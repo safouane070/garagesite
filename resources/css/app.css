@@ -1,0 +1,153 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+    :root {
+        /* Eén bron voor het merkrood binnen CSS. Zelfde waarde als
+           brass.500 (tailwind.config.js) en config('brand.accent') in PHP. */
+        --brass: #d90429;
+    }
+
+    html {
+        -webkit-font-smoothing: antialiased;
+        text-rendering: optimizeLegibility;
+    }
+
+    body {
+        @apply bg-ink text-cream font-sans;
+    }
+
+    /* Warme selectiekleur i.p.v. het standaard felblauw. */
+    ::selection {
+        @apply bg-brass-500/30 text-cream;
+    }
+
+    /* Zichtbare, consistente focus voor toetsenbordnavigatie (toegankelijkheid). */
+    :focus-visible {
+        outline: none;
+        @apply ring-2 ring-brass-400/80 ring-offset-2 ring-offset-ink;
+    }
+
+    /* Getallen netjes uitgelijnd (prijzen, specs). */
+    .tabular {
+        font-variant-numeric: tabular-nums;
+    }
+
+    /* Verberg Alpine-elementen tot het framework geladen is (geen flikkering). */
+    [x-cloak] {
+        display: none !important;
+    }
+}
+
+@layer components {
+    /* ---- Dual-range slider (twee thumbs over één track) ---- */
+    .dual-range {
+        @apply pointer-events-none absolute inset-x-0 top-1/2 h-0 w-full -translate-y-1/2 appearance-none bg-transparent;
+        margin: 0;
+    }
+    .dual-range::-webkit-slider-thumb {
+        pointer-events: auto;
+        -webkit-appearance: none;
+        height: 18px;
+        width: 18px;
+        border-radius: 9999px;
+        background: var(--brass);
+        border: 2px solid #15130f;
+        box-shadow: 0 0 0 1px rgba(217, 4, 41, 0.6);
+        cursor: pointer;
+        transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+    .dual-range::-webkit-slider-thumb:hover {
+        transform: scale(1.12);
+        box-shadow: 0 0 0 4px rgba(217, 4, 41, 0.22);
+    }
+    .dual-range::-moz-range-thumb {
+        pointer-events: auto;
+        height: 18px;
+        width: 18px;
+        border-radius: 9999px;
+        background: var(--brass);
+        border: 2px solid #15130f;
+        box-shadow: 0 0 0 1px rgba(217, 4, 41, 0.6);
+        cursor: pointer;
+    }
+    .dual-range::-webkit-slider-runnable-track {
+        background: transparent;
+    }
+    .dual-range:focus-visible::-webkit-slider-thumb {
+        box-shadow: 0 0 0 4px rgba(242, 97, 120, 0.4);
+    }
+}
+
+@layer utilities {
+    /* Subtiele, gestaffelde re-entrance van resultaten bij het filteren. */
+    @keyframes cfIn {
+        from { opacity: 0; transform: translateY(8px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+    .cf-in {
+        animation: cfIn 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+
+    /* Uniforme behandeling voor autofoto's: de bronbeelden wisselen sterk in
+       belichting/verzadiging; deze lichte correctie maakt er één serie van.
+       Bij hover (in een .group) klaart het beeld op ── het "leeft". */
+    .photo-fx {
+        filter: saturate(0.92) contrast(1.07) brightness(0.9);
+        transition: filter 0.5s cubic-bezier(0.22, 1, 0.36, 1), transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .group:hover .photo-fx {
+        filter: saturate(1.04) contrast(1.04) brightness(1);
+    }
+    @media (prefers-reduced-motion: reduce) {
+        .photo-fx { transition: none; }
+    }
+}
+
+@layer components {
+    /* Vaste, gecentreerde inhoudsbreedte. */
+    .container-x {
+        @apply mx-auto w-full max-w-container px-5 sm:px-8;
+    }
+
+    /* Kleine, mono, uppercase kicker/label — terugkerend signatuurelement. */
+    .kicker {
+        @apply font-mono text-[0.7rem] uppercase tracking-[0.2em] text-brass-300;
+    }
+
+    /* ---- Knoppen: crisp, kleine radius (geen pill-soep) ---- */
+    .btn {
+        @apply inline-flex items-center justify-center gap-2 rounded-[3px] px-5 py-2.5 text-sm font-medium
+               transition duration-200 ease-premium focus-visible:ring-2 disabled:cursor-not-allowed disabled:opacity-50;
+    }
+    .btn-primary {
+        @apply bg-brass-500 text-cream hover:bg-brass-600 active:bg-brass-700;
+    }
+    .btn-outline {
+        @apply border border-hairline text-cream hover:border-brass-400/60 hover:text-brass-300 hover:bg-brass-500/[0.08];
+    }
+    .btn-ghost {
+        @apply text-cream/80 hover:text-cream hover:bg-brass-500/[0.07];
+    }
+    .btn-danger {
+        @apply border border-rose-500/30 text-rose-300 hover:bg-rose-500/10 hover:border-rose-500/50;
+    }
+
+    /* ---- Oppervlakken ---- */
+    .surface {
+        @apply rounded-[4px] border border-hairline bg-graphite-700/70;
+    }
+
+    /* ---- Formuliervelden ---- */
+    .field-label {
+        @apply mb-1.5 block font-mono text-[0.7rem] font-medium uppercase tracking-[0.15em] text-cream/70;
+    }
+    .field-input {
+        @apply w-full rounded-[3px] border-graphite-500 bg-graphite-800 px-4 py-2.5 text-cream placeholder:text-cream/50
+               shadow-sm transition focus:border-brass-500 focus:ring-1 focus:ring-brass-500;
+    }
+    .field-hint {
+        @apply mt-1 text-xs text-cream/65;
+    }
+}

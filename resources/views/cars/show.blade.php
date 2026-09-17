@@ -1,0 +1,262 @@
+@php
+    $images = $car->images;
+    // Volledige specificatielijst: kern + extra (JSON).
+    $coreSpecs = [
+        'Bouwjaar' => $car->year,
+        'Kilometerstand' => $car->formattedMileage(),
+        'Brandstof' => $car->fuel_type,
+        'Transmissie' => $car->transmission,
+        'Carrosserie' => $car->body_type,
+        'Kleur' => $car->color,
+    ];
+    $extraSpecs = [];
+    foreach (($car->specs ?? []) as $key => $value) {
+        if ($value === null || $value === '') continue;
+        $extraSpecs[\App\Models\Car::SPEC_FIELDS[$key] ?? ucfirst(str_replace('_', ' ', $key))] = $value;
+    }
+
+    // Per-auto meta-description: échte specs i.p.v. één generieke zin.
+    $metaDescription = trim(sprintf(
+        '%s uit %s · %s · %s · %s. Te koop bij %s voor %s.',
+        $car->title(), $car->year, $car->formattedMileage(),
+        $car->fuel_type, $car->transmission, config('app.name'), $car->formattedPrice()
+    ));
+    $ogImage = $car->primaryImage?->url();
+
+    $vehicleLd = [
+        '@context' => 'https://schema.org',
+        '@type' => 'Vehicle',
+        'name' => $car->title(),
+        'brand' => ['@type' => 'Brand', 'name' => $car->brand],
+        'model' => $car->model,
+        'vehicleModelDate' => (string) $car->year,
+        'productionDate' => (string) $car->year,
+        'color' => $car->color,
+        'bodyType' => $car->body_type,
+        'fuelType' => $car->fuel_type,
+        'vehicleTransmission' => $car->transmission,
+        'mileageFromOdometer' => ['@type' => 'QuantitativeValue', 'value' => $car->mileage, 'unitCode' => 'KMT'],
+        'image' => $images->map->url()->values(),
+        'description' => $car->description ?: $metaDescription,
+        'offers' => [
+            '@type' => 'Offer',
+            'price' => number_format((float) $car->price, 2, '.', ''),
+            'priceCurrency' => 'EUR',
+            'availability' => $car->status === \App\Enums\CarStatus::Sold
+                ? 'https://schema.org/SoldOut'
+                : 'https://schema.org/InStock',
+            'url' => route('cars.show', $car),
+        ],
+    ];
+@endphp
+
+<x-layouts.public :title="$car->title()" :description="$metaDescription" :og-image="$ogImage">
+    @push('head')
+        <script type="application/ld+json">
+            {!! json_encode($vehicleLd, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}
+        </script>
+    @endpush
+
+    {{-- Kruimelpad --}}
+    <div class="container-x pt-6">
+        <nav class="flex items-center gap-2 font-mono text-[0.7rem] uppercase tracking-wider text-cream/70" aria-label="Kruimelpad">
+            <a href="{{ route('home') }}" class="transition hover:text-brass-300">Home</a>
+            <x-icon name="chevron-right" class="h-3 w-3" />
+            <a href="{{ route('cars.index') }}" class="transition hover:text-brass-300">Aanbod</a>
+            <x-icon name="chevron-right" class="h-3 w-3" />
+            <span class="text-cream/70">{{ $car->title() }}</span>
+        </nav>
+    </div>
+
+    <div class="container-x grid gap-10 py-8 lg:grid-cols-12 lg:gap-12">
+        {{-- ═══ Galerij ═══ --}}
+        <div class="lg:col-span-7"
+             x-data="gallery({ images: @js($images->map->url()->values()) })">
+            <div class="relative aspect-[16/10] overflow-hidden rounded-[4px] border border-hairline bg-graphite-800 focus:outline-none focus-visible:ring-2"
+                 tabindex="0" role="group" aria-roledescription="carrousel" aria-label="Fotogalerij (pijltjestoetsen of vegen)"
+                 @keydown.arrow-left.prevent="prev()" @keydown.arrow-right.prevent="next()"
+                 @touchstart.passive="touchStart($event)" @touchend.passive="touchEnd($event)">
+                @if ($images->isNotEmpty())
+                    <img :src="current" :alt="'{{ $car->title() }} · foto ' + (i + 1)"
+                         class="photo-fx h-full w-full object-cover">
+                    <div class="pointer-events-none absolute inset-0 bg-gradient-to-t from-scrim/30 to-transparent"></div>
+
+                    {{-- Statusbadge --}}
+                    <div class="absolute left-4 top-4"><x-status-badge :status="$car->status" class="backdrop-blur-md" /></div>
+
+                    {{-- Teller --}}
+                    <div class="absolute right-4 top-4 rounded-[3px] bg-scrim/70 px-2.5 py-1 font-mono text-xs text-onscrim/80 backdrop-blur-md">
+                        <span x-text="String(i + 1).padStart(2, '0')"></span> / <span x-text="String(images.length).padStart(2, '0')"></span>
+                    </div>
+
+                    {{-- Navigatie --}}
+                    <template x-if="images.length > 1">
+                        <div>
+                            <button @click="prev()" type="button" aria-label="Vorige foto"
+                                    class="group absolute left-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-hairline bg-scrim/60 text-onscrim backdrop-blur-md transition hover:border-brass-500/60 hover:bg-scrim/80">
+                                <x-icon name="chevron-left" class="h-5 w-5" />
+                            </button>
+                            <button @click="next()" type="button" aria-label="Volgende foto"
+                                    class="group absolute right-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-hairline bg-scrim/60 text-onscrim backdrop-blur-md transition hover:border-brass-500/60 hover:bg-scrim/80">
+                                <x-icon name="chevron-right" class="h-5 w-5" />
+                            </button>
+                        </div>
+                    </template>
+                @else
+                    <div class="flex h-full w-full flex-col items-center justify-center gap-2 text-cream/25">
+                        <x-icon name="car" class="h-10 w-10" /><span class="font-mono text-xs uppercase tracking-widest">Geen foto</span>
+                    </div>
+                @endif
+            </div>
+
+            {{-- Thumbnails --}}
+            @if ($images->count() > 1)
+                <div class="mt-3 grid grid-cols-4 gap-3 sm:grid-cols-6">
+                    @foreach ($images as $index => $image)
+                        <button type="button" @click="go({{ $index }})"
+                                :class="i === {{ $index }} ? 'border-brass-500 ring-1 ring-brass-500' : 'border-hairline opacity-70 hover:opacity-100'"
+                                class="aspect-[4/3] overflow-hidden rounded-[3px] border transition"
+                                aria-label="Toon foto {{ $index + 1 }}">
+                            <img src="{{ $image->url() }}" alt="" class="h-full w-full object-cover">
+                        </button>
+                    @endforeach
+                </div>
+            @endif
+        </div>
+
+        {{-- ═══ Infopaneel ═══ --}}
+        <div class="lg:col-span-5">
+            <div class="lg:sticky lg:top-24">
+                <p class="kicker">{{ $car->body_type ?: 'Occasion' }} · {{ $car->year }}</p>
+                <h1 class="mt-3 font-display text-3xl font-bold leading-tight tracking-tight text-cream sm:text-4xl">
+                    {{ $car->brand }} {{ $car->model }}
+                </h1>
+                @if ($car->variant)
+                    <p class="mt-1 text-lg text-cream/65">{{ $car->variant }}</p>
+                @endif
+
+                {{-- Prijs: ademt --}}
+                <div class="mt-6 flex items-end justify-between border-y border-hairline py-5">
+                    <div>
+                        <span class="kicker text-[0.6rem]">Vraagprijs</span>
+                        <span class="mt-1 block font-display text-4xl font-bold tracking-tight text-brass-400 tabular sm:text-5xl">
+                            {{ $car->formattedPrice() }}
+                        </span>
+                    </div>
+                    <x-status-badge :status="$car->status" />
+                </div>
+
+                {{-- Kernspecs (highlight) --}}
+                <dl class="mt-6 grid grid-cols-2 gap-px overflow-hidden rounded-[4px] border border-hairline bg-hairline">
+                    @php
+                        $highlights = [
+                            ['icon' => 'calendar', 'label' => 'Bouwjaar', 'value' => $car->year],
+                            ['icon' => 'gauge', 'label' => 'Kilometerstand', 'value' => $car->formattedMileage()],
+                            ['icon' => 'fuel', 'label' => 'Brandstof', 'value' => $car->fuel_type],
+                            ['icon' => 'gearbox', 'label' => 'Transmissie', 'value' => $car->transmission],
+                        ];
+                    @endphp
+                    @foreach ($highlights as $h)
+                        <div class="flex items-center gap-3 bg-graphite-800 p-4">
+                            <x-icon name="{{ $h['icon'] }}" class="h-5 w-5 shrink-0 text-brass-500/70" />
+                            <div class="min-w-0">
+                                <dt class="font-mono text-[0.65rem] uppercase tracking-wider text-cream/70">{{ $h['label'] }}</dt>
+                                <dd class="truncate text-sm font-medium text-cream">{{ $h['value'] }}</dd>
+                            </div>
+                        </div>
+                    @endforeach
+                </dl>
+
+                {{-- CTA --}}
+                @if ($car->status !== \App\Enums\CarStatus::Sold)
+                    <div class="mt-6 flex flex-col gap-3 sm:flex-row">
+                        <a href="tel:{{ config('brand.contact.phone_href') }}" class="btn btn-primary flex-1">
+                            <x-icon name="phone" class="h-4 w-4" /> Plan een bezichtiging
+                        </a>
+                        <a href="mailto:{{ config('brand.contact.email') }}?subject={{ rawurlencode($car->title()) }}" class="btn btn-outline flex-1">
+                            <x-icon name="mail" class="h-4 w-4" /> Stel een vraag
+                        </a>
+                    </div>
+                @else
+                    <div class="mt-6 flex items-center gap-3 rounded-[4px] border border-hairline bg-graphite-800 p-4 text-sm text-cream/70">
+                        <x-icon name="check" class="h-5 w-5 text-rose-400" />
+                        Deze auto is verkocht. Bekijk ons <a href="{{ route('cars.index') }}" class="text-brass-300 underline-offset-2 hover:underline">actuele aanbod</a>.
+                    </div>
+                @endif
+
+                {{-- Vertrouwensregel --}}
+                <div class="mt-5 flex flex-wrap gap-x-5 gap-y-2 font-mono text-[0.7rem] uppercase tracking-wider text-cream/70">
+                    <span class="inline-flex items-center gap-1.5"><x-icon name="shield-check" class="h-3.5 w-3.5 text-brass-500/70" /> BOVAG-garantie</span>
+                    <span class="inline-flex items-center gap-1.5"><x-icon name="file-text" class="h-3.5 w-3.5 text-brass-500/70" /> Volledige historiek</span>
+                    <span class="inline-flex items-center gap-1.5"><x-icon name="repeat" class="h-3.5 w-3.5 text-brass-500/70" /> Inruil mogelijk</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- ═══ Beschrijving + volledige specs ═══ --}}
+    <div class="container-x grid gap-12 border-t border-hairline py-14 lg:grid-cols-12">
+        <div class="lg:col-span-7">
+            <h2 class="font-display text-2xl font-bold text-cream">Over deze {{ $car->brand }}</h2>
+            <p class="mt-4 leading-relaxed text-cream/70">{{ $car->description ?: 'Geen beschrijving beschikbaar.' }}</p>
+        </div>
+
+        <div class="lg:col-span-5">
+            <h2 class="font-display text-2xl font-bold text-cream">Specificaties</h2>
+            <dl class="mt-4 divide-y divide-hairline border-y border-hairline">
+                @foreach ($coreSpecs as $label => $value)
+                    @if ($value)
+                        <div class="flex items-center justify-between py-2.5">
+                            <dt class="text-sm text-cream/65">{{ $label }}</dt>
+                            <dd class="font-mono text-sm text-cream tabular">{{ $value }}</dd>
+                        </div>
+                    @endif
+                @endforeach
+                @foreach ($extraSpecs as $label => $value)
+                    <div class="flex items-center justify-between py-2.5">
+                        <dt class="text-sm text-cream/65">{{ $label }}</dt>
+                        <dd class="font-mono text-sm text-cream tabular">{{ $value }}</dd>
+                    </div>
+                @endforeach
+            </dl>
+        </div>
+    </div>
+
+    {{-- ═══ Vergelijkbaar ═══ --}}
+    @if ($related->isNotEmpty())
+        <section class="container-x border-t border-hairline py-14">
+            <div class="mb-8 flex items-end justify-between border-b border-hairline pb-6">
+                <div>
+                    <p class="kicker">Vergelijkbaar</p>
+                    <h2 class="mt-3 font-display text-2xl font-bold tracking-tight text-cream sm:text-3xl">Misschien ook interessant</h2>
+                </div>
+            </div>
+            <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                @foreach ($related as $item)
+                    <x-car-card :car="$item" />
+                @endforeach
+            </div>
+        </section>
+    @endif
+
+    <script>
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('gallery', (config) => ({
+                images: config.images,
+                i: 0,
+                touchX: null,
+                get current() { return this.images[this.i]; },
+                next() { if (this.images.length > 1) this.i = (this.i + 1) % this.images.length; },
+                prev() { if (this.images.length > 1) this.i = (this.i - 1 + this.images.length) % this.images.length; },
+                go(n) { this.i = n; },
+                touchStart(e) { this.touchX = e.changedTouches[0].clientX; },
+                touchEnd(e) {
+                    if (this.touchX === null) return;
+                    const dx = e.changedTouches[0].clientX - this.touchX;
+                    if (Math.abs(dx) > 40) { dx < 0 ? this.next() : this.prev(); }
+                    this.touchX = null;
+                },
+            }));
+        });
+    </script>
+</x-layouts.public>
