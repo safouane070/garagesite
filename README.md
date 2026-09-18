@@ -4,6 +4,14 @@ Een complete autogarage-website gebouwd met **Laravel 13**, **MySQL/MariaDB**, *
 
 ---
 
+## 🚀 Live demo & screenshots
+
+> _Binnenkort online — hier komt een demo-link. Voeg hieronder een screenshot of GIF van de homepage + admin toe, bijvoorbeeld:_
+>
+> `![Homepage](docs/screenshot-home.png)`
+
+---
+
 ## Functionaliteit
 
 **Publiek**
@@ -122,3 +130,11 @@ resources/views/
 - **Typografie:** Space Grotesk (display) + Inter (tekst) + JetBrains Mono (technische spec-labels).
 - **Iconen:** één consistente [Lucide](https://lucide.dev)-set via een eigen `<x-icon>`-component (geen emoji).
 - Kleuren en fonts staan als tokens in `tailwind.config.js` — pas ze daar aan om de hele huisstijl te wijzigen.
+
+---
+
+## Licentie
+
+Uitgebracht onder de [MIT-licentie](LICENSE).
+
+Gemaakt door **Safouane Lahoua** — [github.com/safouane070](https://github.com/safouane070)
