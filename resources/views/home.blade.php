@@ -11,20 +11,12 @@
 
         <div class="container-x relative py-16">
             <div class="max-w-2xl" style="text-shadow: 0 2px 24px rgba(0,0,0,0.45)">
-                <p class="kicker flex items-center gap-3">
-                    <span class="h-px w-10 bg-brass-500"></span> BOVAG-erkend autobedrijf · Rijswijk
-                </p>
-                <h1 class="mt-6 font-display text-[2.6rem] font-bold uppercase leading-[0.95] tracking-tight text-white sm:text-6xl lg:text-[4.6rem]">
+                <h1 class="font-display text-[2.6rem] font-bold uppercase leading-[0.95] tracking-tight text-white sm:text-6xl lg:text-[4.6rem]">
                     Dé Duitse occasions<br>van Rijswijk
                 </h1>
-                <p class="mt-7 max-w-xl text-lg leading-relaxed text-cream/85">
-                    Zorgvuldig geselecteerde occasions, van Volkswagen en Audi tot premium
-                    toppers van Mercedes, BMW en Porsche. BOVAG-garantie, geen afleverkosten,
-                    inruil en financiering mogelijk.
-                </p>
 
-                {{-- USP's, zoals op de originele hero --}}
-                <ul class="mt-7 flex flex-wrap gap-x-6 gap-y-2">
+                {{-- USP's, zoals op de originele hero (kort, geen lange alinea) --}}
+                <ul class="mt-8 flex flex-wrap gap-x-6 gap-y-2">
                     @foreach (['BOVAG-garantie', 'Geen afleverkosten', 'VAG-specialist'] as $usp)
                         <li class="inline-flex items-center gap-2 text-sm font-medium text-cream">
                             <x-icon name="check" class="h-4 w-4 text-brass-400" /> {{ $usp }}
