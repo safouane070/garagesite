@@ -1,25 +1,37 @@
 <x-layouts.public>
-    {{-- ═══════════ HERO · uitgeknipte wagen op donker ═══════════ --}}
-    <section class="relative -mt-[4.5rem] overflow-hidden bg-ink">
-        {{-- Diepte: verticaal verloop (donkerder naar de vloer toe) + neutrale
-             spotlight achter de wagen (geen gekleurde glow). --}}
-        <div class="pointer-events-none absolute inset-0 bg-gradient-to-b from-paper via-ink to-scrim"></div>
-        <div class="pointer-events-none absolute right-[-5%] top-1/2 h-[85%] w-[65%] -translate-y-1/2 rounded-full bg-[radial-gradient(ellipse_at_center,rgba(242,238,228,0.10),transparent_68%)]"></div>
+    {{-- ═══════════ HERO · echte showroomfoto met tekst eroverheen ═══════════ --}}
+    <section class="relative -mt-[4.5rem] flex min-h-[92vh] items-center overflow-hidden bg-ink pt-[4.5rem]">
+        {{-- Echte foto van het wagenpark van de zaak --}}
+        <img src="{{ asset('images/hero-showroom.webp') }}" alt="Wagenpark van {{ config('app.name') }}"
+             fetchpriority="high" decoding="async"
+             class="absolute inset-0 h-full w-full object-cover object-center">
+        {{-- Overlays voor leesbaarheid van de tekst --}}
+        <div class="pointer-events-none absolute inset-0 bg-gradient-to-r from-ink via-ink/80 to-ink/45"></div>
+        <div class="pointer-events-none absolute inset-0 bg-gradient-to-t from-ink/90 via-transparent to-ink/30"></div>
 
-        <div class="container-x relative grid items-center gap-10 pb-16 pt-32 lg:min-h-[90vh] lg:grid-cols-12 lg:gap-4 lg:pb-20 lg:pt-36">
-            {{-- Copy --}}
-            <div class="min-w-0 max-w-xl lg:col-span-6">
+        <div class="container-x relative py-16">
+            <div class="max-w-2xl" style="text-shadow: 0 2px 24px rgba(0,0,0,0.45)">
                 <p class="kicker flex items-center gap-3">
                     <span class="h-px w-10 bg-brass-500"></span> BOVAG-erkend autobedrijf · Rijswijk
                 </p>
-                <h1 class="mt-6 font-display text-[2.4rem] font-bold uppercase leading-[0.95] tracking-tight text-cream sm:text-6xl lg:text-[4.4rem]">
+                <h1 class="mt-6 font-display text-[2.6rem] font-bold uppercase leading-[0.95] tracking-tight text-white sm:text-6xl lg:text-[4.6rem]">
                     Dé Duitse occasions<br>van Rijswijk
                 </h1>
-                <p class="mt-7 max-w-xl text-lg leading-relaxed text-cream/80">
+                <p class="mt-7 max-w-xl text-lg leading-relaxed text-cream/85">
                     Zorgvuldig geselecteerde occasions, van Volkswagen en Audi tot premium
                     toppers van Mercedes, BMW en Porsche. BOVAG-garantie, geen afleverkosten,
                     inruil en financiering mogelijk.
                 </p>
+
+                {{-- USP's, zoals op de originele hero --}}
+                <ul class="mt-7 flex flex-wrap gap-x-6 gap-y-2">
+                    @foreach (['BOVAG-garantie', 'Geen afleverkosten', 'VAG-specialist'] as $usp)
+                        <li class="inline-flex items-center gap-2 text-sm font-medium text-cream">
+                            <x-icon name="check" class="h-4 w-4 text-brass-400" /> {{ $usp }}
+                        </li>
+                    @endforeach
+                </ul>
+
                 <div class="mt-9 flex flex-wrap items-center gap-4">
                     <a href="{{ route('cars.index') }}" class="btn btn-primary">
                         Bekijk het aanbod <x-icon name="arrow-right" class="h-4 w-4" />
@@ -30,27 +42,6 @@
                     </a>
                 </div>
             </div>
-
-            {{-- Uitgeknipte wagen --}}
-            @if ($hero)
-                <div class="min-w-0 lg:col-span-6">
-                    <div class="relative">
-                        {{-- grondschaduw onder de wielen: ankert de wagen zodat 'ie
-                             niet als losse sticker zweeft --}}
-                        <div class="pointer-events-none absolute inset-x-[10%] bottom-[2%] h-[10%] rounded-[50%] bg-scrim/80 blur-2xl lg:inset-x-[18%] lg:-translate-x-[4%]"></div>
-                        <img src="{{ $hero->cutoutUrl() }}" alt="{{ $hero->title() }}"
-                             fetchpriority="high" loading="eager" decoding="async"
-                             class="relative w-full drop-shadow-[0_30px_38px_rgba(0,0,0,0.55)] lg:w-[128%] lg:max-w-none lg:-translate-x-[4%]">
-                    </div>
-                    <a href="{{ route('cars.show', $hero) }}"
-                       class="group mt-5 inline-flex items-center gap-3 text-sm text-cream/70 transition hover:text-brass-300 lg:mt-3 lg:pl-[8%]">
-                        <span class="font-mono text-[0.6rem] uppercase tracking-[0.25em] text-brass-300">Uitgelicht</span>
-                        <span class="font-display font-semibold text-cream">{{ $hero->shortTitle() }}</span>
-                        <span class="tabular font-display font-bold text-white">{{ $hero->formattedPrice() }}</span>
-                        <x-icon name="arrow-right" class="h-4 w-4 transition group-hover:translate-x-0.5" />
-                    </a>
-                </div>
-            @endif
         </div>
     </section>
 
