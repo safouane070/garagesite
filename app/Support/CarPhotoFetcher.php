@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\Http;
 class CarPhotoFetcher
 {
     private const ENDPOINT = 'https://unsplash.com/napi/search/photos';
-    private const USER_AGENT = 'Mozilla/5.0 (KroonAutomobielenDemo; educational demo)';
+    private const USER_AGENT = 'Mozilla/5.0 (AutobedrijfRijswijkDemo; educational demo)';
 
     /**
      * @return array<int, string> Lijst van afbeeldings-URL's.

@@ -65,7 +65,7 @@ class PlaceholderImage
   <text x="90" y="140" fill="#f4f2ec" font-family="Georgia, 'Times New Roman', serif" font-size="66" font-weight="700" letter-spacing="2">$brand</text>
   <text x="92" y="188" fill="$accent" font-family="Arial, Helvetica, sans-serif" font-size="30" letter-spacing="6">$model</text>
 
-  <text x="90" y="930" fill="#8b8f98" font-family="Arial, Helvetica, sans-serif" font-size="22" letter-spacing="7">KROON AUTOMOBIELEN</text>
+  <text x="90" y="930" fill="#8b8f98" font-family="Arial, Helvetica, sans-serif" font-size="22" letter-spacing="7">AUTOBEDRIJF RIJSWIJK</text>
   <text x="1510" y="930" text-anchor="end" fill="#b9bcc4" font-family="Arial, Helvetica, sans-serif" font-size="24" letter-spacing="3">$view</text>
 
   <rect x="40" y="40" width="1520" height="920" fill="none" stroke="#ffffff" stroke-opacity="0.06" rx="8"/>
