@@ -122,9 +122,6 @@
                 @auth
                     <a href="{{ route('admin.dashboard') }}" class="btn btn-outline hidden sm:inline-flex">Beheer</a>
                 @endauth
-                <a href="{{ route('cars.index') }}" class="btn btn-primary hidden sm:inline-flex">
-                    Aanbod <x-icon name="arrow-right" class="h-4 w-4" />
-                </a>
 
                 <button @click="open = !open" type="button"
                         class="btn btn-ghost -mr-2 lg:hidden" :aria-expanded="open" aria-label="Menu">
