@@ -12,7 +12,7 @@ class DatabaseSeeder extends Seeder
     {
         // Admin-account voor de garage-eigenaar (zie README voor inloggegevens).
         User::updateOrCreate(
-            ['email' => 'admin@kroon.test'],
+            ['email' => 'admin@autobedrijfrijswijk.test'],
             [
                 'name' => 'Garage Beheerder',
                 'password' => Hash::make('password'),

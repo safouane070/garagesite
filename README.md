@@ -1,4 +1,4 @@
-# Kroon Automobielen — Autogarage website
+# Autobedrijf Rijswijk — Autogarage website
 
 Een complete autogarage-website gebouwd met **Laravel 13**, **MySQL/MariaDB**, **Blade + Tailwind CSS** en **Alpine.js**. Met een publieke etalage (homepage, aanbod met live filtering, detailpagina met foto-carousel) en een beveiligde admin-omgeving (Laravel Breeze) voor volledig voorraadbeheer.
 
@@ -6,7 +6,7 @@ Een complete autogarage-website gebouwd met **Laravel 13**, **MySQL/MariaDB**, *
 
 ## 🚀 Live demo
 
-![Kroon Automobielen — homepage](docs/screenshot-home.png)
+![Autobedrijf Rijswijk — homepage](docs/screenshot-home.png)
 
 > _Binnenkort online — hier komt een link naar een live demo._
 
@@ -97,7 +97,7 @@ Na `php artisan migrate --seed` bestaat er een beheerdersaccount:
 
 | E-mail | Wachtwoord |
 |--------|------------|
-| `admin@kroon.test` | `password` |
+| `admin@autobedrijfrijswijk.test` | `password` |
 
 Log in via **http://localhost:8000/login** en beheer de voorraad op **/admin**.
 Publieke registratie is bewust uitgeschakeld — extra accounts maak je via de seeder of `php artisan tinker`.

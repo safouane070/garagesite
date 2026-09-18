@@ -7,7 +7,7 @@
 
     {{-- Demo-inloggegevens (handig tijdens testen) --}}
     <div class="mb-6 rounded-[4px] border border-brass-500/20 bg-brass-500/[0.06] p-3 font-mono text-[0.7rem] text-cream/70">
-        <span class="text-brass-300">Demo:</span> admin@kroon.test · password
+        <span class="text-brass-300">Demo:</span> admin@autobedrijfrijswijk.test · password
     </div>
 
     @if (session('status'))
