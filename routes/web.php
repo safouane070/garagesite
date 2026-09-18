@@ -3,7 +3,9 @@
 use App\Http\Controllers\Admin\CarController as AdminCarController;
 use App\Http\Controllers\CarController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\LeadController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\SitemapController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -14,6 +16,22 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/aanbod', [CarController::class, 'index'])->name('cars.index');
 Route::get('/aanbod/{car}', [CarController::class, 'show'])->name('cars.show');
+
+// Contact-/interesseaanvraag vanaf de site. Throttle houdt bots/spam af.
+Route::post('/aanvraag', [LeadController::class, 'store'])
+    ->middleware('throttle:6,1')
+    ->name('leads.store');
+
+Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap');
+
+// Statische inhoudspagina's (lezen zelf uit config/brand.php + shared components).
+Route::view('/diensten', 'pages.diensten')->name('diensten');
+Route::view('/financial-lease', 'pages.financial-lease')->name('financial-lease');
+Route::view('/volkswagen-specialist', 'pages.vw-specialist')->name('vw-specialist');
+Route::view('/over-ons', 'pages.over-ons')->name('over-ons');
+Route::view('/contact', 'pages.contact')->name('contact');
+Route::view('/algemene-voorwaarden', 'pages.voorwaarden')->name('voorwaarden');
+Route::view('/privacybeleid', 'pages.privacy')->name('privacy');
 
 /*
 |--------------------------------------------------------------------------

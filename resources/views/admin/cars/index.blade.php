@@ -28,10 +28,65 @@
         @endforeach
     </dl>
 
-    {{-- Autolijst --}}
-    <div class="mt-8 overflow-hidden rounded-[4px] border border-hairline">
-        @if ($cars->count())
-            <div class="overflow-x-auto">
+    {{-- Voorraad + filter --}}
+    @if ($cars->isEmpty())
+        <div class="mt-8 flex flex-col items-center justify-center rounded-[4px] border border-hairline px-6 py-20 text-center">
+            <span class="flex h-14 w-14 items-center justify-center rounded-full border border-hairline text-cream/40"><x-icon name="car" class="h-6 w-6" /></span>
+            <h3 class="mt-5 font-display text-xl font-semibold text-cream">Nog geen auto's</h3>
+            <p class="mt-2 max-w-sm text-sm text-cream/65">Voeg je eerste occasion toe om te beginnen.</p>
+            <a href="{{ route('admin.cars.create') }}" class="btn btn-primary mt-6"><x-icon name="plus" class="h-4 w-4" /> Nieuwe auto</a>
+        </div>
+    @else
+        <div x-data="{
+                q: '',
+                status: '',
+                items: @js($items),
+                match(t, s) {
+                    const term = this.q.toLowerCase().trim();
+                    return (term === '' || t.includes(term)) && (this.status === '' || this.status === s);
+                },
+                get matched() { return this.items.filter(i => this.match(i.t, i.s)).length; },
+                get filtering() { return this.q.trim() !== '' || this.status !== ''; },
+                reset() { this.q = ''; this.status = ''; },
+             }"
+             class="mt-8 overflow-hidden rounded-[4px] border border-hairline">
+
+            {{-- Toolbar --}}
+            <div class="flex flex-col gap-2.5 border-b border-hairline bg-graphite-800/40 p-3 lg:flex-row lg:items-center">
+                {{-- Zoekveld: filtert direct terwijl je typt --}}
+                <label class="flex flex-1 items-center gap-2 rounded-[3px] border border-hairline bg-graphite-800 px-3 transition focus-within:border-brass-500 focus-within:ring-1 focus-within:ring-brass-500">
+                    <x-icon name="search" class="h-4 w-4 shrink-0 text-cream/40" />
+                    <input type="search" x-model="q" placeholder="Zoek op merk, model, bouwjaar…"
+                           class="w-full border-0 bg-transparent py-2 text-sm text-cream placeholder:text-cream/35 focus:outline-none focus:ring-0">
+                    <button type="button" x-show="q" @click="q = ''" title="Wis zoekopdracht"
+                            class="shrink-0 text-cream/40 transition hover:text-cream"><x-icon name="x" class="h-4 w-4" /></button>
+                </label>
+
+                <div class="flex flex-wrap items-center gap-2">
+                    {{-- Status --}}
+                    <div class="relative min-w-[150px] flex-1 lg:flex-none">
+                        <select x-model="status"
+                                class="w-full appearance-none rounded-[3px] border border-hairline bg-graphite-800 py-2 pl-3 pr-9 text-sm text-cream focus:border-brass-500 focus:ring-1 focus:ring-brass-500">
+                            <option value="">Alle statussen</option>
+                            @foreach (\App\Enums\CarStatus::cases() as $s)
+                                <option value="{{ $s->value }}">{{ $s->label() }}</option>
+                            @endforeach
+                        </select>
+                        <x-icon name="chevron-down" class="pointer-events-none absolute right-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-cream/40" />
+                    </div>
+
+                    <button type="button" x-show="filtering" x-cloak @click="reset()"
+                            class="btn btn-outline shrink-0 px-4 py-2">Wissen</button>
+                </div>
+            </div>
+
+            {{-- Live telling --}}
+            <p x-show="filtering" x-cloak class="border-b border-hairline px-4 py-2.5 font-mono text-xs text-cream/45">
+                <span x-text="matched"></span> van {{ $cars->count() }} auto's
+            </p>
+
+            {{-- Tabel --}}
+            <div class="overflow-x-auto" x-show="matched > 0">
                 <table class="w-full min-w-[720px] text-left">
                     <thead>
                         <tr class="border-b border-hairline bg-graphite-800 font-mono text-[0.7rem] uppercase tracking-wider text-cream/40">
@@ -44,7 +99,9 @@
                     </thead>
                     <tbody class="divide-y divide-hairline">
                         @foreach ($cars as $car)
-                            <tr class="group transition hover:bg-graphite-800/50">
+                            <tr data-search="{{ $car->searchText() }}" data-status="{{ $car->status->value }}"
+                                x-show="match($el.dataset.search, $el.dataset.status)"
+                                class="group transition hover:bg-graphite-800/50">
                                 {{-- Auto (foto + naam) --}}
                                 <td class="px-4 py-3">
                                     <div class="flex items-center gap-3">
@@ -106,17 +163,14 @@
                     </tbody>
                 </table>
             </div>
-        @else
-            <div class="flex flex-col items-center justify-center px-6 py-20 text-center">
-                <span class="flex h-14 w-14 items-center justify-center rounded-full border border-hairline text-cream/40"><x-icon name="car" class="h-6 w-6" /></span>
-                <h3 class="mt-5 font-display text-xl font-semibold text-cream">Nog geen auto's</h3>
-                <p class="mt-2 max-w-sm text-sm text-cream/65">Voeg je eerste occasion toe om te beginnen.</p>
-                <a href="{{ route('admin.cars.create') }}" class="btn btn-primary mt-6"><x-icon name="plus" class="h-4 w-4" /> Nieuwe auto</a>
-            </div>
-        @endif
-    </div>
 
-    @if ($cars->hasPages())
-        <div class="mt-6">{{ $cars->links() }}</div>
+            {{-- Geen resultaat voor de huidige filter --}}
+            <div x-show="matched === 0" x-cloak class="flex flex-col items-center justify-center px-6 py-20 text-center">
+                <span class="flex h-14 w-14 items-center justify-center rounded-full border border-hairline text-cream/40"><x-icon name="search" class="h-6 w-6" /></span>
+                <h3 class="mt-5 font-display text-xl font-semibold text-cream">Geen auto's gevonden</h3>
+                <p class="mt-2 max-w-sm text-sm text-cream/65">Geen resultaten voor deze zoekopdracht of status.</p>
+                <button type="button" @click="reset()" class="btn btn-ghost mt-6">Filter wissen</button>
+            </div>
+        </div>
     @endif
 </x-layouts.admin>

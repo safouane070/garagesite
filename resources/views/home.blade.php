@@ -46,13 +46,16 @@
                        class="group mt-5 inline-flex items-center gap-3 text-sm text-cream/70 transition hover:text-brass-300 lg:mt-3 lg:pl-[8%]">
                         <span class="font-mono text-[0.6rem] uppercase tracking-[0.25em] text-brass-300">Uitgelicht</span>
                         <span class="font-display font-semibold text-cream">{{ $hero->shortTitle() }}</span>
-                        <span class="tabular font-display font-bold text-brass-300">{{ $hero->formattedPrice() }}</span>
+                        <span class="tabular font-display font-bold text-white">{{ $hero->formattedPrice() }}</span>
                         <x-icon name="arrow-right" class="h-4 w-4 transition group-hover:translate-x-0.5" />
                     </a>
                 </div>
             @endif
         </div>
     </section>
+
+    {{-- ═══════════ CIJFERS ═══════════ --}}
+    <x-home.stats />
 
     {{-- ═══════════ AANRADERS ═══════════ --}}
     @if ($featured->count())
@@ -121,8 +124,49 @@
         </div>
     </section>
 
+    {{-- ═══════════ MET TROTS VERKOCHT ═══════════ --}}
+    <x-home.sold :cars="$sold" />
+
+    {{-- ═══════════ DIENSTEN ═══════════ --}}
+    <section class="container-x py-16 lg:py-24">
+        <div class="flex flex-wrap items-end justify-between gap-4 border-b border-hairline pb-6">
+            <div>
+                <p class="kicker">Diensten</p>
+                <h2 class="mt-3 font-display text-3xl font-bold uppercase tracking-tight text-cream sm:text-4xl">
+                    Alles rondom je auto
+                </h2>
+            </div>
+            <a href="{{ route('diensten') }}" class="group inline-flex items-center gap-2 text-sm text-cream/70 transition hover:text-brass-300">
+                Alle diensten <x-icon name="arrow-right" class="h-4 w-4 transition group-hover:translate-x-0.5" />
+            </a>
+        </div>
+
+        @php
+            $teaser = [
+                ['icon' => 'tag', 't' => 'Inkoop & verkoop', 'd' => 'Eerlijke dagprijs voor je auto, of koop met BOVAG-garantie.'],
+                ['icon' => 'search', 't' => 'Zoekopdracht', 'd' => 'Niet gevonden? Wij zoeken gericht naar jouw droomauto.'],
+                ['icon' => 'repeat', 't' => 'Inruil & financiering', 'd' => 'Vlotte inruil en passende financial lease op maat.'],
+                ['icon' => 'map-pin', 't' => 'Import & taxatie', 'd' => 'Import uit het buitenland en onderbouwde taxaties.'],
+            ];
+        @endphp
+        <div class="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            @foreach ($teaser as $s)
+                <a href="{{ route('diensten') }}" class="flex flex-col rounded-[4px] border border-hairline bg-graphite-700/50 p-6 transition hover:-translate-y-1 hover:border-brass-500/40">
+                    <span class="flex h-11 w-11 items-center justify-center rounded-full border border-brass-500/35 text-brass-400">
+                        <x-icon name="{{ $s['icon'] }}" class="h-5 w-5" />
+                    </span>
+                    <h3 class="mt-5 font-display text-lg font-semibold text-cream">{{ $s['t'] }}</h3>
+                    <p class="mt-2 text-sm leading-relaxed text-cream/65">{{ $s['d'] }}</p>
+                </a>
+            @endforeach
+        </div>
+    </section>
+
+    {{-- ═══════════ KLANTERVARINGEN ═══════════ --}}
+    <x-home.reviews class="border-t border-hairline" />
+
     {{-- ═══════════ CTA ═══════════ --}}
-    <section class="container-x pb-24">
+    <section class="container-x py-16 pb-24">
         <div class="grid items-center gap-8 rounded-[4px] border border-hairline bg-graphite-700 p-8 lg:grid-cols-12 lg:p-14">
             <div class="lg:col-span-8">
                 <h2 class="font-display text-3xl font-bold uppercase tracking-tight text-cream sm:text-4xl">
@@ -133,8 +177,8 @@
                     voor je op zoek en houden we je op de hoogte zodra hij binnenkomt.
                 </p>
             </div>
-            <div class="flex gap-3 lg:col-span-4 lg:justify-end">
-                <a href="{{ route('cars.index') }}" class="btn btn-primary">Doorzoek aanbod</a>
+            <div class="flex flex-wrap gap-3 lg:col-span-4 lg:justify-end">
+                <a href="{{ route('diensten') }}" class="btn btn-primary">Plaats een zoekopdracht</a>
                 <a href="tel:{{ config('brand.contact.phone_href') }}" class="btn btn-outline">Bel ons</a>
             </div>
         </div>

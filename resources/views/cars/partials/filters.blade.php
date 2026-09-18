@@ -17,7 +17,21 @@
             <select x-model="brand" @change="apply()" class="field-input appearance-none pr-10">
                 <option value="">Alle merken</option>
                 @foreach ($brands as $b)
-                    <option value="{{ $b }}">{{ $b }}</option>
+                    <option value="{{ $b }}">{{ $b }} ({{ $brandCounts[$b] ?? 0 }})</option>
+                @endforeach
+            </select>
+            <x-icon name="chevron-down" class="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-cream/70" />
+        </div>
+    </div>
+
+    {{-- Carrosserie --}}
+    <div>
+        <label class="field-label">Carrosserie</label>
+        <div class="relative">
+            <select x-model="body" @change="apply()" class="field-input appearance-none pr-10">
+                <option value="">Alle carrosserieën</option>
+                @foreach ($bodyTypes as $bt)
+                    <option value="{{ $bt }}">{{ $bt }} ({{ $bodyCounts[$bt] ?? 0 }})</option>
                 @endforeach
             </select>
             <x-icon name="chevron-down" class="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-cream/70" />
@@ -32,7 +46,7 @@
                 <button type="button" @click="toggleFuel('{{ $f }}')"
                         :class="fuels.includes('{{ $f }}') ? 'border-brass-500 bg-brass-500/15 text-brass-300' : 'border-hairline text-cream/70 hover:border-cream/30 hover:text-cream/80'"
                         class="rounded-[3px] border px-3 py-1.5 font-mono text-[0.7rem] uppercase tracking-wider transition">
-                    {{ $f }}
+                    {{ $f }} ({{ $fuelCounts[$f] ?? 0 }})
                 </button>
             @endforeach
         </div>

@@ -21,7 +21,7 @@
             '@type' => 'PostalAddress',
             'streetAddress' => config('brand.contact.address'),
             'addressLocality' => config('brand.contact.city'),
-            'addressCountry' => 'BE',
+            'addressCountry' => 'NL',
         ],
         'openingHours' => 'Mo-Sa 09:00-18:00',
     ];
@@ -55,7 +55,7 @@
 
     {{-- Bedrijfsgegevens voor zoekmachines --}}
     <script type="application/ld+json">
-        {!! json_encode($organizationLd, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}
+        {!! json_encode($organizationLd, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_HEX_TAG) !!}
     </script>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -89,11 +89,14 @@
                 <x-brand-mark />
             </a>
 
-            <nav class="hidden items-center gap-8 md:flex" aria-label="Hoofdnavigatie">
+            <nav class="hidden items-center gap-6 lg:flex" aria-label="Hoofdnavigatie">
                 @php
                     $nav = [
-                        ['label' => 'Home', 'route' => 'home', 'active' => request()->routeIs('home')],
                         ['label' => 'Aanbod', 'route' => 'cars.index', 'active' => request()->routeIs('cars.*')],
+                        ['label' => 'Diensten', 'route' => 'diensten', 'active' => request()->routeIs('diensten')],
+                        ['label' => 'Financial lease', 'route' => 'financial-lease', 'active' => request()->routeIs('financial-lease')],
+                        ['label' => 'Over ons', 'route' => 'over-ons', 'active' => request()->routeIs('over-ons')],
+                        ['label' => 'Contact', 'route' => 'contact', 'active' => request()->routeIs('contact')],
                     ];
                 @endphp
                 @foreach ($nav as $item)
@@ -109,10 +112,13 @@
                 @endforeach
             </nav>
 
-            <div class="flex items-center gap-4">
-                <a href="tel:{{ config('brand.contact.phone_href') }}" class="hidden items-center gap-2 font-mono text-xs text-cream/70 transition hover:text-brass-300 lg:inline-flex">
+            <div class="flex items-center gap-3">
+                <a href="tel:{{ config('brand.contact.phone_href') }}" class="hidden items-center gap-2 font-mono text-xs text-cream/70 transition hover:text-brass-300 xl:inline-flex">
                     <x-icon name="phone" class="h-3.5 w-3.5" /> {{ config('brand.contact.phone') }}
                 </a>
+
+                <x-whatsapp-button />
+
                 @auth
                     <a href="{{ route('admin.dashboard') }}" class="btn btn-outline hidden sm:inline-flex">Beheer</a>
                 @endauth
@@ -121,7 +127,7 @@
                 </a>
 
                 <button @click="open = !open" type="button"
-                        class="btn btn-ghost -mr-2 md:hidden" :aria-expanded="open" aria-label="Menu">
+                        class="btn btn-ghost -mr-2 lg:hidden" :aria-expanded="open" aria-label="Menu">
                     <x-icon name="menu" x-show="!open" class="h-5 w-5" />
                     <x-icon name="x" x-show="open" x-cloak class="h-5 w-5" />
                 </button>
@@ -134,8 +140,20 @@
              x-transition:enter-end="opacity-100 translate-y-0"
              class="border-t border-hairline bg-ink/95 md:hidden">
             <nav class="container-x flex flex-col py-3" aria-label="Mobiele navigatie">
-                <a href="{{ route('home') }}" class="border-b border-hairline py-3 font-mono text-xs uppercase tracking-[0.15em] text-cream/70">Home</a>
-                <a href="{{ route('cars.index') }}" class="border-b border-hairline py-3 font-mono text-xs uppercase tracking-[0.15em] text-cream/70">Aanbod</a>
+                @php
+                    $mobileNav = [
+                        ['label' => 'Home', 'route' => 'home'],
+                        ['label' => 'Aanbod', 'route' => 'cars.index'],
+                        ['label' => 'Diensten', 'route' => 'diensten'],
+                        ['label' => 'Financial lease', 'route' => 'financial-lease'],
+                        ['label' => 'Volkswagen specialist', 'route' => 'vw-specialist'],
+                        ['label' => 'Over ons', 'route' => 'over-ons'],
+                        ['label' => 'Contact', 'route' => 'contact'],
+                    ];
+                @endphp
+                @foreach ($mobileNav as $item)
+                    <a href="{{ route($item['route']) }}" class="border-b border-hairline py-3 font-mono text-xs uppercase tracking-[0.15em] text-cream/70">{{ $item['label'] }}</a>
+                @endforeach
                 @auth
                     <a href="{{ route('admin.dashboard') }}" class="border-b border-hairline py-3 font-mono text-xs uppercase tracking-[0.15em] text-cream/70">Beheer</a>
                 @endauth
@@ -150,37 +168,69 @@
 
     <footer class="mt-28 border-t border-hairline">
         <div class="container-x grid gap-12 py-16 md:grid-cols-12">
-            <div class="md:col-span-5">
+            <div class="md:col-span-4">
                 <x-brand-mark />
                 <p class="mt-5 max-w-sm text-sm leading-relaxed text-cream/65">
                     Volkswagen-, Audi- en premium occasionspecialist in Rijswijk, regio Den Haag.
                     Elke auto met BOVAG-garantie, keuringsattest en zonder afleverkosten.
                 </p>
+                <div class="mt-6 flex flex-wrap gap-2">
+                    @foreach (['BOVAG', 'RDW erkend', 'VAG specialist'] as $badge)
+                        <span class="inline-flex items-center gap-1.5 rounded-[3px] border border-hairline px-2.5 py-1 font-mono text-[0.65rem] uppercase tracking-wider text-cream/60">
+                            <x-icon name="badge-check" class="h-3.5 w-3.5 text-brass-500/70" /> {{ $badge }}
+                        </span>
+                    @endforeach
+                </div>
             </div>
+
             <div class="md:col-span-3">
                 <p class="kicker">Navigatie</p>
                 <ul class="mt-5 space-y-3 text-sm text-cream/70">
-                    <li><a href="{{ route('home') }}" class="transition hover:text-brass-300">Home</a></li>
-                    <li><a href="{{ route('cars.index') }}" class="transition hover:text-brass-300">Volledig aanbod</a></li>
-                    <li><a href="{{ route('login') }}" class="transition hover:text-brass-300">Beheerderslogin</a></li>
+                    <li><a href="{{ route('cars.index') }}" class="transition hover:text-brass-300">Aanbod</a></li>
+                    <li><a href="{{ route('diensten') }}" class="transition hover:text-brass-300">Diensten</a></li>
+                    <li><a href="{{ route('financial-lease') }}" class="transition hover:text-brass-300">Financial lease</a></li>
+                    <li><a href="{{ route('vw-specialist') }}" class="transition hover:text-brass-300">Volkswagen specialist</a></li>
+                    <li><a href="{{ route('over-ons') }}" class="transition hover:text-brass-300">Over ons</a></li>
+                    <li><a href="{{ route('contact') }}" class="transition hover:text-brass-300">Contact</a></li>
                 </ul>
             </div>
-            <div class="md:col-span-4">
+
+            <div class="md:col-span-5">
                 <p class="kicker">Showroom</p>
                 <ul class="mt-5 space-y-3 text-sm text-cream/70">
-                    <li class="flex items-center gap-2.5"><x-icon name="map-pin" class="h-4 w-4 text-brass-500/70" /> {{ config('brand.contact.address') }}</li>
-                    <li class="flex items-center gap-2.5"><x-icon name="phone" class="h-4 w-4 text-brass-500/70" /> <a href="tel:{{ config('brand.contact.phone_href') }}" class="hover:text-brass-300">{{ config('brand.contact.phone') }}</a></li>
-                    <li class="flex items-center gap-2.5"><x-icon name="mail" class="h-4 w-4 text-brass-500/70" /> <a href="mailto:{{ config('brand.contact.email') }}" class="hover:text-brass-300">{{ config('brand.contact.email') }}</a></li>
-                    <li class="flex items-center gap-2.5"><x-icon name="clock" class="h-4 w-4 text-brass-500/70" /> {{ config('brand.contact.hours') }}</li>
+                    <li class="flex items-start gap-2.5"><x-icon name="map-pin" class="mt-0.5 h-4 w-4 shrink-0 text-brass-500/70" /> {{ config('brand.contact.address') }}</li>
+                    <li class="flex items-center gap-2.5"><x-icon name="phone" class="h-4 w-4 shrink-0 text-brass-500/70" />
+                        <a href="tel:{{ config('brand.contact.phone_href') }}" class="hover:text-brass-300">{{ config('brand.contact.phone') }}</a>
+                        <span class="text-cream/25">·</span>
+                        <a href="tel:{{ config('brand.contact.mobile_href') }}" class="hover:text-brass-300">{{ config('brand.contact.mobile') }}</a>
+                    </li>
+                    <li class="flex items-center gap-2.5"><x-icon name="mail" class="h-4 w-4 shrink-0 text-brass-500/70" /> <a href="mailto:{{ config('brand.contact.email') }}" class="hover:text-brass-300">{{ config('brand.contact.email') }}</a></li>
                 </ul>
+
+                <p class="kicker mt-6">Openingstijden</p>
+                <dl class="mt-4 max-w-xs space-y-2 text-sm">
+                    @foreach (config('brand.opening_hours.days') as $d)
+                        <div class="flex justify-between gap-6">
+                            <dt class="text-cream/60">{{ $d['label'] }}</dt>
+                            <dd class="font-mono text-cream/75 tabular">{{ $d['value'] }}</dd>
+                        </div>
+                    @endforeach
+                </dl>
             </div>
         </div>
         <div class="border-t border-hairline">
-            <div class="container-x flex flex-col items-center justify-between gap-2 py-5 font-mono text-[0.7rem] uppercase tracking-wider text-cream/65 sm:flex-row">
-                <span>&copy; {{ date('Y') }} {{ config('app.name') }}</span>
-                <span>Laravel · Tailwind · Alpine</span>
+            <div class="container-x flex flex-col items-center justify-between gap-3 py-5 text-center font-mono text-[0.7rem] uppercase tracking-wider text-cream/60 sm:flex-row sm:text-left">
+                <span>&copy; {{ date('Y') }} {{ config('app.name') }} · Alle rechten voorbehouden</span>
+                <span class="flex flex-wrap items-center justify-center gap-x-4 gap-y-1">
+                    <a href="{{ route('voorwaarden') }}" class="transition hover:text-brass-300">Algemene voorwaarden</a>
+                    <a href="{{ route('privacy') }}" class="transition hover:text-brass-300">Privacybeleid</a>
+                    <a href="{{ route('login') }}" class="transition hover:text-brass-300">Beheer</a>
+                </span>
             </div>
         </div>
     </footer>
+
+    {{-- Zwevende WhatsApp-knop, site-breed --}}
+    <x-whatsapp-button floating />
 </body>
 </html>

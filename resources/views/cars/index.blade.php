@@ -2,7 +2,7 @@
 <div x-data="carCatalog({
         priceMin: {{ $priceMin }}, priceMax: {{ $priceMax }},
         yearMin: {{ $yearMin }}, yearMax: {{ $yearMax }},
-        brand: @js($initialBrand), fuel: @js($initialFuel),
+        brand: @js($initialBrand), fuel: @js($initialFuel), body: @js($initialBody),
         total: {{ $cars->count() }}
      })" x-init="init()">
 
@@ -144,6 +144,7 @@
             bounds: { priceMin: config.priceMin, priceMax: config.priceMax, yearMin: config.yearMin, yearMax: config.yearMax },
             search: '',
             brand: config.brand || '',
+            body: config.body || '',
             fuels: config.fuel ? [config.fuel] : [],
             price: [config.priceMin, config.priceMax],
             year: [config.yearMin, config.yearMax],
@@ -169,6 +170,7 @@
                     el,
                     name: el.dataset.name,
                     brand: el.dataset.brand,
+                    body: el.dataset.body,
                     fuel: el.dataset.fuel,
                     price: +el.dataset.price,
                     year: +el.dataset.year,
@@ -187,6 +189,7 @@
                 const clamp = (v, lo, hi) => Math.min(Math.max(v, lo), hi);
                 if (p.has('q')) this.search = p.get('q');
                 if (p.has('brand')) this.brand = p.get('brand');
+                if (p.has('body_type')) this.body = p.get('body_type');
                 if (p.has('fuel_type')) this.fuels = p.get('fuel_type').split(',').filter(Boolean);
                 if (p.has('price_min')) this.price[0] = clamp(+p.get('price_min'), this.bounds.priceMin, this.bounds.priceMax);
                 if (p.has('price_max')) this.price[1] = clamp(+p.get('price_max'), this.bounds.priceMin, this.bounds.priceMax);
@@ -200,6 +203,7 @@
                 const p = new URLSearchParams();
                 if (this.search) p.set('q', this.search);
                 if (this.brand) p.set('brand', this.brand);
+                if (this.body) p.set('body_type', this.body);
                 if (this.fuels.length) p.set('fuel_type', this.fuels.join(','));
                 if (this.price[0] != this.bounds.priceMin) p.set('price_min', this.price[0]);
                 if (this.price[1] != this.bounds.priceMax) p.set('price_max', this.price[1]);
@@ -218,6 +222,7 @@
             matches(c) {
                 if (this.search && !c.name.includes(this.search.toLowerCase())) return false;
                 if (this.brand && c.brand !== this.brand) return false;
+                if (this.body && c.body !== this.body) return false;
                 if (this.fuels.length && !this.fuels.includes(c.fuel)) return false;
                 if (c.price < this.price[0] || c.price > this.price[1]) return false;
                 if (c.year < this.year[0] || c.year > this.year[1]) return false;
@@ -256,6 +261,7 @@
             reset() {
                 this.search = '';
                 this.brand = '';
+                this.body = '';
                 this.fuels = [];
                 this.price = [this.bounds.priceMin, this.bounds.priceMax];
                 this.year = [this.bounds.yearMin, this.bounds.yearMax];
@@ -266,6 +272,7 @@
             removeChip(k) {
                 if (k === 'search') this.search = '';
                 else if (k === 'brand') this.brand = '';
+                else if (k === 'body') this.body = '';
                 else if (k === 'price') this.price = [this.bounds.priceMin, this.bounds.priceMax];
                 else if (k === 'year') this.year = [this.bounds.yearMin, this.bounds.yearMax];
                 else if (k.startsWith('fuel:')) this.fuels = this.fuels.filter((f) => f !== k.slice(5));
@@ -278,6 +285,7 @@
                 let n = 0;
                 if (this.search) n++;
                 if (this.brand) n++;
+                if (this.body) n++;
                 n += this.fuels.length;
                 if (this.price[0] != this.bounds.priceMin || this.price[1] != this.bounds.priceMax) n++;
                 if (this.year[0] != this.bounds.yearMin || this.year[1] != this.bounds.yearMax) n++;
@@ -290,6 +298,7 @@
                 const c = [];
                 if (this.search) c.push({ k: 'search', label: '"' + this.search + '"' });
                 if (this.brand) c.push({ k: 'brand', label: this.brand });
+                if (this.body) c.push({ k: 'body', label: this.body });
                 this.fuels.forEach((f) => c.push({ k: 'fuel:' + f, label: f }));
                 if (this.price[0] != this.bounds.priceMin || this.price[1] != this.bounds.priceMax)
                     c.push({ k: 'price', label: '€ ' + this.fmt(this.price[0]) + ' – € ' + this.fmt(this.price[1]) });

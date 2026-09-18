@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\CarStatus;
 use App\Models\Car;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -15,7 +16,10 @@ class CarController extends Controller
      */
     public function index(Request $request): View
     {
+        // Verkochte auto's horen niet in het actuele aanbod (wel in de
+        // "met trots verkocht"-showcase op de homepage).
         $cars = Car::query()
+            ->where('status', '!=', CarStatus::Sold->value)
             ->with('primaryImage')
             ->orderByDesc('is_featured')
             ->latest()
@@ -24,6 +28,12 @@ class CarController extends Controller
         // Keuzes en grenzen voor de filterbalk, afgeleid uit de echte data.
         $brands = $cars->pluck('brand')->unique()->sort()->values();
         $fuelTypes = $cars->pluck('fuel_type')->unique()->sort()->values();
+        $bodyTypes = $cars->pluck('body_type')->filter()->unique()->sort()->values();
+
+        // Aantallen per keuze (echt uit de data) voor "(26)"-achtige labels.
+        $brandCounts = $cars->countBy('brand');
+        $fuelCounts = $cars->countBy('fuel_type');
+        $bodyCounts = $cars->countBy('body_type');
 
         $priceMin = (int) floor(($cars->min('price') ?? 0) / 500) * 500;
         $priceMax = (int) ceil(($cars->max('price') ?? 100000) / 500) * 500;
@@ -34,12 +44,17 @@ class CarController extends Controller
             'cars' => $cars,
             'brands' => $brands,
             'fuelTypes' => $fuelTypes,
+            'bodyTypes' => $bodyTypes,
+            'brandCounts' => $brandCounts,
+            'fuelCounts' => $fuelCounts,
+            'bodyCounts' => $bodyCounts,
             'priceMin' => $priceMin,
             'priceMax' => $priceMax,
             'yearMin' => $yearMin,
             'yearMax' => $yearMax,
             'initialBrand' => $request->query('brand', ''),
             'initialFuel' => $request->query('fuel_type', ''),
+            'initialBody' => $request->query('body_type', ''),
         ]);
     }
 
