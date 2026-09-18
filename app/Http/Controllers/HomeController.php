@@ -31,14 +31,6 @@ class HomeController extends Controller
             ->take(8)
             ->get();
 
-        // Hero = de duurste beschikbare wagen mét een uitgeknipte cutout. Zo
-        // matchen foto én data altijd; verkoopt de topper, dan schuift de hero
-        // automatisch door naar de volgende beschikbare wagen met een cutout.
-        $hero = Car::available()
-            ->orderByDesc('price')
-            ->get()
-            ->first(fn (Car $car) => $car->cutoutUrl() !== null);
-
         // Recent verkocht — social proof ("met trots verkocht").
         $sold = Car::where('status', CarStatus::Sold->value)
             ->with('primaryImage')
@@ -46,6 +38,6 @@ class HomeController extends Controller
             ->take(6)
             ->get();
 
-        return view('home', compact('featured', 'newest', 'hero', 'sold'));
+        return view('home', compact('featured', 'newest', 'sold'));
     }
 }
