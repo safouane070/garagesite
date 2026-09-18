@@ -12,6 +12,7 @@
    data-name="{{ $searchKey }}"
    data-brand="{{ $car->brand }}"
    data-fuel="{{ $car->fuel_type }}"
+   data-body="{{ $car->body_type }}"
    data-transmission="{{ $car->transmission }}"
    data-status="{{ $car->status->value }}"
    data-price="{{ (int) $car->price }}"
@@ -71,7 +72,7 @@
     <div class="mt-4 flex items-end justify-between border-t border-hairline px-4 py-3.5">
         <div>
             <span class="kicker text-[0.6rem]">Vraagprijs</span>
-            <span class="mt-1 block font-display text-2xl font-bold tracking-tight text-cream tabular">{{ $car->formattedPrice() }}</span>
+            <span class="mt-1 block font-display text-2xl font-bold tracking-tight text-white tabular">{{ $car->formattedPrice() }}</span>
         </div>
         <span class="mb-1 inline-flex h-9 w-9 items-center justify-center rounded-[3px] border border-hairline text-cream/65
                      transition duration-300 ease-premium group-hover:border-brass-500 group-hover:bg-brass-500 group-hover:text-cream"

@@ -101,6 +101,18 @@
             </div>
         </section>
 
+        {{-- Uitrusting / opties --}}
+        <section class="surface p-6">
+            <h2 class="font-display text-lg font-semibold text-cream">Uitrusting</h2>
+            <p class="mt-1 text-sm text-cream/45">Eén optie per regel (bv. Panoramadak, Navigatiesysteem, Achteruitrijcamera). Verschijnt als lijst op de detailpagina.</p>
+            <div class="mt-4">
+                <label class="field-label sr-only" for="options">Opties</label>
+                <textarea id="options" name="options" rows="8" class="field-input font-mono text-sm"
+                          placeholder="Panoramadak&#10;Navigatiesysteem&#10;Adaptieve cruise control">{{ old('options', implode("\n", $car->options ?? [])) }}</textarea>
+                @error('options') <p class="field-hint text-rose-300">{{ $message }}</p> @enderror
+            </div>
+        </section>
+
         {{-- Foto's uploaden --}}
         <section class="surface p-6">
             <h2 class="font-display text-lg font-semibold text-cream">Foto's toevoegen</h2>

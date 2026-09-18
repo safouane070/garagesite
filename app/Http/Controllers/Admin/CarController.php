@@ -14,19 +14,29 @@ use Illuminate\View\View;
 
 class CarController extends Controller
 {
-    /** Dashboard: overzicht van alle auto's + wat kerncijfers. */
+    /**
+     * Dashboard: overzicht van alle auto's + kerncijfers. Het zoeken/filteren
+     * gebeurt client-side (Alpine) zodat het instant is terwijl je typt; we
+     * laden daarom de volledige voorraad in één keer.
+     */
     public function index(): View
     {
-        $cars = Car::with('primaryImage')->latest()->paginate(12);
+        $cars = Car::with('primaryImage')->latest()->get();
 
         $stats = [
-            'total' => Car::count(),
-            'available' => Car::where('status', CarStatus::Available->value)->count(),
-            'reserved' => Car::where('status', CarStatus::Reserved->value)->count(),
-            'sold' => Car::where('status', CarStatus::Sold->value)->count(),
+            'total' => $cars->count(),
+            'available' => $cars->where('status', CarStatus::Available)->count(),
+            'reserved' => $cars->where('status', CarStatus::Reserved)->count(),
+            'sold' => $cars->where('status', CarStatus::Sold)->count(),
         ];
 
-        return view('admin.cars.index', compact('cars', 'stats'));
+        // Lichtgewicht index voor de live filter/telling: zoektekst + status.
+        $items = $cars->map(fn (Car $car) => [
+            't' => $car->searchText(),
+            's' => $car->status->value,
+        ])->values();
+
+        return view('admin.cars.index', compact('cars', 'stats', 'items'));
     }
 
     /** Formulier voor een nieuwe auto. */
@@ -126,7 +136,7 @@ class CarController extends Controller
      */
     private function carData(CarRequest $request): array
     {
-        $data = $request->safe()->except(['images', 'specs']);
+        $data = $request->safe()->except(['images', 'specs', 'options']);
 
         $specs = collect($request->validated('specs') ?? [])
             ->map(fn ($v) => is_string($v) ? trim($v) : $v)
@@ -135,6 +145,16 @@ class CarController extends Controller
             ->all();
 
         $data['specs'] = $specs ?: null;
+
+        // Opties: vrije tekst → nette array (één per regel, dubbele eruit).
+        $options = collect(preg_split('/\r\n|\r|\n/', (string) $request->validated('options')))
+            ->map(fn ($line) => trim($line))
+            ->reject(fn ($line) => $line === '')
+            ->unique()
+            ->values()
+            ->all();
+
+        $data['options'] = $options ?: null;
 
         return $data;
     }

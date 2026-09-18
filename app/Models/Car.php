@@ -30,7 +30,7 @@ class Car extends Model
         'koppel_nm' => 'Koppel (Nm)',
         'topsnelheid_kmh' => 'Topsnelheid (km/u)',
         'acceleratie_0_100' => '0-100 km/u (s)',
-        'verbruik_l_100km' => 'Verbruik (l/100km)',
+        'verbruik_km_l' => 'Verbruik (km/l)',
         'co2_g_km' => 'CO₂ (g/km)',
         'actieradius_km' => 'Actieradius (km)',
         'accu_kwh' => 'Accucapaciteit (kWh)',
@@ -58,7 +58,7 @@ class Car extends Model
     protected $fillable = [
         'slug', 'brand', 'model', 'variant', 'year', 'price', 'mileage',
         'fuel_type', 'transmission', 'color', 'body_type', 'description',
-        'specs', 'status', 'is_featured',
+        'specs', 'options', 'status', 'is_featured',
     ];
 
     /**
@@ -70,6 +70,7 @@ class Car extends Model
     {
         return [
             'specs' => 'array',
+            'options' => 'array',
             'status' => CarStatus::class,
             'is_featured' => 'boolean',
             'year' => 'integer',
@@ -184,6 +185,19 @@ class Car extends Model
     public function shortTitle(): string
     {
         return trim("{$this->brand} {$this->model}");
+    }
+
+    /**
+     * Vrij doorzoekbare tekst (lowercase) voor de admin-filter die client-side
+     * met Alpine werkt. Breed opgezet zodat merk, model, uitvoering, bouwjaar,
+     * carrosserie, brandstof én kleur meetellen.
+     */
+    public function searchText(): string
+    {
+        return Str::lower(implode(' ', array_filter([
+            $this->brand, $this->model, $this->variant, $this->year,
+            $this->body_type, $this->fuel_type, $this->color,
+        ])));
     }
 
     /**

@@ -38,6 +38,12 @@
     [x-cloak] {
         display: none !important;
     }
+
+    /* Verberg het native search-kruisje; we tonen een eigen wis-knop. */
+    input[type="search"]::-webkit-search-cancel-button {
+        -webkit-appearance: none;
+        appearance: none;
+    }
 }
 
 @layer components {

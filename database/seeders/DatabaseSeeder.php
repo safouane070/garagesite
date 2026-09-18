@@ -21,5 +21,8 @@ class DatabaseSeeder extends Seeder
 
         // Demo-auto's inclusief gegenereerde foto's.
         $this->call(CarSeeder::class);
+
+        // Vult de occasions aan met opties, extra specs en verkocht-status.
+        $this->call(CarEnrichmentSeeder::class);
     }
 }

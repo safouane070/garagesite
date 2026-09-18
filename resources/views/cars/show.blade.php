@@ -23,6 +23,13 @@
     ));
     $ogImage = $car->primaryImage?->url();
 
+    // Indicatief maandbedrag (financial lease) — zelfde formule als de rekenhulp.
+    $fin = config('brand.finance');
+    $financed = (float) $car->price * (1 - $fin['min_down_pct'] / 100);
+    $r = $fin['annual_interest_pct'] / 100 / 12;
+    $n = max(1, (int) $fin['default_term_months']);
+    $monthlyFrom = (int) round($r > 0 ? $financed * $r / (1 - pow(1 + $r, -$n)) : $financed / $n);
+
     $vehicleLd = [
         '@context' => 'https://schema.org',
         '@type' => 'Vehicle',
@@ -53,7 +60,7 @@
 <x-layouts.public :title="$car->title()" :description="$metaDescription" :og-image="$ogImage">
     @push('head')
         <script type="application/ld+json">
-            {!! json_encode($vehicleLd, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}
+            {!! json_encode($vehicleLd, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_HEX_TAG) !!}
         </script>
     @endpush
 
@@ -135,15 +142,24 @@
                     <p class="mt-1 text-lg text-cream/65">{{ $car->variant }}</p>
                 @endif
 
-                {{-- Prijs: ademt --}}
-                <div class="mt-6 flex items-end justify-between border-y border-hairline py-5">
-                    <div>
-                        <span class="kicker text-[0.6rem]">Vraagprijs</span>
-                        <span class="mt-1 block font-display text-4xl font-bold tracking-tight text-brass-400 tabular sm:text-5xl">
-                            {{ $car->formattedPrice() }}
-                        </span>
+                {{-- Prijs: ademt, in het wit zodat 'ie meteen opvalt --}}
+                <div class="mt-6 border-y border-hairline py-5">
+                    <div class="flex items-end justify-between">
+                        <div>
+                            <span class="kicker text-[0.6rem]">Vraagprijs</span>
+                            <span class="mt-1 block font-display text-4xl font-bold tracking-tight text-white tabular sm:text-5xl">
+                                {{ $car->formattedPrice() }}
+                            </span>
+                        </div>
+                        <x-status-badge :status="$car->status" />
                     </div>
-                    <x-status-badge :status="$car->status" />
+
+                    @if ($car->status !== \App\Enums\CarStatus::Sold)
+                        <a href="{{ route('financial-lease') }}" class="mt-3 inline-flex items-center gap-2 text-sm text-cream/70 transition hover:text-brass-300">
+                            <x-icon name="repeat" class="h-4 w-4 text-brass-500/70" />
+                            Financial lease vanaf <span class="font-semibold text-white">± € {{ number_format($monthlyFrom, 0, ',', '.') }} p/m</span>
+                        </a>
+                    @endif
                 </div>
 
                 {{-- Kernspecs (highlight) --}}
@@ -161,20 +177,26 @@
                             <x-icon name="{{ $h['icon'] }}" class="h-5 w-5 shrink-0 text-brass-500/70" />
                             <div class="min-w-0">
                                 <dt class="font-mono text-[0.65rem] uppercase tracking-wider text-cream/70">{{ $h['label'] }}</dt>
-                                <dd class="truncate text-sm font-medium text-cream">{{ $h['value'] }}</dd>
+                                <dd class="truncate text-sm font-medium text-white">{{ $h['value'] }}</dd>
                             </div>
                         </div>
                     @endforeach
                 </dl>
 
-                {{-- CTA --}}
+                {{-- CTA: snelacties die het contactformulier-onderwerp kiezen --}}
                 @if ($car->status !== \App\Enums\CarStatus::Sold)
-                    <div class="mt-6 flex flex-col gap-3 sm:flex-row">
-                        <a href="tel:{{ config('brand.contact.phone_href') }}" class="btn btn-primary flex-1">
-                            <x-icon name="phone" class="h-4 w-4" /> Plan een bezichtiging
-                        </a>
-                        <a href="mailto:{{ config('brand.contact.email') }}?subject={{ rawurlencode($car->title()) }}" class="btn btn-outline flex-1">
-                            <x-icon name="mail" class="h-4 w-4" /> Stel een vraag
+                    <div class="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2" x-data>
+                        <button type="button" @click="$store.lead.type='proefrit'; document.getElementById('contact').scrollIntoView({behavior:'smooth'})" class="btn btn-primary">
+                            <x-icon name="calendar" class="h-4 w-4" /> Proefrit aanvragen
+                        </button>
+                        <button type="button" @click="$store.lead.type='bezichtiging'; document.getElementById('contact').scrollIntoView({behavior:'smooth'})" class="btn btn-outline">
+                            <x-icon name="check" class="h-4 w-4" /> Bezichtiging plannen
+                        </button>
+                        <button type="button" @click="$store.lead.type='inruil'; document.getElementById('contact').scrollIntoView({behavior:'smooth'})" class="btn btn-outline">
+                            <x-icon name="repeat" class="h-4 w-4" /> Inruil bespreken
+                        </button>
+                        <a href="tel:{{ config('brand.contact.phone_href') }}" class="btn btn-outline">
+                            <x-icon name="phone" class="h-4 w-4" /> Bel ons
                         </a>
                     </div>
                 @else
@@ -219,6 +241,56 @@
                     </div>
                 @endforeach
             </dl>
+        </div>
+    </div>
+
+    {{-- ═══ Uitrusting + aflevering ═══ --}}
+    <div class="container-x border-t border-hairline py-14">
+        <div class="grid gap-12 lg:grid-cols-12">
+            @php $hasOptions = ! empty($car->options); @endphp
+
+            @if ($hasOptions)
+                <div class="lg:col-span-8">
+                    <h2 class="font-display text-2xl font-bold text-white">Uitrusting</h2>
+                    <div class="mt-5 grid gap-x-6 gap-y-2.5 sm:grid-cols-2 lg:grid-cols-3">
+                        @foreach ($car->options as $opt)
+                            <div class="flex items-start gap-2 text-sm text-cream/80">
+                                <x-icon name="check" class="mt-0.5 h-4 w-4 shrink-0 text-brass-500/80" />
+                                <span>{{ $opt }}</span>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+            @endif
+
+            <aside class="{{ $hasOptions ? 'lg:col-span-4' : 'lg:col-span-6 lg:col-start-4' }}">
+                <div class="surface p-6">
+                    <h3 class="font-display text-lg font-bold text-white">Inbegrepen bij aflevering</h3>
+                    <ul class="mt-4 space-y-3 text-sm text-cream/80">
+                        @foreach ([
+                            'BOVAG-garantie (' . config('brand.trust.warranty_months') . ' maanden)',
+                            'Onderhoudsbeurt vóór aflevering',
+                            'Nieuwe APK',
+                            'Geen afleverkosten',
+                            'Inruil & financiering mogelijk',
+                        ] as $item)
+                            <li class="flex items-start gap-2.5">
+                                <x-icon name="shield-check" class="mt-0.5 h-4 w-4 shrink-0 text-brass-500/80" />
+                                <span>{{ $item }}</span>
+                            </li>
+                        @endforeach
+                    </ul>
+                </div>
+            </aside>
+        </div>
+    </div>
+
+    {{-- ═══ Interesseformulier ═══ --}}
+    <div class="container-x border-t border-hairline py-14">
+        <div class="mx-auto max-w-2xl">
+            <x-lead-form :car="$car" type="bezichtiging"
+                title="Interesse in deze {{ $car->brand }}?"
+                intro="Plan een bezichtiging of stel je vraag. We reageren meestal binnen één werkdag." />
         </div>
     </div>
 
