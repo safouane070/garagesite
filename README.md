@@ -4,11 +4,11 @@ Een complete autogarage-website gebouwd met **Laravel 13**, **MySQL/MariaDB**, *
 
 ---
 
-## 🚀 Live demo & screenshots
+## 🚀 Live demo
 
-> _Binnenkort online — hier komt een demo-link. Voeg hieronder een screenshot of GIF van de homepage + admin toe, bijvoorbeeld:_
->
-> `![Homepage](docs/screenshot-home.png)`
+![Kroon Automobielen — homepage](docs/screenshot-home.png)
+
+> _Binnenkort online — hier komt een link naar een live demo._
 
 ---
 
