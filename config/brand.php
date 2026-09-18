@@ -80,4 +80,10 @@ return [
     'finance' => [
         'financiallease_stock_id' => env('BRAND_FL_STOCK_ID', '1262'),
     ],
+
+    // Officiële juridische documenten van de zaak (we verzinnen geen eigen tekst).
+    'legal' => [
+        'terms_url'   => env('BRAND_TERMS_URL', 'https://autobedrijfrijswijk.nl/algemene-voorwaarden/'),
+        'privacy_url' => env('BRAND_PRIVACY_URL', 'https://autobedrijfrijswijk.nl/privacy-policy/'),
+    ],
 ];
