@@ -70,7 +70,9 @@ return [
     'reviews' => [
         'rating' => (float) env('BRAND_REVIEW_RATING', 4.7),
         'count'  => (int) env('BRAND_REVIEW_COUNT', 227),
-        'url'    => env('BRAND_REVIEW_URL', 'https://www.google.com/maps/search/?api=1&query=Autobedrijf+Rijswijk+Poldermeesterstraat+16+Rijswijk'),
+        // Echte Google-bedrijfslink (CID van het Google-profiel — opent de zaak
+        // met reviews). Geverifieerd op Google Maps: 4,7 · 227 reviews.
+        'url'    => env('BRAND_REVIEW_URL', 'https://www.google.com/maps?cid=12874092222779176954'),
     ],
 
     // Financieringsindicatie (client-side rekenhulp op de detailpagina).
