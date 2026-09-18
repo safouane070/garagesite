@@ -75,12 +75,9 @@ return [
         'url'    => env('BRAND_REVIEW_URL', 'https://www.google.com/maps?cid=12874092222779176954'),
     ],
 
-    // Financieringsindicatie (client-side rekenhulp op de detailpagina).
-    // Puur indicatief; geen kredietaanbod. Pas het rentepercentage en de
-    // standaardlooptijd aan op wat de zaak werkelijk aanbiedt.
+    // Financial lease loopt via onze leasepartner FinancialLease.nl (widget met
+    // echte maandbedragen). stock_id = de dealer-feed van de zaak.
     'finance' => [
-        'annual_interest_pct' => (float) env('BRAND_FINANCE_RATE', 7.9), // nominaal, indicatief
-        'default_term_months' => (int) env('BRAND_FINANCE_TERM', 72),
-        'min_down_pct'        => (int) env('BRAND_FINANCE_DOWN', 10),
+        'financiallease_stock_id' => env('BRAND_FL_STOCK_ID', '1262'),
     ],
 ];

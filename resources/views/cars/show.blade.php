@@ -23,13 +23,6 @@
     ));
     $ogImage = $car->primaryImage?->url();
 
-    // Indicatief maandbedrag (financial lease) — zelfde formule als de rekenhulp.
-    $fin = config('brand.finance');
-    $financed = (float) $car->price * (1 - $fin['min_down_pct'] / 100);
-    $r = $fin['annual_interest_pct'] / 100 / 12;
-    $n = max(1, (int) $fin['default_term_months']);
-    $monthlyFrom = (int) round($r > 0 ? $financed * $r / (1 - pow(1 + $r, -$n)) : $financed / $n);
-
     $vehicleLd = [
         '@context' => 'https://schema.org',
         '@type' => 'Vehicle',
@@ -157,7 +150,7 @@
                     @if ($car->status !== \App\Enums\CarStatus::Sold)
                         <a href="{{ route('financial-lease') }}" class="mt-3 inline-flex items-center gap-2 text-sm text-cream/70 transition hover:text-brass-300">
                             <x-icon name="repeat" class="h-4 w-4 text-brass-500/70" />
-                            Financial lease vanaf <span class="font-semibold text-white">± € {{ number_format($monthlyFrom, 0, ',', '.') }} p/m</span>
+                            Ook mogelijk via <span class="font-semibold text-white">financial lease</span>
                         </a>
                     @endif
                 </div>

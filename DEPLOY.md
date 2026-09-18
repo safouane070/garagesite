@@ -18,7 +18,7 @@ daarna is het afvinken.
 ## 3. Merk-/echte data (`.env`, zie `config/brand.php`)
 - [ ] `BRAND_REVIEW_URL` = de exacte Google "Reviews delen"-link van de zaak
 - [ ] `BRAND_REVIEW_RATING` / `BRAND_REVIEW_COUNT` gelijk aan het Google-profiel
-- [ ] `BRAND_FINANCE_RATE` = de werkelijke indicatieve rente
+- [ ] `BRAND_FL_STOCK_ID` = de FinancialLease.nl dealer-feed van de zaak (nu 1262)
 - [ ] Openingstijden in `config/brand.php` (`opening_hours`) kloppen
 - [ ] Echte opties per auto toegevoegd via het admin-dashboard (optioneel)
 
