@@ -32,26 +32,21 @@ class PruneGoneCars extends Command
         $dry = (bool) $this->option('dry-run');
         $paths = json_decode((string) file_get_contents(database_path('seeders/rijswijk_listings.json')), true) ?: [];
         $cars = Car::all();
-        $assignment = DealerListing::match($cars, DealerListing::dealerSlugs($paths));
+        $assignment = DealerListing::match($cars, $paths);
 
         // Kandidaten: auto's zonder opgehaalde opties (auto's mét opties zijn live).
         $candidates = $cars->filter(fn (Car $c) => empty($c->options));
 
         $gone = [];
-        $kept = 0;
         foreach ($candidates as $car) {
             $slug = $assignment[$car->id] ?? null;
+            // Geen dealer-slug om te controleren: laten staan, niet gokken.
             if (! $slug) {
-                // Geen dealer-slug om te controleren: laten staan, niet gokken.
-                $kept++;
                 continue;
             }
 
-            $status = $this->pageStatus(DealerListing::BASE . $slug . '/');
-            if (in_array($status, [404, 410], true)) {
+            if (in_array($this->pageStatus(DealerListing::BASE . $slug . '/'), [404, 410], true)) {
                 $gone[] = $car;
-            } else {
-                $kept++;
             }
         }
 
