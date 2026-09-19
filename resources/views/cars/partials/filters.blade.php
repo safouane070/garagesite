@@ -6,7 +6,7 @@
         <div class="relative">
             <x-icon name="search" class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-cream/30" />
             <input type="search" x-model="search" @input="apply()" placeholder="Merk of model…"
-                   class="field-input pl-10">
+                   aria-label="Zoeken op merk of model" class="field-input pl-10">
         </div>
     </div>
 
@@ -14,7 +14,7 @@
     <div>
         <label class="field-label">Merk</label>
         <div class="relative">
-            <select x-model="brand" @change="apply()" class="field-input appearance-none pr-10">
+            <select x-model="brand" @change="apply()" aria-label="Filter op merk" class="field-input appearance-none pr-10">
                 <option value="">Alle merken</option>
                 @foreach ($brands as $b)
                     <option value="{{ $b }}">{{ $b }} ({{ $brandCounts[$b] ?? 0 }})</option>
@@ -28,7 +28,7 @@
     <div>
         <label class="field-label">Carrosserie</label>
         <div class="relative">
-            <select x-model="body" @change="apply()" class="field-input appearance-none pr-10">
+            <select x-model="body" @change="apply()" aria-label="Filter op carrosserie" class="field-input appearance-none pr-10">
                 <option value="">Alle carrosserieën</option>
                 @foreach ($bodyTypes as $bt)
                     <option value="{{ $bt }}">{{ $bt }} ({{ $bodyCounts[$bt] ?? 0 }})</option>

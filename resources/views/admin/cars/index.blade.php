@@ -81,7 +81,7 @@
             </div>
 
             {{-- Live telling --}}
-            <p x-show="filtering" x-cloak class="border-b border-hairline px-4 py-2.5 font-mono text-xs text-cream/45">
+            <p x-show="filtering" x-cloak class="border-b border-hairline px-4 py-2.5 font-mono text-xs text-cream/60">
                 <span x-text="matched"></span> van {{ $cars->count() }} auto's
             </p>
 
@@ -114,7 +114,7 @@
                                         </div>
                                         <div class="min-w-0">
                                             <p class="truncate font-medium text-cream">{{ $car->brand }} {{ $car->model }}</p>
-                                            <p class="truncate font-mono text-xs text-cream/45">{{ $car->variant ?: $car->body_type }}</p>
+                                            <p class="truncate font-mono text-xs text-cream/60">{{ $car->variant ?: $car->body_type }}</p>
                                         </div>
                                     </div>
                                 </td>

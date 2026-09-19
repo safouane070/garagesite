@@ -100,7 +100,7 @@
                     <button type="submit" class="btn btn-primary">
                         Verstuur aanvraag <x-icon name="arrow-right" class="h-4 w-4" />
                     </button>
-                    <p class="text-xs text-cream/45">
+                    <p class="text-xs text-cream/60">
                         We gebruiken je gegevens alleen om te reageren op je aanvraag.
                     </p>
                 </div>
