@@ -73,6 +73,10 @@ return [
         // Echte Google-bedrijfslink (CID van het Google-profiel — opent de zaak
         // met reviews). Geverifieerd op Google Maps: 4,7 · 227 reviews.
         'url'    => env('BRAND_REVIEW_URL', 'https://www.google.com/maps?cid=12874092222779176954'),
+        // Publieke Trustindex-widget-ID van de zaak — databron voor
+        // `php artisan reviews:fetch`, dat de echte reviews ophaalt en cachet.
+        // Niet in de HTML embed (we tonen ze in eigen stijl), puur als bron.
+        'trustindex_widget_id' => env('BRAND_TRUSTINDEX_WIDGET', 'd143df026f54805b969687b3cea'),
     ],
 
     // Financial lease loopt via onze leasepartner FinancialLease.nl (widget met

@@ -54,7 +54,7 @@
                                     </div>
                                 @endforeach
                             </dl>
-                            <p class="mt-2 text-xs text-cream/45">{{ config('brand.opening_hours.note') }}</p>
+                            <p class="mt-2 text-xs text-cream/60">{{ config('brand.opening_hours.note') }}</p>
                         </div>
                     </li>
                 </ul>

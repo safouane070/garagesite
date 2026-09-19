@@ -4,7 +4,7 @@
     $reviewUrl = config('brand.reviews.url');
     $ratingNl = str_replace('.', ',', (string) $rating);
     $fillPct = max(0, min(100, $rating / 5 * 100));
-    $testimonials = config('brand.testimonials', []);
+    $testimonials = \App\Support\Reviews::all();
 
     $starPath = 'M11.5 2.8a.6.6 0 0 1 1 0l2.4 5a.6.6 0 0 0 .5.3l5.4.5a.6.6 0 0 1 .3 1l-4 3.6a.6.6 0 0 0-.2.6l1.2 5.3a.6.6 0 0 1-.9.6l-4.6-2.8a.6.6 0 0 0-.6 0l-4.6 2.8a.6.6 0 0 1-.9-.6l1.2-5.3a.6.6 0 0 0-.2-.6l-4-3.6a.6.6 0 0 1 .3-1l5.4-.5a.6.6 0 0 0 .5-.3z';
     $starsRow = str_repeat('<svg viewBox="0 0 24 24" fill="currentColor" class="h-5 w-5 shrink-0"><path d="' . $starPath . '"/></svg>', 5);

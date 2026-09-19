@@ -90,7 +90,7 @@
         {{-- Specificaties --}}
         <section class="surface p-6">
             <h2 class="font-display text-lg font-semibold text-cream">Specificaties</h2>
-            <p class="mt-1 text-sm text-cream/45">Alle velden zijn optioneel. Laat leeg wat niet van toepassing is.</p>
+            <p class="mt-1 text-sm text-cream/60">Alle velden zijn optioneel. Laat leeg wat niet van toepassing is.</p>
             <div class="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 @foreach (\App\Models\Car::SPEC_FIELDS as $key => $label)
                     <div>
@@ -134,12 +134,12 @@
                     <span x-text="selected.length">0</span> aangevinkt
                 </span>
             </div>
-            <p class="mt-1 text-sm text-cream/45">Vink de aanwezige opties aan. Staat een optie er niet bij? Voeg 'm onderaan toe.</p>
+            <p class="mt-1 text-sm text-cream/60">Vink de aanwezige opties aan. Staat een optie er niet bij? Voeg 'm onderaan toe.</p>
 
             {{-- Zoeken --}}
             <div class="relative mt-4">
                 <x-icon name="search" class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-cream/40" />
-                <input type="text" x-model="q" placeholder="Zoek een optie…"
+                <input type="text" x-model="q" placeholder="Zoek een optie…" aria-label="Zoek een optie"
                        class="field-input pl-9" @keydown.enter.prevent>
             </div>
 
@@ -153,13 +153,13 @@
                             <span x-text="opt"></span>
                         </label>
                     </template>
-                    <p x-show="!filtered.length" class="px-2 py-3 text-sm text-cream/45">Geen optie gevonden voor "<span x-text="q"></span>".</p>
+                    <p x-show="!filtered.length" class="px-2 py-3 text-sm text-cream/60">Geen optie gevonden voor "<span x-text="q"></span>".</p>
                 </div>
             </div>
 
             {{-- Eigen optie toevoegen --}}
             <div class="mt-3 flex gap-2">
-                <input type="text" x-model="custom" placeholder="Eigen optie toevoegen…"
+                <input type="text" x-model="custom" placeholder="Eigen optie toevoegen…" aria-label="Eigen optie toevoegen"
                        class="field-input" @keydown.enter.prevent="addCustom">
                 <button type="button" @click="addCustom"
                         class="btn btn-outline shrink-0" x-bind:disabled="!custom.trim()">
@@ -218,7 +218,7 @@
                        class="mt-0.5 h-4 w-4 rounded-[3px] border-graphite-500 bg-graphite-800 text-brass-500 focus:ring-brass-500 focus:ring-offset-ink">
                 <span>
                     <span class="block text-sm font-medium text-cream">Uitlichten</span>
-                    <span class="block text-xs text-cream/45">Toon deze auto prominent op de homepage.</span>
+                    <span class="block text-xs text-cream/60">Toon deze auto prominent op de homepage.</span>
                 </span>
             </label>
 
@@ -236,7 +236,7 @@
 @if ($isEdit && $car->images->isNotEmpty())
     <section class="surface mt-8 p-6">
         <h2 class="font-display text-lg font-semibold text-cream">Huidige foto's</h2>
-        <p class="mt-1 text-sm text-cream/45">Stel de omslagfoto in of verwijder foto's.</p>
+        <p class="mt-1 text-sm text-cream/60">Stel de omslagfoto in of verwijder foto's.</p>
         <div class="mt-5 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
             @foreach ($car->images as $image)
                 <div class="group relative overflow-hidden rounded-[4px] border {{ $image->is_primary ? 'border-brass-500' : 'border-hairline' }}">
