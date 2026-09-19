@@ -146,10 +146,10 @@ class CarController extends Controller
 
         $data['specs'] = $specs ?: null;
 
-        // Opties: vrije tekst → nette array (één per regel, dubbele eruit).
-        $options = collect(preg_split('/\r\n|\r|\n/', (string) $request->validated('options')))
-            ->map(fn ($line) => trim($line))
-            ->reject(fn ($line) => $line === '')
+        // Opties: aangevinkte checkboxes (+ eigen toevoegingen) → nette array.
+        $options = collect($request->validated('options') ?? [])
+            ->map(fn ($o) => trim((string) $o))
+            ->reject(fn ($o) => $o === '')
             ->unique()
             ->values()
             ->all();

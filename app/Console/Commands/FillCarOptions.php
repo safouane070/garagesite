@@ -87,7 +87,7 @@ class FillCarOptions extends Command
 
         $out = [];
         foreach ($lis[1] as $li) {
-            $label = trim(preg_replace('/\s+/', ' ', html_entity_decode(strip_tags($li), ENT_QUOTES)));
+            $label = self::cleanLabel(html_entity_decode(strip_tags($li), ENT_QUOTES));
             // Nette optielabels; sla lege of absurd lange fragmenten over.
             if ($label !== '' && mb_strlen($label) <= 80) {
                 $out[$label] = true;
@@ -95,5 +95,17 @@ class FillCarOptions extends Command
         }
 
         return array_keys($out);
+    }
+
+    /**
+     * Schoont een optielabel op: spaties normaliseren en verdubbelde
+     * inch-tekens (bv. "Lichtmetalen velgen 18\"\"\"") terug naar één ".
+     */
+    public static function cleanLabel(string $label): string
+    {
+        $label = preg_replace('/\s+/', ' ', $label);
+        $label = preg_replace('/"{2,}/', '"', $label);
+
+        return trim($label);
     }
 }
