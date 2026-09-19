@@ -28,6 +28,12 @@
             'addressCountry' => 'NL',
         ],
         'openingHours' => 'Mo-Sa 09:00-18:00',
+        'aggregateRating' => [
+            '@type' => 'AggregateRating',
+            'ratingValue' => (string) config('brand.reviews.rating'),
+            'reviewCount' => (string) config('brand.reviews.count'),
+            'bestRating' => '5',
+        ],
     ];
 @endphp
 

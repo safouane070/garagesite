@@ -5,6 +5,7 @@
     $ratingNl = str_replace('.', ',', (string) $rating);
     $fillPct = max(0, min(100, $rating / 5 * 100));
     $testimonials = config('brand.testimonials', []);
+    $widgetId = config('brand.reviews.trustindex_widget_id');
 
     $starPath = 'M11.5 2.8a.6.6 0 0 1 1 0l2.4 5a.6.6 0 0 0 .5.3l5.4.5a.6.6 0 0 1 .3 1l-4 3.6a.6.6 0 0 0-.2.6l1.2 5.3a.6.6 0 0 1-.9.6l-4.6-2.8a.6.6 0 0 0-.6 0l-4.6 2.8a.6.6 0 0 1-.9-.6l1.2-5.3a.6.6 0 0 0-.2-.6l-4-3.6a.6.6 0 0 1 .3-1l5.4-.5a.6.6 0 0 0 .5-.3z';
     $starsRow = str_repeat('<svg viewBox="0 0 24 24" fill="currentColor" class="h-5 w-5 shrink-0"><path d="' . $starPath . '"/></svg>', 5);
@@ -32,8 +33,14 @@
         </a>
     </div>
 
-    {{-- Echte reviews --}}
-    @if (count($testimonials))
+    {{-- Live, auto-updatende reviews via de Trustindex-widget van de zaak.
+         Valt terug op de statische citaten als de widget-ID leeg is of de
+         widget (JS uit / CSP) niet laadt. --}}
+    @if ($widgetId)
+        <div class="mt-12">
+            <script defer async src="https://cdn.trustindex.io/loader.js?{{ $widgetId }}"></script>
+        </div>
+    @elseif (count($testimonials))
         <div class="mt-12 grid gap-6 md:grid-cols-3">
             @foreach ($testimonials as $t)
                 <figure class="flex flex-col rounded-[4px] border border-hairline bg-graphite-700/50 p-6">
@@ -46,11 +53,11 @@
                 </figure>
             @endforeach
         </div>
-
-        <div class="mt-8 text-center">
-            <a href="{{ $reviewUrl }}" target="_blank" rel="noopener" class="btn btn-outline">
-                Lees alle reviews <x-icon name="arrow-up-right" class="h-4 w-4" />
-            </a>
-        </div>
     @endif
+
+    <div class="mt-8 text-center">
+        <a href="{{ $reviewUrl }}" target="_blank" rel="noopener" class="btn btn-outline">
+            Lees alle reviews <x-icon name="arrow-up-right" class="h-4 w-4" />
+        </a>
+    </div>
 </section>

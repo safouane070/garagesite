@@ -26,12 +26,12 @@ class SecurityHeaders
 
         $csp = implode('; ', [
             "default-src 'self'",
-            "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
-            "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-            "font-src 'self' https://fonts.gstatic.com",
+            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.trustindex.io",
+            "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.trustindex.io",
+            "font-src 'self' https://fonts.gstatic.com https://cdn.trustindex.io",
             "img-src 'self' data: https:",
-            "frame-src https://www.google.com https://iframe.financiallease.nl https://www.financiallease.nl",
-            "connect-src 'self'",
+            "frame-src https://www.google.com https://iframe.financiallease.nl https://www.financiallease.nl https://cdn.trustindex.io",
+            "connect-src 'self' https://cdn.trustindex.io",
             "base-uri 'self'",
             "form-action 'self'",
             "object-src 'none'",
