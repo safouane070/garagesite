@@ -81,6 +81,14 @@ return [
         'financiallease_stock_id' => env('BRAND_FL_STOCK_ID', '1262'),
     ],
 
+    // Echte reviews van het Google/Trustindex-profiel van de zaak (verkorte
+    // citaten, geen verzinsels). Vervang eventueel door de live Trustindex-widget.
+    'testimonials' => [
+        ['name' => 'Martijn J.', 'text' => 'Gewoon fantastisch geholpen bij het vinden van mijn droomauto! Van de uitgebreide testrit tot de aflevering was alles uitstekend geregeld. De service is echt top.'],
+        ['name' => 'Teus D.', 'text' => 'Keurig netjes geholpen. Er wordt alle tijd voor je genomen om alle opties goed door te nemen. Uiterst vriendelijk personeel — en de prijzen zijn superscherp.'],
+        ['name' => 'Joze M.', 'text' => 'Zeer vriendelijke ontvangst, heeft alle tijd genomen voor de uitleg. Nette inruilprijs. Kortom: een fijne deal en tevreden met de aankoop.'],
+    ],
+
     // Officiële juridische documenten van de zaak (we verzinnen geen eigen tekst).
     'legal' => [
         'terms_url'   => env('BRAND_TERMS_URL', 'https://autobedrijfrijswijk.nl/algemene-voorwaarden/'),

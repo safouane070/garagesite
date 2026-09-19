@@ -1,6 +1,6 @@
 <x-layouts.public>
     {{-- ═══════════ HERO · echte showroomfoto met tekst eroverheen ═══════════ --}}
-    <section class="relative -mt-[4.5rem] flex min-h-[92vh] items-center overflow-hidden bg-ink pt-[4.5rem]">
+    <section class="relative -mt-[4.5rem] flex min-h-[90vh] items-end overflow-hidden bg-ink pt-[4.5rem]">
         {{-- Echte foto van het wagenpark van de zaak --}}
         <img src="{{ asset('images/hero-showroom.webp') }}" alt="Wagenpark van {{ config('app.name') }}"
              fetchpriority="high" decoding="async"
