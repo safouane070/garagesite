@@ -126,10 +126,10 @@
 
         @php
             $teaser = [
-                ['icon' => 'tag', 't' => 'Inkoop & verkoop', 'd' => 'Eerlijke dagprijs voor je auto, of koop met BOVAG-garantie.'],
+                ['icon' => 'tag', 't' => 'Inkoop', 'd' => 'Eerlijke dagprijs voor je auto, direct geregeld.'],
+                ['icon' => 'badge-check', 't' => 'Verkoop', 'd' => 'Kwaliteitsoccasions met BOVAG-garantie, zonder afleverkosten.'],
+                ['icon' => 'users', 't' => 'Aankoop', 'd' => 'Zelf een auto op het oog? Wij begeleiden je bij de aankoop.'],
                 ['icon' => 'search', 't' => 'Zoekopdracht', 'd' => 'Niet gevonden? Wij zoeken gericht naar jouw droomauto.'],
-                ['icon' => 'repeat', 't' => 'Inruil & financiering', 'd' => 'Vlotte inruil en passende financial lease op maat.'],
-                ['icon' => 'map-pin', 't' => 'Import & taxatie', 'd' => 'Import uit het buitenland en onderbouwde taxaties.'],
             ];
         @endphp
         <div class="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">

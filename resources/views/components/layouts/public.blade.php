@@ -8,7 +8,11 @@
     $metaTitle = ($title ? $title . ' · ' : '') . config('app.name');
     $metaDescription = $description
         ?? config('app.name') . ' · Volkswagen-, Audi- en premium Duitse occasions met BOVAG-garantie in ' . config('brand.contact.city') . '. Geen afleverkosten, inruil en financiering mogelijk.';
-    $ogImage = $ogImage ? (\Illuminate\Support\Str::startsWith($ogImage, 'http') ? $ogImage : url($ogImage)) : null;
+    // Standaard deel-afbeelding = de showroomfoto, zodat elke gedeelde link
+    // (WhatsApp/social) een beeld toont ook als de pagina er zelf geen meegeeft.
+    $ogImage = $ogImage
+        ? (\Illuminate\Support\Str::startsWith($ogImage, 'http') ? $ogImage : url($ogImage))
+        : asset('images/hero-showroom.webp');
 
     $organizationLd = [
         '@context' => 'https://schema.org',
@@ -46,12 +50,12 @@
     <meta property="og:title" content="{{ $metaTitle }}">
     <meta property="og:description" content="{{ $metaDescription }}">
     <meta property="og:url" content="{{ url()->current() }}">
-    @if ($ogImage)
-        <meta property="og:image" content="{{ $ogImage }}">
-        <meta name="twitter:card" content="summary_large_image">
-    @else
-        <meta name="twitter:card" content="summary">
-    @endif
+    <meta property="og:image" content="{{ $ogImage }}">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image" content="{{ $ogImage }}">
+    <meta name="twitter:title" content="{{ $metaTitle }}">
+    <meta name="twitter:description" content="{{ $metaDescription }}">
+    <meta property="og:locale" content="nl_NL">
 
     {{-- Bedrijfsgegevens voor zoekmachines --}}
     <script type="application/ld+json">
@@ -135,7 +139,7 @@
              x-transition:enter="transition ease-out duration-200"
              x-transition:enter-start="opacity-0 -translate-y-2"
              x-transition:enter-end="opacity-100 translate-y-0"
-             class="border-t border-hairline bg-ink/95 md:hidden">
+             class="border-t border-hairline bg-ink/95 lg:hidden">
             <nav class="container-x flex flex-col py-3" aria-label="Mobiele navigatie">
                 @php
                     $mobileNav = [
