@@ -1,5 +1,5 @@
 <x-layouts.public title="Diensten"
-    description="Inkoop, verkoop, aankoopbemiddeling, zoekopdracht, import en taxatie. Autobedrijf Rijswijk ontzorgt je bij elke stap rond je auto.">
+    description="Inkoop, verkoop, aankoopbemiddeling en gepersonaliseerde zoekopdrachten. Autobedrijf Rijswijk ontzorgt je bij elke stap rond je auto.">
 
     <x-page-hero kicker="Diensten"
         title="Alles rondom je auto onder één dak"
@@ -10,13 +10,11 @@
             $services = [
                 ['icon' => 'tag', 't' => 'Inkoop', 'd' => 'We kopen je auto direct in tegen een eerlijke dagprijs. Snelle afhandeling, betaling en vrijwaring geregeld.'],
                 ['icon' => 'badge-check', 't' => 'Verkoop', 'd' => 'Elke occasion met BOVAG-garantie, APK en servicebeurt. Geen afleverkosten, geen verrassingen.'],
-                ['icon' => 'users', 't' => 'Aankoopbemiddeling', 'd' => 'Zelf een auto op het oog? Wij keuren, onderhandelen en regelen de aankoop voor je.'],
+                ['icon' => 'users', 't' => 'Aankoop', 'd' => 'Zelf een auto op het oog? Wij begeleiden je bij de aankoop, zodat je met een gerust hart koopt.'],
                 ['icon' => 'search', 't' => 'Zoekopdracht', 'd' => 'Niet in de showroom gevonden? Geef je wensen door, dan gaan wij gericht voor je op zoek.'],
-                ['icon' => 'map-pin', 't' => 'Import', 'd' => 'Auto uit het buitenland? Wij verzorgen import, BPM en RDW-keuring van A tot Z.'],
-                ['icon' => 'file-text', 't' => 'Taxatie', 'd' => 'Een onderbouwde, realistische taxatie van je auto — voor verkoop, inruil of verzekering.'],
             ];
         @endphp
-        <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             @foreach ($services as $s)
                 <div class="flex flex-col rounded-[4px] border border-hairline bg-graphite-700/50 p-6 transition hover:border-brass-500/40">
                     <span class="flex h-11 w-11 items-center justify-center rounded-full border border-brass-500/35 text-brass-400">

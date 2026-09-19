@@ -10,9 +10,9 @@
 | seeder en de sitemap lezen hier uit, zodat de eigenaar dit op één plek
 | aanpast in plaats van verspreid door de blade-bestanden.
 |
-| De waarden hieronder zijn realistische demo-gegevens. Cijfers die als
-| belofte tonen (verkochte auto's, tevredenheid, reviews) zijn PLACEHOLDERS —
-| vervang ze door de echte cijfers van de zaak vóór livegang.
+| De waarden hieronder zijn de ECHTE gegevens van de zaak (contact, uren,
+| Google-score 4,7 · 227 reviews, FinancialLease-feed). Verandert er iets bij
+| de zaak, dan hier bijwerken — of via de BRAND_*-keys in .env.
 |
 */
 
