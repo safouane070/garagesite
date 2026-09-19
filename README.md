@@ -18,6 +18,8 @@ Een complete autogarage-website gebouwd met **Laravel 13**, **MySQL/MariaDB**, *
 - Homepage met uitgelichte en nieuwste occasions
 - Aanbodpagina met **instant client-side filtering** (Alpine.js): zoeken, merk, brandstof, dual-range prijs- en bouwjaar-slider, sorteren, verwijderbare filter-chips, live resultatenteller en een mobiele filter-drawer
 - Detailpagina met foto-carousel, alle specificaties en vergelijkbare auto's
+- **Diensten**-pagina (inkoop, verkoop, aankoopbemiddeling, zoekopdracht)
+- **Financial lease**-pagina met de externe FinancialLease-rekenwidget (maandbedrag-indicatie)
 - Volledig responsive (mobiel / tablet / desktop) en toegankelijk (focus states, alt-teksten, skip-link)
 
 **Admin** (`/admin`, na inloggen)
