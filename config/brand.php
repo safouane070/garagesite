@@ -73,10 +73,6 @@ return [
         // Echte Google-bedrijfslink (CID van het Google-profiel — opent de zaak
         // met reviews). Geverifieerd op Google Maps: 4,7 · 227 reviews.
         'url'    => env('BRAND_REVIEW_URL', 'https://www.google.com/maps?cid=12874092222779176954'),
-        // Live Trustindex-review-widget van de zaak (auto-updatend). Dit is de
-        // publieke loader-ID uit hun eigen site (sectie "wat onze klanten
-        // zeggen"). Leeg laten = terugval op de statische citaten hieronder.
-        'trustindex_widget_id' => env('BRAND_TRUSTINDEX_WIDGET', 'd143df026f54805b969687b3cea'),
     ],
 
     // Financial lease loopt via onze leasepartner FinancialLease.nl (widget met
@@ -85,12 +81,20 @@ return [
         'financiallease_stock_id' => env('BRAND_FL_STOCK_ID', '1262'),
     ],
 
-    // Echte reviews van het Google/Trustindex-profiel van de zaak (verkorte
-    // citaten, geen verzinsels). Vervang eventueel door de live Trustindex-widget.
+    // Echte Google-reviews van het bedrijfsprofiel van de zaak (naam, score en
+    // tekst van Google; alleen kennelijke typefouten en emoji opgeschoond, niets
+    // verzonnen). Dit is dezelfde bron die hun eigen site via Trustindex toont —
+    // hier in de eigen huisstijl. Bijwerken = deze lijst vervangen door de
+    // nieuwste reviews van het Google-profiel.
     'testimonials' => [
-        ['name' => 'Martijn J.', 'text' => 'Gewoon fantastisch geholpen bij het vinden van mijn droomauto! Van de uitgebreide testrit tot de aflevering was alles uitstekend geregeld. De service is echt top.'],
-        ['name' => 'Teus D.', 'text' => 'Keurig netjes geholpen. Er wordt alle tijd voor je genomen om alle opties goed door te nemen. Uiterst vriendelijk personeel — en de prijzen zijn superscherp.'],
-        ['name' => 'Joze M.', 'text' => 'Zeer vriendelijke ontvangst, heeft alle tijd genomen voor de uitleg. Nette inruilprijs. Kortom: een fijne deal en tevreden met de aankoop.'],
+        ['name' => 'Teus Dekker', 'rating' => 5, 'text' => 'Een paar weken geleden een andere auto gekocht bij Van Rijswijk. Keurig netjes geholpen. Er word alle tijd voor je genomen om alle opties die er zijn goed door te nemen. Uiterst vriendelijk personeel. En ook niet onbelangrijk, de prijzen zijn superscherp. Bij een volgende aanschaf zal ik als eerste naar Van Rijswijk gaan.'],
+        ['name' => 'Enis Aliov', 'rating' => 5, 'text' => 'Vorige maand een Tesla Model 3 gekocht bij Autobedrijf Rijswijk. Alles is eerlijk en netjes nagekomen, precies zoals afgesproken. Inmiddels een heerlijke vakantie achter de rug met de Tesla, zonder ook maar één probleem. Top service en zeker een aanrader!'],
+        ['name' => 'Martijn Jellema', 'rating' => 5, 'text' => 'Gewoon goed bedrijf, heb hier een super mooie T-Roc gekocht van 2022, super blij mee. Zou dit bedrijf zeker aanraden aan wie een leuke occasion zoekt, want ze hebben van alles staan.'],
+        ['name' => 'Gemeente Den Haag', 'rating' => 5, 'text' => 'Onlangs een prachtige Mercedes-AMG G63 gekocht bij BS Autobedrijf in Rijswijk. Wat een geweldige auto! Ik ben ontzettend tevreden over de service en de manier waarop ik ben geholpen. Alles was netjes geregeld en het contact was professioneel en vriendelijk. Zeker een aanrader.'],
+        ['name' => 'Seko 1907', 'rating' => 5, 'text' => 'Hele mooie GLC 400e gekocht. Vanaf \'t begin tot einde goed geholpen. Ceasar en Dennis hebben passie voor auto\'s, denken keurig netjes mee en zijn zeer vriendelijk! Ga zo door heren.'],
+        ['name' => 'MBM Bouwservice B.V.', 'rating' => 5, 'text' => 'De heren hebben mij zo goed geholpen, vriendelijk en servicegericht. Ik was niet van plan om iets te kopen, meer oriënterend. 6 maanden later besloot ik toch een auto te kopen voor mijn dochter. Ik wist precies waar ik moest zijn. Dankjewel Dennis.'],
+        ['name' => 'Joze Marbus', 'rating' => 4, 'text' => 'Zeer vriendelijke ontvangst, heeft alle tijd genomen voor de uitleg. Nette inruilprijs. Kortom een fijne deal en tevreden met de aankoop.'],
+        ['name' => 'Murat Altuntas', 'rating' => 5, 'text' => 'Aardige heren! Dennis en Ceasar toppers.'],
     ],
 
     // Officiële juridische documenten van de zaak (we verzinnen geen eigen tekst).
