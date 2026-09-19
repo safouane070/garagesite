@@ -17,24 +17,20 @@ class DealerListing
 {
     public const BASE = 'https://autobedrijfrijswijk.nl/voertuig/';
 
-    /** Dealer-slugs (deel ná "m<cijfers>-") uit de listing-paden. */
-    public static function dealerSlugs(array $listingPaths): array
+    /**
+     * @param  array<int,string>  $listingPaths  Marktplaats-paden uit de seed.
+     * @return array<int,string>  carId => dealerSlug (1-op-1)
+     */
+    public static function match(Collection $cars, array $listingPaths): array
     {
-        $slugs = [];
+        // Dealer-slug = het deel ná "m<cijfers>-" in het listing-pad.
+        $dealerSlugs = [];
         foreach ($listingPaths as $path) {
             if (preg_match('#/m\d+-(.+)$#', $path, $m)) {
-                $slugs[] = $m[1];
+                $dealerSlugs[] = $m[1];
             }
         }
 
-        return $slugs;
-    }
-
-    /**
-     * @return array<int,string>  carId => dealerSlug (1-op-1)
-     */
-    public static function match(Collection $cars, array $dealerSlugs): array
-    {
         $norm = fn (string $s): string => preg_replace('/[^a-z0-9]/', '', strtolower($s));
 
         $pairs = [];

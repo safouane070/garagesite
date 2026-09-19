@@ -33,7 +33,7 @@ class FillCarOptions extends Command
         $paths = json_decode((string) file_get_contents(database_path('seeders/rijswijk_listings.json')), true) ?: [];
         $cars = Car::all();
 
-        $assignment = DealerListing::match($cars, DealerListing::dealerSlugs($paths));
+        $assignment = DealerListing::match($cars, $paths);
 
         $filled = 0;
         $skipped = 0;
