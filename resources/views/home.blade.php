@@ -5,9 +5,9 @@
         <img src="{{ asset('images/hero-showroom.webp') }}" alt="Wagenpark van {{ config('app.name') }}"
              fetchpriority="high" decoding="async"
              class="absolute inset-0 h-full w-full object-cover object-center">
-        {{-- Overlays voor leesbaarheid van de tekst --}}
-        <div class="pointer-events-none absolute inset-0 bg-gradient-to-r from-ink via-ink/80 to-ink/45"></div>
-        <div class="pointer-events-none absolute inset-0 bg-gradient-to-t from-ink/90 via-transparent to-ink/30"></div>
+        {{-- Lichte overlay: alleen onderin/links donker voor tekst, boven blijft de foto helder --}}
+        <div class="pointer-events-none absolute inset-0 bg-gradient-to-t from-ink via-ink/40 to-ink/5"></div>
+        <div class="pointer-events-none absolute inset-0 bg-gradient-to-r from-ink/55 via-transparent to-transparent"></div>
 
         <div class="container-x relative py-16">
             <div class="max-w-2xl" style="text-shadow: 0 2px 24px rgba(0,0,0,0.45)">
