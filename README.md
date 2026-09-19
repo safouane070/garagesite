@@ -15,17 +15,21 @@ Een complete autogarage-website gebouwd met **Laravel 13**, **MySQL/MariaDB**, *
 ## Functionaliteit
 
 **Publiek**
-- Homepage met uitgelichte en nieuwste occasions
+- Homepage met uitgelichte en nieuwste occasions, echte Google-reviews (in eigen huisstijl) en vertrouwensband
 - Aanbodpagina met **instant client-side filtering** (Alpine.js): zoeken, merk, brandstof, dual-range prijs- en bouwjaar-slider, sorteren, verwijderbare filter-chips, live resultatenteller en een mobiele filter-drawer
-- Detailpagina met foto-carousel, alle specificaties en vergelijkbare auto's
+- Detailpagina met foto-carousel, alle specificaties, uitrusting/opties, vergelijkbare auto's en een **interesse-/aanvraagformulier** (met voorwerp, voorkeursdatum bij bezichtiging/proefrit, honeypot + rate-limiting)
 - **Diensten**-pagina (inkoop, verkoop, aankoopbemiddeling, zoekopdracht)
 - **Financial lease**-pagina met de externe FinancialLease-rekenwidget (maandbedrag-indicatie)
-- Volledig responsive (mobiel / tablet / desktop) en toegankelijk (focus states, alt-teksten, skip-link)
+- **Contact**-pagina met formulier en Google Maps, plus `over-ons`, `volkswagen-specialist`, `privacybeleid` en `algemene-voorwaarden`
+- Aanvragen worden opgeslagen én naar de zaak gemaild (`Reply-To` = klant)
+- SEO: per-auto `Vehicle`- en site-brede `AutoDealer`-schema (JSON-LD), Open Graph, canonical, dynamische `sitemap.xml` en beveiligingsheaders (CSP e.a.)
+- Volledig responsive (mobiel / tablet / desktop) en toegankelijk (focus states, alt-teksten, skip-link, labels)
 
 **Admin** (`/admin`, na inloggen)
 - Dashboard met voorraadoverzicht en statistieken
 - Auto's toevoegen / bewerken / verwijderen (CRUD)
 - Meerdere foto's uploaden per auto, omslagfoto instellen, foto's verwijderen
+- Uitrusting/opties per auto aanvinken uit een bestaande lijst
 - Snelle statuswijziging (beschikbaar / gereserveerd / verkocht)
 
 ---
@@ -64,7 +68,7 @@ php artisan migrate --seed
 php artisan storage:link
 ```
 
-> De seeder haalt **echte autofoto's** op via de publieke Wikimedia Commons-API en slaat ze lokaal op. Werkt dat niet (bv. geen internet), dan vallen de auto's automatisch terug op nette, in-huisstijl SVG-placeholders — de seeder faalt nooit.
+> De seeder vult de demo met de **echte voorraad van Autobedrijf Rijswijk**: hij leest de openbare Marktplaats-listings van de dealer uit (`database/seeders/rijswijk_listings.json`), mapt de kenmerken naar onze velden en slaat de foto's lokaal op. Lukt het ophalen niet (bv. geen internet), dan valt die auto automatisch terug op nette, in-huisstijl SVG-placeholders — de seeder faalt nooit. `CarEnrichmentSeeder` vult daarna opties, extra specs en verkocht-status aan.
 
 ---
 
@@ -111,24 +115,29 @@ Publieke registratie is bewust uitgeschakeld — extra accounts maak je via de s
 ```
 app/
   Enums/CarStatus.php            # Statussen + labels/kleuren op één plek
-  Models/Car.php, CarImage.php   # Modellen, relaties, query-scopes
-  Http/Controllers/              # Publiek (Home, Car) + Admin\CarController
-  Http/Requests/CarRequest.php   # Validatieregels (toevoegen/bewerken)
-  Support/CarPhotoFetcher.php    # Haalt echte foto's op bij Wikimedia
+  Models/                        # Car, CarImage, Lead, User (relaties, scopes)
+  Http/Controllers/              # Publiek (Home, Car, Lead, Sitemap) + Admin\CarController
+  Http/Requests/                 # CarRequest + StoreLeadRequest (validatie)
+  Http/Middleware/SecurityHeaders.php  # CSP en overige beveiligingsheaders
+  Mail/LeadReceived.php          # Aanvraag-mail naar de zaak
+  Support/DealerListing.php      # Parser voor de Marktplaats-listings
+  Support/Reviews.php            # Google-reviews inlezen (config-gedreven)
   Support/PlaceholderImage.php   # SVG-vangnet voor foto's
+config/brand.php                 # Één bron voor contact, reviews, lease-feed, huisstijl
 database/
-  migrations/                    # cars, car_images
-  seeders/CarSeeder.php          # 12 curated demo-auto's + foto's
-  factories/CarFactory.php       # Willekeurige, plausibele auto's
+  migrations/                    # cars, car_images, leads (+ options, preferred_date)
+  seeders/CarSeeder.php          # ~85 echte occasions van de dealer + foto's
+  seeders/CarEnrichmentSeeder.php# Opties, extra specs, verkocht-status
 resources/views/
-  components/                    # car-card, status-badge, icon (Lucide), layouts, brand-mark
-  home.blade.php, cars/          # Publieke pagina's
+  components/                    # car-card, status-badge, icon (Lucide), lead-form, layouts, brand-mark
+  home.blade.php, cars/          # Publieke etalage
+  pages/                         # diensten, financial-lease, contact, over-ons, vw-specialist, privacy, voorwaarden
   admin/cars/                    # Dashboard + formulieren
 ```
 
 ## Ontwerpkeuzes
 
-- **Signatuur:** donker "automotive-premium" thema (obsidiaan + messing accent), scherpe hoeken met hairline-scheidingen i.p.v. overal identieke cards.
+- **Signatuur:** donker "automotive-premium" thema (obsidiaan + het rode merk-accent `#D90429` van de dealer), scherpe hoeken met hairline-scheidingen i.p.v. overal identieke cards. De `brass`-token in `tailwind.config.js` houdt om historische redenen de rode waarden (naam is legacy).
 - **Typografie:** Space Grotesk (display) + Inter (tekst) + JetBrains Mono (technische spec-labels).
 - **Iconen:** één consistente [Lucide](https://lucide.dev)-set via een eigen `<x-icon>`-component (geen emoji).
 - Kleuren en fonts staan als tokens in `tailwind.config.js` — pas ze daar aan om de hele huisstijl te wijzigen.
