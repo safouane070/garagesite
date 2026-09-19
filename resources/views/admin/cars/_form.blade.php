@@ -101,16 +101,74 @@
             </div>
         </section>
 
-        {{-- Uitrusting / opties --}}
-        <section class="surface p-6">
-            <h2 class="font-display text-lg font-semibold text-cream">Uitrusting</h2>
-            <p class="mt-1 text-sm text-cream/45">Eén optie per regel (bv. Panoramadak, Navigatiesysteem, Achteruitrijcamera). Verschijnt als lijst op de detailpagina.</p>
-            <div class="mt-4">
-                <label class="field-label sr-only" for="options">Opties</label>
-                <textarea id="options" name="options" rows="8" class="field-input font-mono text-sm"
-                          placeholder="Panoramadak&#10;Navigatiesysteem&#10;Adaptieve cruise control">{{ old('options', implode("\n", $car->options ?? [])) }}</textarea>
-                @error('options') <p class="field-hint text-rose-300">{{ $message }}</p> @enderror
+        {{-- Uitrusting / opties: aanvinken uit de bestaande lijst i.p.v. typen. --}}
+        @php
+            $selectedOptions = array_values(old('options', $car->options ?? []));
+            // Bekende opties (frequentie-gesorteerd) + eigen selecties die er nog
+            // niet in staan vooraan, zodat alles zichtbaar en aan te vinken is.
+            $allOptions = array_values(array_unique(array_merge($selectedOptions, \App\Models\Car::knownOptions())));
+        @endphp
+        <section class="surface p-6"
+                 x-data="{
+                    q: '',
+                    all: @js($allOptions),
+                    selected: @js($selectedOptions),
+                    custom: '',
+                    get filtered() {
+                        const q = this.q.trim().toLowerCase();
+                        return q ? this.all.filter(o => o.toLowerCase().includes(q)) : this.all;
+                    },
+                    addCustom() {
+                        const v = this.custom.trim();
+                        if (v) {
+                            if (!this.all.includes(v)) this.all.unshift(v);
+                            if (!this.selected.includes(v)) this.selected.push(v);
+                        }
+                        this.custom = '';
+                        this.q = '';
+                    }
+                 }">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+                <h2 class="font-display text-lg font-semibold text-cream">Uitrusting</h2>
+                <span class="font-mono text-xs uppercase tracking-wider text-cream/60">
+                    <span x-text="selected.length">0</span> aangevinkt
+                </span>
             </div>
+            <p class="mt-1 text-sm text-cream/45">Vink de aanwezige opties aan. Staat een optie er niet bij? Voeg 'm onderaan toe.</p>
+
+            {{-- Zoeken --}}
+            <div class="relative mt-4">
+                <x-icon name="search" class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-cream/40" />
+                <input type="text" x-model="q" placeholder="Zoek een optie…"
+                       class="field-input pl-9" @keydown.enter.prevent>
+            </div>
+
+            {{-- Aanvink-lijst --}}
+            <div class="mt-4 max-h-80 overflow-y-auto rounded-[4px] border border-hairline bg-graphite-800 p-2 [scrollbar-width:thin]">
+                <div class="grid gap-x-4 sm:grid-cols-2">
+                    <template x-for="opt in filtered" :key="opt">
+                        <label class="flex cursor-pointer items-center gap-2.5 rounded-[3px] px-2 py-1.5 text-sm text-cream/85 transition hover:bg-graphite-700">
+                            <input type="checkbox" name="options[]" :value="opt" x-model="selected"
+                                   class="h-4 w-4 shrink-0 rounded border-hairline bg-graphite-700 text-brass-500 focus:ring-brass-500/40">
+                            <span x-text="opt"></span>
+                        </label>
+                    </template>
+                    <p x-show="!filtered.length" class="px-2 py-3 text-sm text-cream/45">Geen optie gevonden voor "<span x-text="q"></span>".</p>
+                </div>
+            </div>
+
+            {{-- Eigen optie toevoegen --}}
+            <div class="mt-3 flex gap-2">
+                <input type="text" x-model="custom" placeholder="Eigen optie toevoegen…"
+                       class="field-input" @keydown.enter.prevent="addCustom">
+                <button type="button" @click="addCustom"
+                        class="btn btn-outline shrink-0" x-bind:disabled="!custom.trim()">
+                    <x-icon name="plus" class="h-4 w-4" /> Toevoegen
+                </button>
+            </div>
+
+            @error('options') <p class="field-hint text-rose-300">{{ $message }}</p> @enderror
+            @error('options.*') <p class="field-hint text-rose-300">{{ $message }}</p> @enderror
         </section>
 
         {{-- Foto's uploaden --}}

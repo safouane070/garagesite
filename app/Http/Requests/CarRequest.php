@@ -41,8 +41,9 @@ class CarRequest extends FormRequest
             'specs' => ['nullable', 'array'],
             'specs.*' => ['nullable', 'string', 'max:100'],
 
-            // Uitrusting/opties als vrije tekst (één per regel), later gesplitst.
-            'options' => ['nullable', 'string', 'max:5000'],
+            // Uitrusting/opties: aangevinkte checkboxes komen binnen als array.
+            'options' => ['nullable', 'array', 'max:400'],
+            'options.*' => ['string', 'max:100'],
 
             // Meerdere foto's tegelijk uploaden.
             'images' => ['nullable', 'array', 'max:12'],

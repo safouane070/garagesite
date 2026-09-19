@@ -87,6 +87,31 @@ class Car extends Model
         return 'slug';
     }
 
+    /**
+     * De volledige, echte optie-woordenschat: alle opties die op auto's
+     * voorkomen, gesorteerd op hoe vaak ze voorkomen (meest gangbare eerst).
+     * Voedt de aanvink-lijst in de beheeromgeving — geen verzonnen lijst, puur
+     * wat er in de voorraad zit. Groeit vanzelf mee als een beheerder een eigen
+     * optie toevoegt aan een auto.
+     *
+     * @return list<string>
+     */
+    public static function knownOptions(): array
+    {
+        $freq = [];
+        foreach (static::query()->whereNotNull('options')->pluck('options') as $opts) {
+            foreach ((array) $opts as $o) {
+                $o = trim((string) $o);
+                if ($o !== '') {
+                    $freq[$o] = ($freq[$o] ?? 0) + 1;
+                }
+            }
+        }
+        arsort($freq);
+
+        return array_keys($freq);
+    }
+
     // ----- Relaties -------------------------------------------------------
 
     /** Eén auto heeft meerdere foto's (one-to-many). */
