@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Models\Car;
+use App\Support\DealerListing;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Http;
 
@@ -32,15 +33,7 @@ class FillCarOptions extends Command
         $paths = json_decode((string) file_get_contents(database_path('seeders/rijswijk_listings.json')), true) ?: [];
         $cars = Car::all();
 
-        // Dealer-slug = het deel ná "m<cijfers>-" in de Marktplaats-listing.
-        $dealerSlugs = [];
-        foreach ($paths as $path) {
-            if (preg_match('#/m\d+-(.+)$#', $path, $mm)) {
-                $dealerSlugs[] = $mm[1];
-            }
-        }
-
-        $assignment = $this->matchCarsToDealerSlugs($cars, $dealerSlugs);
+        $assignment = DealerListing::match($cars, DealerListing::dealerSlugs($paths));
 
         $filled = 0;
         $skipped = 0;
@@ -55,7 +48,7 @@ class FillCarOptions extends Command
             try {
                 $resp = Http::withHeaders(['User-Agent' => self::UA])
                     ->timeout(25)->retry(2, 400)
-                    ->get("https://autobedrijfrijswijk.nl/voertuig/{$slug}/");
+                    ->get(DealerListing::BASE . $slug . '/');
             } catch (\Throwable $e) {
                 $skipped++;
                 continue;
@@ -81,61 +74,6 @@ class FillCarOptions extends Command
         $this->info("Klaar: {$filled} gevuld, {$skipped} overgeslagen (geen pagina/opties). Totaal met opties: {$withOptions} van {$cars->count()}.");
 
         return self::SUCCESS;
-    }
-
-    /**
-     * Koppelt elke auto aan hoogstens één dealer-slug via genormaliseerde
-     * gemeenschappelijke voorloop, greedy en 1-op-1 (beste score eerst).
-     *
-     * @return array<int,string>  carId => dealerSlug
-     */
-    private function matchCarsToDealerSlugs($cars, array $dealerSlugs): array
-    {
-        $norm = fn (string $s): string => preg_replace('/[^a-z0-9]/', '', strtolower($s));
-
-        $pairs = [];
-        foreach ($dealerSlugs as $di => $ds) {
-            $dn = $norm($ds);
-            foreach ($cars as $car) {
-                $cn = $norm($car->slug);
-                if ($cn === '') {
-                    continue;
-                }
-                $score = $this->commonPrefixLength($dn, $cn);
-                // Match moet (bijna) de hele auto-slug dekken: voorkomt dat een
-                // korte slug per ongeluk op een verre auto plakt.
-                if ($score >= min(strlen($cn), 20)) {
-                    $pairs[] = ['score' => $score, 'di' => $di, 'cid' => $car->id, 'slug' => $ds];
-                }
-            }
-        }
-
-        usort($pairs, fn ($a, $b) => $b['score'] <=> $a['score']);
-
-        $usedDealer = [];
-        $usedCar = [];
-        $out = [];
-        foreach ($pairs as $p) {
-            if (isset($usedDealer[$p['di']]) || isset($usedCar[$p['cid']])) {
-                continue;
-            }
-            $usedDealer[$p['di']] = true;
-            $usedCar[$p['cid']] = true;
-            $out[$p['cid']] = $p['slug'];
-        }
-
-        return $out;
-    }
-
-    private function commonPrefixLength(string $a, string $b): int
-    {
-        $n = min(strlen($a), strlen($b));
-        $i = 0;
-        while ($i < $n && $a[$i] === $b[$i]) {
-            $i++;
-        }
-
-        return $i;
     }
 
     /** Haalt de <li>-labels uit de "optionstest"-lijst van de voertuig-pagina. */
