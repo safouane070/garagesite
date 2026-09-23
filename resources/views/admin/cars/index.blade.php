@@ -118,7 +118,7 @@
             </p>
 
             {{-- Tabel --}}
-            <div class="overflow-x-auto" x-show="matched > 0">
+            <div class="scroll-thin overflow-x-auto" x-show="matched > 0">
                 <table class="w-full min-w-[880px] text-left">
                     <thead>
                         <tr class="border-b border-hairline bg-graphite-800 font-mono text-[0.7rem] uppercase tracking-wider text-cream/65">

@@ -45,7 +45,7 @@
     {{-- Echte Google-reviews in eigen huisstijl, als horizontale rail (zoals de
          carrousel op de originele site, maar passend op de donkere sectie). --}}
     @if (count($testimonials))
-        <div class="mt-12 flex snap-x snap-mandatory gap-5 overflow-x-auto px-5 pb-4 sm:px-8 [scrollbar-width:thin]">
+        <div class="mt-12 flex snap-x snap-mandatory gap-5 scroll-thin overflow-x-auto px-5 pb-4 sm:px-8">
             @foreach ($testimonials as $t)
                 <figure class="flex w-[300px] shrink-0 snap-start flex-col rounded-[4px] border border-hairline bg-graphite-700/50 p-6 sm:w-[340px]">
                     <div class="flex items-center justify-between">
