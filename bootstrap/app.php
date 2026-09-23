@@ -17,6 +17,10 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
+        // Foutbewaking: in productie een (gedempte) mail naar de beheerder.
+        // 404's, validatiefouten e.d. worden door Laravel al niet "gerapporteerd".
+        $exceptions->report(fn (\Throwable $e) => \App\Support\ErrorAlert::exception($e));
+
         $exceptions->shouldRenderJsonWhen(
             fn (Request $request) => $request->is('api/*') || $request->expectsJson(),
         );
