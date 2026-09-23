@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\CarController as AdminCarController;
+use App\Http\Controllers\Admin\LeadController as AdminLeadController;
 use App\Http\Controllers\CarController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\LeadController;
@@ -23,6 +24,7 @@ Route::post('/aanvraag', [LeadController::class, 'store'])
     ->name('leads.store');
 
 Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap');
+Route::get('/robots.txt', [SitemapController::class, 'robots'])->name('robots');
 
 // Statische inhoudspagina's (lezen zelf uit config/brand.php + shared components).
 Route::view('/diensten', 'pages.diensten')->name('diensten');
@@ -52,12 +54,16 @@ Route::middleware('auth')->group(function () {
         Route::patch('cars/{car}/status', [AdminCarController::class, 'updateStatus'])->name('cars.status');
         Route::delete('cars/{car}/images/{image}', [AdminCarController::class, 'destroyImage'])->name('cars.images.destroy');
         Route::patch('cars/{car}/images/{image}/primary', [AdminCarController::class, 'setPrimaryImage'])->name('cars.images.primary');
+
+        // Aanvragen-inbox (leads van de site).
+        Route::get('aanvragen', [AdminLeadController::class, 'index'])->name('leads.index');
+        Route::patch('aanvragen/{lead}/afgehandeld', [AdminLeadController::class, 'toggle'])->name('leads.toggle');
+        Route::delete('aanvragen/{lead}', [AdminLeadController::class, 'destroy'])->name('leads.destroy');
     });
 
     // Profielbeheer (van Breeze).
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
 require __DIR__.'/auth.php';
