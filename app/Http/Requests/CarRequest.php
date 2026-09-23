@@ -45,9 +45,10 @@ class CarRequest extends FormRequest
             'options' => ['nullable', 'array', 'max:400'],
             'options.*' => ['string', 'max:100'],
 
-            // Meerdere foto's tegelijk uploaden.
+            // Meerdere foto's tegelijk uploaden. Ruime limiet (telefoonfoto's zijn
+            // vaak 5–10 MB); ImageOptimizer verkleint ze bij het opslaan.
             'images' => ['nullable', 'array', 'max:12'],
-            'images.*' => ['image', 'mimes:jpg,jpeg,png,webp', 'max:4096'],
+            'images.*' => ['image', 'mimes:jpg,jpeg,png,webp', 'max:12288'],
         ];
     }
 
@@ -71,6 +72,7 @@ class CarRequest extends FormRequest
             'transmission' => 'transmissie',
             'color' => 'kleur',
             'body_type' => 'carrosserie',
+            'images' => "foto's",
             'images.*' => 'foto',
         ];
     }

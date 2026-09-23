@@ -29,7 +29,8 @@ class SecurityHeaders
             "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
             "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
             "font-src 'self' https://fonts.gstatic.com",
-            "img-src 'self' data: https:",
+            // blob: voor de upload-preview in het beheer (URL.createObjectURL).
+            "img-src 'self' data: blob: https:",
             "frame-src https://www.google.com https://iframe.financiallease.nl https://www.financiallease.nl",
             "connect-src 'self'",
             "base-uri 'self'",
