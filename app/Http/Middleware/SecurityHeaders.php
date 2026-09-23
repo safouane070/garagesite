@@ -27,8 +27,8 @@ class SecurityHeaders
         $csp = implode('; ', [
             "default-src 'self'",
             "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
-            "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-            "font-src 'self' https://fonts.gstatic.com",
+            "style-src 'self' 'unsafe-inline'",
+            "font-src 'self'", // fonts zelf gehost (AVG)
             // blob: voor de upload-preview in het beheer (URL.createObjectURL).
             "img-src 'self' data: blob: https:",
             "frame-src https://www.google.com https://iframe.financiallease.nl https://www.financiallease.nl",

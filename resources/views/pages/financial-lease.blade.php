@@ -45,12 +45,13 @@
             <div>
                 <p class="kicker">Actueel aanbod</p>
                 <p class="mt-2 mb-4 text-sm text-cream/60">Live maandbedragen, verzorgd door onze leasepartner FinancialLease.nl.</p>
-                <div class="overflow-hidden rounded-[4px] border border-hairline bg-white">
-                    <iframe
-                        title="Financial-lease-aanbod van Autobedrijf Rijswijk"
-                        src="https://iframe.financiallease.nl/lease?stock_id={{ config('brand.finance.financiallease_stock_id') }}&primary_color=d90429&secondary_color=d90429"
-                        class="w-full" style="height: 1500px; border: 0" loading="lazy"></iframe>
-                </div>
+                <x-consent-embed
+                    src="https://iframe.financiallease.nl/lease?stock_id={{ config('brand.finance.financiallease_stock_id') }}&primary_color=d90429&secondary_color=d90429"
+                    title="Financial-lease-aanbod van {{ config('app.name') }}" provider="FinancialLease.nl" height="1500px"
+                    button="Toon het lease-aanbod" icon="repeat" class="bg-white"
+                    fallback-url="https://www.financiallease.nl/" fallback-label="FinancialLease.nl">
+                    <p class="font-display text-lg font-semibold text-cream">Live maandbedragen per auto</p>
+                </x-consent-embed>
             </div>
         </div>
     </section>
