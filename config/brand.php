@@ -101,6 +101,11 @@ return [
         ['name' => 'Murat Altuntas', 'rating' => 5, 'text' => 'Aardige heren! Dennis en Ceasar toppers.'],
     ],
 
+    // Foutbewaking: wie krijgt een mail bij een fout in productie (App\Support\ErrorAlert).
+    'alerts' => [
+        'error_email' => env('ERROR_ALERT_EMAIL'),
+    ],
+
     // Officiële juridische documenten van de zaak (we verzinnen geen eigen tekst).
     'legal' => [
         'terms_url'   => env('BRAND_TERMS_URL', 'https://autobedrijfrijswijk.nl/algemene-voorwaarden/'),

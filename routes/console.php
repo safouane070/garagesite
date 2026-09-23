@@ -13,7 +13,12 @@ Schedule::command('reviews:fetch')->weekly()->sundays()->at('04:00');
 
 // Voorraad gelijk houden met de dealersite: nieuwe auto's erbij, verkochte eraf,
 // prijswijzigingen bijgewerkt. Stopt zelf bij een verdachte bron (zie SyncCars).
-Schedule::command('cars:sync')->dailyAt('06:00')->withoutOverlapping();
+Schedule::command('cars:sync')->dailyAt('06:00')->withoutOverlapping()
+    ->onFailure(fn () => \App\Support\ErrorAlert::send(
+        'Voorraad-sync mislukt',
+        "cars:sync is gestopt zonder wijzigingen (dealersite onbereikbaar of verdacht veel auto's verdwenen).\n"
+        . 'Controleer de dealersite en draai zo nodig: php artisan cars:sync --dry-run',
+    ));
 
 // Wachtrij (aanvraag-mails) verwerken. Op shared hosting draait er geen vaste
 // worker: de minuut-cron start 'm kort, hij stopt zodra de wachtrij leeg is.
