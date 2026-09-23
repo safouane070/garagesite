@@ -30,7 +30,7 @@
                             <p class="font-medium text-cream">Telefonisch</p>
                             <p class="mt-0.5 text-sm">
                                 <a href="tel:{{ config('brand.contact.phone_href') }}" class="text-cream/70 transition hover:text-brass-300">{{ config('brand.contact.phone') }}</a>
-                                <span class="text-cream/30"> · </span>
+                                <span class="text-cream/50" aria-hidden="true"> · </span>
                                 <a href="tel:{{ config('brand.contact.mobile_href') }}" class="text-cream/70 transition hover:text-brass-300">{{ config('brand.contact.mobile') }}</a>
                             </p>
                         </div>

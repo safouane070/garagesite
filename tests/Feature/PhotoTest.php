@@ -58,12 +58,23 @@ class PhotoTest extends TestCase
 
         $image = $car->images()->first();
         $this->assertSame([1600, 1200], [$image->width, $image->height]);
-        [$tw] = getimagesizefromstring(Storage::disk('public')->get($image->thumb_path));
-        $this->assertSame(640, $tw);
+        foreach (['xs_path' => 240, 'thumb_path' => 640, 'md_path' => 1024] as $column => $width) {
+            [$w] = getimagesizefromstring(Storage::disk('public')->get($image->{$column}));
+            $this->assertSame($width, $w, $column);
+        }
 
+        // Telefoon kiest 640/1024 i.p.v. de volledige foto; het strookje op de detailpagina de 240-versie.
+        $srcset = $image->thumbUrl() . ' 640w, ' . Storage::disk('public')->url($image->md_path) . ' 1024w, ' . $image->url() . ' 1600w';
         $this->get(route('cars.index'))
-            ->assertSee('srcset="' . $image->thumbUrl() . ' 640w, ' . $image->url() . ' 1600w"', false)
+            ->assertSee('srcset="' . $srcset . '"', false)
             ->assertSee('width="1600" height="1200"', false);
+
+        // Verwijderen ruimt alle maten op.
+        $paths = [$image->path, $image->xs_path, $image->thumb_path, $image->md_path];
+        $image->deleteFiles();
+        foreach ($paths as $p) {
+            Storage::disk('public')->assertMissing($p);
+        }
     }
 
     public function test_photo_can_be_moved_and_first_photo_is_the_cover(): void

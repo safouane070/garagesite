@@ -23,3 +23,20 @@
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteRule ^ index.php [L]
 </IfModule>
+
+# Compressie: HTML/CSS/JS zijn tekst en worden ±70–85% kleiner over de lijn.
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html text/css text/plain text/xml application/javascript application/json application/xml image/svg+xml
+</IfModule>
+
+# Browsercache. CSS/JS/fonts komen van Vite met een hash in de naam (nieuwe versie =
+# nieuwe naam), dus die mogen een jaar. Foto's krijgen bij vervangen ook een nieuwe
+# naam; een maand is ruim veilig.
+<IfModule mod_headers.c>
+    <FilesMatch "\.(css|js|woff2)$">
+        Header set Cache-Control "public, max-age=31536000, immutable"
+    </FilesMatch>
+    <FilesMatch "\.(webp|jpe?g|png|svg|ico)$">
+        Header set Cache-Control "public, max-age=2592000"
+    </FilesMatch>
+</IfModule>

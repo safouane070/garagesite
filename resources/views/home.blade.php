@@ -2,9 +2,14 @@
     {{-- ═══════════ HERO · echte showroomfoto met tekst eroverheen ═══════════ --}}
     <section class="relative -mt-[4.5rem] flex min-h-[90vh] items-end overflow-hidden bg-ink pt-[4.5rem]">
         {{-- Echte foto van het wagenpark van de zaak --}}
-        <img src="{{ asset('images/hero-showroom.webp') }}" alt="Wagenpark van {{ config('app.name') }}"
-             fetchpriority="high" decoding="async"
-             class="absolute inset-0 h-full w-full object-cover object-center">
+        {{-- Staand scherm (telefoon): de middenuitsnede. object-cover toont daar toch alleen het
+             midden van de vierkante foto; zelfde beeld, ±40% minder bytes voor de grootste afbeelding. --}}
+        <picture>
+            <source media="(max-aspect-ratio: 9/16)" srcset="{{ asset('images/hero-showroom-portrait.webp') }}" width="1000" height="1600">
+            <img src="{{ asset('images/hero-showroom.webp') }}" alt="Wagenpark van {{ config('app.name') }}"
+                 width="1600" height="1600" fetchpriority="high" decoding="async"
+                 class="absolute inset-0 h-full w-full object-cover object-center">
+        </picture>
         {{-- Lichte overlay: alleen onderin/links donker voor tekst, boven blijft de foto helder --}}
         <div class="pointer-events-none absolute inset-0 bg-gradient-to-t from-ink via-ink/40 to-ink/5"></div>
         <div class="pointer-events-none absolute inset-0 bg-gradient-to-r from-ink/55 via-transparent to-transparent"></div>

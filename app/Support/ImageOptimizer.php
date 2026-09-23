@@ -28,7 +28,7 @@ class ImageOptimizer
     private const MAX_PIXELS = 40_000_000;
 
     /**
-     * @return array{path:string,thumb_path:?string,width:?int,height:?int}
+     * @return array{path:string,xs_path?:?string,thumb_path:?string,md_path?:?string,width:?int,height:?int}
      */
     public static function store(UploadedFile $file, string $dir): array
     {
@@ -53,7 +53,7 @@ class ImageOptimizer
     /**
      * Miniatuur + afmetingen voor een al opgeslagen foto (bestaande voorraad).
      *
-     * @return array{thumb_path:?string,width:int,height:int}|null
+     * @return array{xs_path:?string,thumb_path:?string,md_path:?string,width:int,height:int}|null
      */
     public static function describeStored(string $path): ?array
     {
@@ -70,21 +70,35 @@ class ImageOptimizer
         return self::thumbnail($image, dirname($path), pathinfo($path, PATHINFO_FILENAME));
     }
 
-    /** @return array{thumb_path:?string,width:int,height:int} */
+    /**
+     * Verkleinde varianten naast de volledige foto: kolom => [breedte, submap].
+     * xs voor fotostrookjes, thumb voor kaartjes, md voor telefoons (die anders
+     * de 2000 px-versie kiezen).
+     */
+    public const VARIANTS = [
+        'xs_path' => [240, 'xs'],
+        'thumb_path' => [self::THUMB_WIDTH, 'thumbs'],
+        'md_path' => [1024, 'md'],
+    ];
+
+    /** @return array{xs_path:?string,thumb_path:?string,md_path:?string,width:int,height:int} */
     private static function thumbnail(\GdImage $image, string $dir, string $name): array
     {
         $w = imagesx($image);
         $h = imagesy($image);
-        $thumbPath = null;
+        $out = ['width' => $w, 'height' => $h];
 
-        // Alleen als de foto duidelijk breder is dan de miniatuur.
-        if ($w > self::THUMB_WIDTH * 1.2) {
-            $thumb = imagescale($image, self::THUMB_WIDTH, (int) round($h * self::THUMB_WIDTH / $w), IMG_BICUBIC);
-            $thumbPath = "{$dir}/thumbs/{$name}.webp";
-            Storage::disk('public')->put($thumbPath, self::webp($thumb));
+        foreach (self::VARIANTS as $column => [$width, $sub]) {
+            $out[$column] = null;
+            // Alleen als de foto duidelijk breder is dan de variant.
+            if ($w > $width * 1.2) {
+                $path = "{$dir}/{$sub}/{$name}.webp";
+                Storage::disk('public')->put($path, self::webp(imagescale($image, $width, (int) round($h * $width / $w), IMG_BICUBIC)));
+                $out[$column] = $path;
+            }
         }
 
-        return ['thumb_path' => $thumbPath, 'width' => $w, 'height' => $h];
+        return $out;
     }
 
     private static function webp(\GdImage $image): string

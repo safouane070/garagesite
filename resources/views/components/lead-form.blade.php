@@ -91,13 +91,13 @@
                 </div>
 
                 <div class="sm:col-span-2">
-                    <label class="field-label" for="lead-phone">Telefoonnummer <span class="text-cream/30">(optioneel)</span></label>
+                    <label class="field-label" for="lead-phone">Telefoonnummer <span class="text-cream/60">(optioneel)</span></label>
                     <input id="lead-phone" @error('phone') aria-invalid="true" aria-describedby="lead-phone-error" @enderror name="phone" value="{{ old('phone') }}" class="field-input" autocomplete="tel" inputmode="tel">
                     @error('phone') <p id="lead-phone-error" class="field-hint text-rose-300">{{ $message }}</p> @enderror
                 </div>
 
                 <div class="sm:col-span-2">
-                    <label class="field-label" for="lead-message">Bericht <span class="text-cream/30">(optioneel)</span></label>
+                    <label class="field-label" for="lead-message">Bericht <span class="text-cream/60">(optioneel)</span></label>
                     <textarea id="lead-message" @error('message') aria-invalid="true" aria-describedby="lead-message-error" @enderror name="message" rows="4" class="field-input">{{ old('message', $defaultMessage) }}</textarea>
                     @error('message') <p id="lead-message-error" class="field-hint text-rose-300">{{ $message }}</p> @enderror
                 </div>

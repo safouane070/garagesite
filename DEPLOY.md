@@ -61,6 +61,9 @@ Begin met `.env.example` en vul in:
 Vast ingebouwd in productie (niets voor nodig): cookies alleen over https, links via https, HSTS,
 en `www.` → hoofddomein (301).
 
+**Schijfruimte:** reken op ±1,2 GB voor de foto's (±2500 foto's in 4 maten). Kies een pakket met
+ruim voldoende opslag.
+
 **PHP-instellingen** (anders falen foto-uploads vanaf een telefoon):
 - [ ] `upload_max_filesize` ≥ 16M, `post_max_size` ≥ 64M, `memory_limit` ≥ 256M
 - [ ] extensies `gd` en `exif` aan
@@ -96,7 +99,7 @@ php artisan storage:link
 php artisan db:seed --force      # lege database: alleen het beheeraccount
 php artisan reviews:fetch        # reviews + actuele Google-score
 php artisan cars:sync --dry-run  # alleen bij keuze A: eerst kijken
-php artisan cars:sync            # eerste keer ±10–15 min (auto's + foto's)
+php artisan cars:sync            # eerste keer ±45–60 min: ±100 auto's × 15–40 foto's
 php artisan config:cache && php artisan route:cache && php artisan view:cache
 ```
 > Zonder `ADMIN_PASSWORD` toont de seeder éénmalig een willekeurig wachtwoord — bewaar het.
