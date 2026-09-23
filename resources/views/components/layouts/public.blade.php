@@ -75,6 +75,10 @@
 
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @if (config('brand.analytics.plausible_domain'))
+        {{-- Cookieloze bezoekersstatistiek (geen toestemming nodig, geen persoonsgegevens). --}}
+        <script defer data-domain="{{ config('brand.analytics.plausible_domain') }}" src="{{ config('brand.analytics.plausible_script') }}"></script>
+    @endif
     @stack('head')
 </head>
 <body class="min-h-screen bg-ink text-cream antialiased">

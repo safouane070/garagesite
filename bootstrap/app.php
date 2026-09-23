@@ -16,6 +16,7 @@ return Application::configure(basePath: dirname(__DIR__))
             \App\Http\Middleware\CanonicalHost::class,
         ], append: [
             \App\Http\Middleware\SecurityHeaders::class,
+            \App\Http\Middleware\RememberLeadSource::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

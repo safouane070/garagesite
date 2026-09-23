@@ -17,6 +17,10 @@
                     <li>Lettertypen staan op onze eigen server; er gaan geen gegevens naar Google Fonts.</li>
                     <li>De kaart (Google Maps) en het lease-aanbod (FinancialLease.nl) laden pas nadat jij daarop klikt.</li>
                     <li>We tellen hoe vaak een auto bekeken wordt, zonder cookies en zonder je IP-adres op te slaan.</li>
+                    <li>Doe je een aanvraag, dan bewaren we daarbij via welke website je bij ons kwam (bv. Google of Marktplaats) en op welke pagina's, zodat we weten welke kanalen werken. Dit wordt samen met je aanvraag gewist.</li>
+                    @if (config('brand.analytics.plausible_domain'))
+                        <li>Bezoekersaantallen meten we met Plausible: zonder cookies, zonder persoonsgegevens en zonder je te volgen over andere websites.</li>
+                    @endif
                 </ul>
             </div>
             <a href="{{ asset('docs/privacybeleid.pdf') }}" target="_blank" rel="noopener" class="btn btn-primary">

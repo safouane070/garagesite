@@ -29,7 +29,7 @@ class Lead extends Model
     /** Onderwerpen waarbij een voorkeursdatum relevant is (afspraak-achtig). */
     public const DATE_TYPES = ['bezichtiging', 'proefrit'];
 
-    protected $fillable = ['car_id', 'type', 'name', 'email', 'phone', 'message', 'preferred_date'];
+    protected $fillable = ['car_id', 'type', 'name', 'email', 'phone', 'message', 'preferred_date', 'source', 'landing_page', 'form_page'];
 
     protected function casts(): array
     {

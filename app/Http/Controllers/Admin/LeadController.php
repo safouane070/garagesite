@@ -34,7 +34,11 @@ class LeadController extends Controller
         ];
         $counts['alle'] = $counts['open'] + $counts['afgehandeld'];
 
-        return view('admin.leads.index', compact('leads', 'tab', 'counts'));
+        $sources = Lead::where('created_at', '>=', now()->subDays(90))->whereNotNull('source')
+            ->selectRaw('source, count(*) as total')->groupBy('source')->orderByDesc('total')
+            ->pluck('total', 'source');
+
+        return view('admin.leads.index', compact('leads', 'tab', 'counts', 'sources'));
     }
 
     /** Afgehandeld ↔ open wisselen. */
