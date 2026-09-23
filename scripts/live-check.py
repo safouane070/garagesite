@@ -1,10 +1,12 @@
-"""Live browsercheck: publieke site + beheer, op desktop- en mobielformaat.
+"""Live browsercheck: publieke site + beheer, op desktop- en mobielformaat, in
+Chromium (Chrome/Edge) én WebKit (Safari; mobiel als iPhone met touch).
 
 Gebruik (met de site draaiend op LIVE_CHECK_URL, standaard http://localhost:8000):
 
     python scripts/live-check.py
 
-Vereist: `pip install playwright` en `playwright install chromium`. Inloggen
+Vereist: `pip install playwright` en `playwright install chromium webkit`
+(alleen Chromium: LIVE_CHECK_BROWSERS=chromium). Inloggen
 gebeurt met het seeder-account (of LIVE_CHECK_EMAIL / LIVE_CHECK_PASSWORD).
 
 Faalt (exit 1) bij: console-/CSP-fouten van onze eigen site, JavaScript-fouten,
@@ -20,7 +22,7 @@ from playwright.sync_api import sync_playwright
 BASE = os.environ.get("LIVE_CHECK_URL", "http://localhost:8000").rstrip("/")
 ADMIN = (os.environ.get("LIVE_CHECK_EMAIL", "admin@autobedrijfrijswijk.test"),
          os.environ.get("LIVE_CHECK_PASSWORD", "password"))
-VIEWPORTS = {"desktop": (1280, 800), "mobiel": (375, 812)}
+BROWSERS = os.environ.get("LIVE_CHECK_BROWSERS", "chromium,webkit").split(",")
 problems = []
 
 
@@ -53,15 +55,30 @@ def expect(cond, label, what):
         problems.append(f"[{label}] {what}")
 
 
-with sync_playwright() as p:
-    browser = p.chromium.launch()
+def contexts(p, engine):
+    """(label, context-opties) per formaat. WebKit-mobiel = een echte iPhone (touch, DPR 3, Safari-UA)."""
+    mobile = dict(p.devices["iPhone 13"]) if engine == "webkit" else {"viewport": {"width": 375, "height": 812}}
+    return [(f"{engine}-desktop", {"viewport": {"width": 1280, "height": 800}}), (f"{engine}-mobiel", mobile)]
 
-    for name, (w, h) in VIEWPORTS.items():
-        ctx = browser.new_context(viewport={"width": w, "height": h})
+
+with sync_playwright() as p:
+  for engine in BROWSERS:
+    browser = getattr(p, engine.strip()).launch()
+
+    for name, options in contexts(p, engine.strip()):
+        ctx = browser.new_context(**options)
         page = ctx.new_page()
+        w = page.viewport_size["width"]
         watch(page, name)
 
         # --- Publiek ---
+        # Hero-foto echt geladen (op een telefoon de staande uitsnede).
+        check_page(page, name, "/")
+        hero = page.eval_on_selector("section img[fetchpriority='high']", "i => ({ok: i.complete && i.naturalWidth > 0, src: i.currentSrc})")
+        expect(hero["ok"], name, f"hero-foto laadt niet ({hero['src']})")
+        if w < 768:
+            expect("portrait" in hero["src"], name, f"telefoon krijgt niet de staande hero ({hero['src']})")
+
         for path in ["/", "/aanbod", "/diensten", "/over-ons", "/privacybeleid",
                      "/contact?onderwerp=financiering"]:
             check_page(page, name, path)
@@ -112,6 +129,12 @@ with sync_playwright() as p:
         page.keyboard.press("Escape")
         page.wait_for_timeout(400)
         expect(not page.is_visible("[role=dialog]"), name, "lightbox sluit niet met Escape")
+        # Touch-gebruikers hebben geen Escape: de sluitknop moet werken.
+        page.click("button[aria-label=\"Foto's schermvullend bekijken\"]")
+        page.wait_for_timeout(400)
+        page.click("[role=dialog] button[aria-label*='luiten']")
+        page.wait_for_timeout(400)
+        expect(not page.is_visible("[role=dialog]"), name, "lightbox sluit niet met de sluitknop")
         expect(not page.evaluate("document.querySelector('main').inert"), name, "pagina blijft inert na sluiten")
 
         # Snelknop "Proefrit aanvragen" -> onderwerp proefrit, datumveld zichtbaar, focus in naamveld.
@@ -123,15 +146,25 @@ with sync_playwright() as p:
             focus: document.activeElement && document.activeElement.id,
         })""")
         expect(state == {"type": "proefrit", "dateVisible": True, "focus": "lead-name"}, name, f"proefrit-snelknop: {state}")
+        # Echt datumveld in de HTML (Safari op iPhone/Mac toont dan de eigen datumkiezer). Het
+        # attribuut, niet .type: WebKit voor Windows kent zelf geen datumveld (echte Safari wel).
+        expect(page.eval_on_selector("#lead-date", "e => e.getAttribute('type')") == "date", name, "datumveld is geen echt datumveld")
 
         # --- Beheer ---
         page.goto(BASE + "/login", wait_until="networkidle")
         page.fill("input[name=email]", ADMIN[0])
         page.fill("input[name=password]", ADMIN[1])
-        page.click("button[type=submit]")
-        page.wait_for_load_state("networkidle")
+        # Expliciet op de navigatie wachten: in WebKit is "networkidle" direct na de klik
+        # al waar vóórdat het formulier verstuurd is.
+        with page.expect_navigation(wait_until="networkidle"):
+            page.click("button[type=submit]")
         for path in ["/admin", "/admin/aanvragen", "/admin/aanvragen?tab=alle", "/profile"]:
             check_page(page, name, path)
+            if page.evaluate("matchMedia('(pointer: coarse)').matches"):
+                # iPhone: velden < 16px laten Safari inzoomen bij elke tik.
+                tiny = page.evaluate("""[...document.querySelectorAll('input:not([type=hidden]):not([type=checkbox]):not([type=radio]):not([type=file]), select, textarea')]
+                    .filter(e => e.getClientRects().length && parseFloat(getComputedStyle(e).fontSize) < 16).length""")
+                expect(tiny == 0, name, f"{path}: {tiny} velden < 16px (Safari zoomt in)")
         expect("Wachtwoord wijzigen" in page.content(), name, "profiel is niet Nederlands")
 
         # Bewerkpagina: fotovolgorde-knoppen, en te grote foto geblokkeerd vóór versturen.

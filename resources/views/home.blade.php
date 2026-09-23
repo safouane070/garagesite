@@ -1,11 +1,13 @@
 <x-layouts.public>
     {{-- ═══════════ HERO · echte showroomfoto met tekst eroverheen ═══════════ --}}
-    <section class="relative -mt-[4.5rem] flex min-h-[90vh] items-end overflow-hidden bg-ink pt-[4.5rem]">
+    <section class="relative -mt-[4.5rem] flex min-h-hero items-end overflow-hidden bg-ink pt-[4.5rem]">
         {{-- Echte foto van het wagenpark van de zaak --}}
         {{-- Staand scherm (telefoon): de middenuitsnede. object-cover toont daar toch alleen het
-             midden van de vierkante foto; zelfde beeld, ±40% minder bytes voor de grootste afbeelding. --}}
+             midden van de vierkante foto; zelfde beeld, ±35% minder bytes voor de grootste afbeelding.
+             5/8: een iPhone in Safari (390×664 zichtbaar, door de balken) valt er ruim onder; de
+             uitsnede (0,7) dekt de hero (breedte / 90% hoogte ≤ 0,69) zonder op te rekken. --}}
         <picture>
-            <source media="(max-aspect-ratio: 9/16)" srcset="{{ asset('images/hero-showroom-portrait.webp') }}" width="1000" height="1600">
+            <source media="(max-aspect-ratio: 5/8)" srcset="{{ asset('images/hero-showroom-portrait.webp') }}" width="1120" height="1600">
             <img src="{{ asset('images/hero-showroom.webp') }}" alt="Wagenpark van {{ config('app.name') }}"
                  width="1600" height="1600" fetchpriority="high" decoding="async"
                  class="absolute inset-0 h-full w-full object-cover object-center">
