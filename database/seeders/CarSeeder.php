@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Car;
+use App\Support\DealerSite;
 use App\Support\PlaceholderImage;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Http;
@@ -23,12 +24,6 @@ class CarSeeder extends Seeder
 {
     private const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120 Safari/537.36';
 
-    /** Bekende merknamen om "merk + model" netjes te splitsen. */
-    private const MAKES = [
-        'Mercedes-Benz', 'Alfa Romeo', 'Land Rover', 'Volkswagen', 'BMW', 'Audi',
-        'Volvo', 'Tesla', 'Cupra', 'Kia', 'Peugeot', 'Honda', 'SEAT', 'Škoda',
-        'Ford', 'Renault', 'Opel', 'Toyota', 'Nissan', 'Mazda', 'Hyundai', 'MINI',
-    ];
 
     public function run(): void
     {
@@ -243,7 +238,7 @@ class CarSeeder extends Seeder
     /** @return array{0:string,1:string} [merk, model] */
     private function splitBrand(string $full): array
     {
-        foreach (self::MAKES as $make) {
+        foreach (DealerSite::MAKES as $make) {
             if (Str::startsWith(Str::lower($full), Str::lower($make))) {
                 return [$make, trim(Str::substr($full, Str::length($make)))];
             }

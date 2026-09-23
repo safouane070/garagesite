@@ -59,6 +59,7 @@ class Car extends Model
         'slug', 'brand', 'model', 'variant', 'year', 'price', 'mileage',
         'fuel_type', 'transmission', 'color', 'body_type', 'description',
         'specs', 'options', 'status', 'is_featured',
+        'dealer_slug', 'dealer_modified_at',
     ];
 
     /**
@@ -71,6 +72,7 @@ class Car extends Model
         return [
             'specs' => 'array',
             'options' => 'array',
+            'dealer_modified_at' => 'datetime',
             'status' => CarStatus::class,
             'is_featured' => 'boolean',
             'year' => 'integer',
