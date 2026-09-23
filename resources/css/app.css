@@ -39,6 +39,15 @@
         display: none !important;
     }
 
+    /* iPhone/iPad: Safari zoomt in op elk veld kleiner dan 16px (en blijft ingezoomd).
+       Op touchschermen daarom minimaal 16px; !important omdat utilities als text-sm
+       anders winnen. Op desktop blijven de compacte maten. */
+    @media (pointer: coarse) {
+        input:not([type=checkbox]):not([type=radio]):not([type=range]), select, textarea {
+            font-size: 16px !important;
+        }
+    }
+
     /* Verberg het native search-kruisje; we tonen een eigen wis-knop. */
     input[type="search"]::-webkit-search-cancel-button {
         -webkit-appearance: none;
@@ -122,6 +131,14 @@
     .scroll-thin::-webkit-scrollbar { height: 6px; width: 6px; }
     .scroll-thin::-webkit-scrollbar-track { background: transparent; }
     .scroll-thin::-webkit-scrollbar-thumb { background: rgba(242, 238, 228, 0.18); border-radius: 9999px; }
+
+    /* Hero-hoogte. iOS Safari rekent vh zónder de werkbalken: 90vh valt dan onder de
+       balk en de knoppen onderin de hero verdwijnen. svh = het zichtbare deel; oudere
+       browsers zonder svh houden de vh-regel. */
+    .min-h-hero {
+        min-height: 90vh;
+        min-height: 90svh;
+    }
 }
 
 @layer components {
