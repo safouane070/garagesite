@@ -19,8 +19,6 @@ use RuntimeException;
  */
 class DealerSite
 {
-    public const BASE = 'https://autobedrijfrijswijk.nl';
-
     private const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120 Safari/537.36';
 
     /** Bekende merknamen (langste eerst) om "merk + model" uit een titel te halen. */
@@ -40,11 +38,17 @@ class DealerSite
      */
     public static function vehicles(): array
     {
+        // Zelfde domein als deze site = we zouden onszelf uitlezen (na livegang op
+        // het oude domein staat de WordPress-site daar niet meer).
+        if (parse_url(self::base(), PHP_URL_HOST) === parse_url(config('app.url'), PHP_URL_HOST)) {
+            throw new RuntimeException('DEALER_SITE_URL wijst naar deze site zelf; zet het adres van de WordPress-site of laat het leeg.');
+        }
+
         $out = [];
         $page = 1;
 
         do {
-            $resp = self::http()->get(self::BASE . '/wp-json/wp/v2/voertuig', [
+            $resp = self::http()->get(self::base() . '/wp-json/wp/v2/voertuig', [
                 'per_page' => 100,
                 'page' => $page,
                 '_fields' => 'slug,title,link,modified,featured_media',
@@ -71,6 +75,11 @@ class DealerSite
         return $out;
     }
 
+    public static function base(): string
+    {
+        return rtrim((string) config('brand.dealer_site_url'), '/');
+    }
+
     public static function page(string $url): ?string
     {
         $resp = self::http()->get($url);
@@ -83,7 +92,7 @@ class DealerSite
         if ($id <= 0) {
             return null;
         }
-        $resp = self::http()->get(self::BASE . "/wp-json/wp/v2/media/{$id}", ['_fields' => 'source_url']);
+        $resp = self::http()->get(self::base() . "/wp-json/wp/v2/media/{$id}", ['_fields' => 'source_url']);
 
         return $resp->ok() ? ($resp->json('source_url') ?: null) : null;
     }

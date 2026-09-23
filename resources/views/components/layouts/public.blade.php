@@ -225,7 +225,7 @@
         </div>
         <div class="border-t border-hairline">
             <div class="container-x flex flex-col items-center justify-between gap-3 py-5 text-center font-mono text-[0.7rem] uppercase tracking-wider text-cream/60 sm:flex-row sm:text-left">
-                <span>&copy; {{ date('Y') }} {{ config('app.name') }} · Alle rechten voorbehouden</span>
+                <span>&copy; {{ date('Y') }} {{ config('app.name') }} · Alle rechten voorbehouden{{ config('brand.company.kvk') ? ' · KvK ' . config('brand.company.kvk') : '' }}{{ config('brand.company.vat') ? ' · btw ' . config('brand.company.vat') : '' }}</span>
                 <span class="flex flex-wrap items-center justify-center gap-x-4 gap-y-1">
                     <a href="{{ route('voorwaarden') }}" class="transition hover:text-brass-300">Algemene voorwaarden</a>
                     <a href="{{ route('privacy') }}" class="transition hover:text-brass-300">Privacybeleid</a>

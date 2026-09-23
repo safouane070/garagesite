@@ -14,6 +14,7 @@ Schedule::command('reviews:fetch')->weekly()->sundays()->at('04:00');
 // Voorraad gelijk houden met de dealersite: nieuwe auto's erbij, verkochte eraf,
 // prijswijzigingen bijgewerkt. Stopt zelf bij een verdachte bron (zie SyncCars).
 Schedule::command('cars:sync')->dailyAt('06:00')->withoutOverlapping()
+    ->when(fn () => filled(config('brand.dealer_site_url')))
     ->onFailure(fn () => \App\Support\ErrorAlert::send(
         'Voorraad-sync mislukt',
         "cars:sync is gestopt zonder wijzigingen (dealersite onbereikbaar of verdacht veel auto's verdwenen).\n"
