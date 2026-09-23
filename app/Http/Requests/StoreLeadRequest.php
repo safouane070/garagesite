@@ -31,6 +31,15 @@ class StoreLeadRequest extends FormRequest
         ];
     }
 
+    /**
+     * Bij een fout terug naar het formulier zelf (#contact), niet naar de
+     * bovenkant van de pagina — anders ziet de bezoeker de melding niet.
+     */
+    protected function getRedirectUrl(): string
+    {
+        return url()->previous() . '#contact';
+    }
+
     public function attributes(): array
     {
         return [

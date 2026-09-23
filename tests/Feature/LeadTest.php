@@ -54,11 +54,42 @@ class LeadTest extends TestCase
         Mail::assertNothingSent();
     }
 
-    public function test_name_and_email_are_required(): void
+    public function test_name_and_email_are_required_with_dutch_messages(): void
     {
         $this->post(route('leads.store'), ['type' => 'vraag'])
-            ->assertSessionHasErrors(['name', 'email']);
+            ->assertSessionHasErrors([
+                'name' => 'Naam is verplicht.',
+                'email' => 'E-mailadres is verplicht.',
+            ]);
 
         $this->assertSame(0, Lead::count());
+    }
+
+    /** Wisselt de bezoeker na het kiezen van een datum van onderwerp, dan geen datum opslaan. */
+    public function test_preferred_date_is_dropped_for_non_appointment_types(): void
+    {
+        Mail::fake();
+
+        $this->post(route('leads.store'), [
+            'type' => 'vraag',
+            'name' => 'Jan',
+            'email' => 'jan@example.com',
+            'preferred_date' => now()->addDays(2)->toDateString(),
+        ])->assertRedirect();
+
+        $this->assertNull(Lead::first()->preferred_date);
+    }
+
+    /** De dealer moet de gevraagde afspraakdatum in de mail zien. */
+    public function test_mail_shows_the_preferred_date(): void
+    {
+        $lead = Lead::create([
+            'type' => 'proefrit',
+            'name' => 'Jan',
+            'email' => 'jan@example.com',
+            'preferred_date' => '2026-12-24',
+        ]);
+
+        (new LeadReceived($lead))->assertSeeInText('donderdag 24 december 2026');
     }
 }

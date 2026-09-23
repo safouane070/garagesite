@@ -28,6 +28,20 @@ class PublicPagesTest extends TestCase
         }
     }
 
+    /** Sitemap bevat de inhoudspagina's; robots.txt verwijst er absoluut naar. */
+    public function test_sitemap_lists_content_pages_and_robots_points_to_it(): void
+    {
+        $this->get(route('sitemap'))
+            ->assertOk()
+            ->assertSee(route('diensten'))
+            ->assertSee(route('contact'))
+            ->assertSee(route('privacy'));
+
+        $this->get('/robots.txt')
+            ->assertOk()
+            ->assertSee('Sitemap: ' . route('sitemap'));
+    }
+
     /** Verkochte auto's horen niet in het publieke aanbod. */
     public function test_sold_cars_are_excluded_from_the_catalogue(): void
     {

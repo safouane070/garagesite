@@ -13,9 +13,17 @@ class LeadController extends Controller
 {
     public function store(StoreLeadRequest $request): RedirectResponse
     {
-        $lead = Lead::create($request->safe()->only([
+        $data = $request->safe()->only([
             'car_id', 'type', 'name', 'email', 'phone', 'message', 'preferred_date',
-        ]));
+        ]);
+
+        // Een datum hoort alleen bij afspraak-onderwerpen. Wisselt de bezoeker na
+        // het kiezen van een datum naar bv. "Algemene vraag", dan negeren we 'm.
+        if (! in_array($data['type'], Lead::DATE_TYPES, true)) {
+            $data['preferred_date'] = null;
+        }
+
+        $lead = Lead::create($data);
 
         // De lead staat veilig in de database; mail is "best effort". Een
         // mailprobleem (SMTP onbereikbaar) mag de bevestiging niet blokkeren.
