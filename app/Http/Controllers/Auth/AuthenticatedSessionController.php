@@ -26,6 +26,19 @@ class AuthenticatedSessionController extends Controller
     {
         $request->authenticate();
 
+        // Tweestapsverificatie aan: wachtwoord klopt, maar pas inloggen na de code.
+        $user = Auth::user();
+        if ($user->hasTwoFactor()) {
+            Auth::guard('web')->logout();
+            $request->session()->regenerate();
+            $request->session()->put([
+                TwoFactorController::SESSION_USER => $user->id,
+                TwoFactorController::SESSION_REMEMBER => $request->boolean('remember'),
+            ]);
+
+            return redirect()->route('two-factor.challenge');
+        }
+
         $request->session()->regenerate();
 
         return redirect()->intended(route('dashboard', absolute: false));

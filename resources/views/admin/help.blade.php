@@ -46,6 +46,7 @@
                 'icon' => 'user', 'title' => 'Inloggen en wachtwoord',
                 'items' => [
                     'Wachtwoord wijzigen: Profiel. Kies een lang wachtwoord dat je nergens anders gebruikt.',
+                    'Extra veilig: zet onder Profiel de tweestapsverificatie aan (code uit een app op je telefoon). Print de herstelcodes en bewaar ze goed.',
                     'Wachtwoord kwijt? Op het inlogscherm “Wachtwoord vergeten”: je krijgt een link op ' . auth()->user()?->email . '.',
                 ],
             ],

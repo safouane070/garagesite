@@ -18,5 +18,11 @@
             </div>
         </div>
 
+        <div class="surface p-6 sm:p-8">
+            <div class="max-w-xl">
+                @include('profile.partials.two-factor-form')
+            </div>
+        </div>
+
     </div>
 </x-layouts.admin>
