@@ -10,6 +10,12 @@ daarna is het afvinken.
 - [ ] `APP_KEY` gezet (`php artisan key:generate` als die leeg is)
 - [ ] Database-gegevens (`DB_*`) van de productie-database ingevuld
 
+## 1b. PHP-instellingen (anders falen foto-uploads vanaf een telefoon)
+Bij Hostinger: hPanel → Geavanceerd → PHP-configuratie.
+- [ ] `upload_max_filesize` ≥ `16M` en `post_max_size` ≥ `64M` (telefoonfoto's zijn 5–10 MB)
+- [ ] `memory_limit` ≥ `256M` (verkleinen van grote foto's)
+- [ ] Extensies `gd` en `exif` aan (verkleinen + rechtop draaien; zonder `exif` wordt de foto ongewijzigd opgeslagen)
+
 ## 2. Mail (leads komen anders niet aan)
 - [ ] `MAIL_MAILER=smtp` + `MAIL_HOST` / `MAIL_PORT` / `MAIL_USERNAME` / `MAIL_PASSWORD` / `MAIL_ENCRYPTION`
 - [ ] `MAIL_FROM_ADDRESS` en `MAIL_FROM_NAME` ingevuld
@@ -39,10 +45,20 @@ php artisan view:cache
 ```
 > Let op: na élke `.env`- of config-wijziging opnieuw `config:cache` draaien.
 
+## 5b. Scheduler (cron) — anders verversen de reviews nooit
+`reviews:fetch` draait via Laravel's scheduler (wekelijks). Die doet niets zonder cron:
+- [ ] Cronjob elke minuut (bij Hostinger: hPanel → Geavanceerd → Cron Jobs):
+  ```
+  * * * * * cd /pad/naar/project && php artisan schedule:run >> /dev/null 2>&1
+  ```
+- [ ] Eenmalig handmatig: `php artisan reviews:fetch` (vult direct de review-cache)
+
 ## 6. Verifiëren (smoke test)
 - [ ] Homepage, /aanbod, een detailpagina, /contact, /diensten, /financial-lease laden (200)
 - [ ] Een auto toevoegen/bewerken in de admin werkt (login: seeder-account)
-- [ ] Contactformulier verstuurt én de mail komt aan
+- [ ] Contactformulier verstuurt én de mail komt aan, en de aanvraag staat in **/admin/aanvragen**
+- [ ] Een foto uploaden vanaf een telefoon lukt (wordt verkleind opgeslagen als `.webp`)
+- [ ] Een niet-bestaande URL (bv. `/aanbod/bestaat-niet`) toont de Nederlandse 404-pagina
 - [ ] Google-kaart op /contact toont de juiste locatie
 - [ ] Security headers aanwezig: `curl -I https://…` toont `Content-Security-Policy` + `X-Content-Type-Options`
 

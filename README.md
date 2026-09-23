@@ -22,13 +22,17 @@ Een complete autogarage-website gebouwd met **Laravel 13**, **MySQL/MariaDB**, *
 - **Financial lease**-pagina met de externe FinancialLease-rekenwidget (maandbedrag-indicatie)
 - **Contact**-pagina met formulier en Google Maps, plus `over-ons`, `volkswagen-specialist`, `privacybeleid` en `algemene-voorwaarden`
 - Aanvragen worden opgeslagen én naar de zaak gemaild (`Reply-To` = klant)
-- SEO: per-auto `Vehicle`- en site-brede `AutoDealer`-schema (JSON-LD), Open Graph, canonical, dynamische `sitemap.xml` en beveiligingsheaders (CSP e.a.)
+- SEO: per-auto `Vehicle`- en site-brede `AutoDealer`-schema (JSON-LD), Open Graph, canonical, dynamische `sitemap.xml` + `robots.txt` en beveiligingsheaders (CSP e.a.)
+- Volledig Nederlands: validatiemeldingen, e-mails, tijdzone (`Europe/Amsterdam`) en eigen foutpagina's (404, 413, 419, 429, 500, 503) met een weg terug
+- WhatsApp-knop die op een detailpagina opent met een vooraf ingevuld bericht over díe auto
 - Volledig responsive (mobiel / tablet / desktop) en toegankelijk (focus states, alt-teksten, skip-link, labels)
 
 **Admin** (`/admin`, na inloggen)
+- **Aanvragen-inbox** (`/admin/aanvragen`): open/afgehandeld, voorkeursdatum, auto, direct beantwoorden per mail of bellen; teller van open aanvragen in de navigatie
 - Dashboard met voorraadoverzicht en statistieken
 - Auto's toevoegen / bewerken / verwijderen (CRUD)
-- Meerdere foto's uploaden per auto, omslagfoto instellen, foto's verwijderen
+- Meerdere foto's uploaden per auto (ook grote telefoonfoto's: automatisch rechtgedraaid, verkleind tot max. 2000 px en als WebP opgeslagen), omslagfoto instellen, foto's verwijderen
+- Waarschuwing vóór het versturen als foto's te groot zijn (limieten komen live uit de PHP-configuratie)
 - Uitrusting/opties per auto aanvinken uit een bestaande lijst
 - Snelle statuswijziging (beschikbaar / gereserveerd / verkocht)
 
@@ -40,6 +44,7 @@ Een complete autogarage-website gebouwd met **Laravel 13**, **MySQL/MariaDB**, *
 - **Composer**
 - **Node.js 18+** en npm
 - **MySQL of MariaDB** (bv. via XAMPP)
+- PHP-extensies `gd` en `exif`, en `upload_max_filesize` ≥ 16M / `post_max_size` ≥ 64M voor foto-uploads (zie [DEPLOY.md](DEPLOY.md))
 
 > **Let op (XAMPP):** de PHP die met oudere XAMPP-versies meekomt kan te oud zijn (Laravel 13 vereist PHP 8.2+). Op deze machine draait een losse PHP 8.3 in `C:\php83`. Vervang in de commando's hieronder `php` desnoods door het volledige pad, bv. `C:\php83\php.exe`.
 
@@ -116,14 +121,16 @@ Publieke registratie is bewust uitgeschakeld — extra accounts maak je via de s
 app/
   Enums/CarStatus.php            # Statussen + labels/kleuren op één plek
   Models/                        # Car, CarImage, Lead, User (relaties, scopes)
-  Http/Controllers/              # Publiek (Home, Car, Lead, Sitemap) + Admin\CarController
+  Http/Controllers/              # Publiek (Home, Car, Lead, Sitemap) + Admin\CarController, Admin\LeadController
   Http/Requests/                 # CarRequest + StoreLeadRequest (validatie)
   Http/Middleware/SecurityHeaders.php  # CSP en overige beveiligingsheaders
   Mail/LeadReceived.php          # Aanvraag-mail naar de zaak
   Support/DealerListing.php      # Parser voor de Marktplaats-listings
   Support/Reviews.php            # Google-reviews inlezen (config-gedreven)
   Support/PlaceholderImage.php   # SVG-vangnet voor foto's
+  Support/ImageOptimizer.php     # Uploads rechtdraaien (EXIF), verkleinen, WebP
 config/brand.php                 # Één bron voor contact, reviews, lease-feed, huisstijl
+lang/nl/, lang/nl.json           # Nederlandse validatie-, login- en profielteksten
 database/
   migrations/                    # cars, car_images, leads (+ options, preferred_date)
   seeders/CarSeeder.php          # ~85 echte occasions van de dealer + foto's
@@ -132,7 +139,8 @@ resources/views/
   components/                    # car-card, status-badge, icon (Lucide), lead-form, layouts, brand-mark
   home.blade.php, cars/          # Publieke etalage
   pages/                         # diensten, financial-lease, contact, over-ons, vw-specialist, privacy, voorwaarden
-  admin/cars/                    # Dashboard + formulieren
+  admin/cars/, admin/leads/      # Voorraad + formulieren, aanvragen-inbox
+  errors/                        # Nederlandse foutpagina's (404, 413, 419, 429, 500, 503)
 ```
 
 ## Ontwerpkeuzes
