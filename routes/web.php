@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\CarController as AdminCarController;
 use App\Http\Controllers\Admin\LeadController as AdminLeadController;
+use App\Http\Controllers\Auth\TwoFactorController;
 use App\Http\Controllers\CarController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\LeadController;
@@ -78,6 +79,12 @@ Route::middleware('auth')->group(function () {
     // Profielbeheer (van Breeze).
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+
+    // Tweestapsverificatie instellen (Profiel).
+    Route::post('/profile/two-factor', [TwoFactorController::class, 'enable'])->name('two-factor.enable');
+    Route::post('/profile/two-factor/confirm', [TwoFactorController::class, 'confirm'])->middleware('throttle:10,1')->name('two-factor.confirm');
+    Route::post('/profile/two-factor/recovery-codes', [TwoFactorController::class, 'recoveryCodes'])->name('two-factor.recovery-codes');
+    Route::delete('/profile/two-factor', [TwoFactorController::class, 'disable'])->name('two-factor.disable');
 });
 
 require __DIR__.'/auth.php';

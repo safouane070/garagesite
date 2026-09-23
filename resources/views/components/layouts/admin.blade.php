@@ -67,6 +67,7 @@
             'profile-updated' => 'Je profiel is opgeslagen.',
             'password-updated' => 'Je wachtwoord is gewijzigd.',
             'verification-link-sent' => 'Er is een nieuwe verificatielink verstuurd.',
+            'two-factor-disabled' => 'Tweestapsverificatie staat uit.',
             default => session('status'),
         };
     @endphp
