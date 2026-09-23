@@ -1,6 +1,10 @@
 @php
     $isEdit = $car->exists;
     $action = $isEdit ? route('admin.cars.update', $car) : route('admin.cars.store');
+    // Echte serverlimieten (verschillen per hosting), zodat de upload vóór het
+    // versturen al kan waarschuwen i.p.v. een foutpagina na het versturen.
+    $maxFileBytes = min(12 * 1024 * 1024, ini_parse_quantity(ini_get('upload_max_filesize')));
+    $maxPostBytes = ini_parse_quantity(ini_get('post_max_size'));
 @endphp
 
 {{-- Validatie-samenvatting --}}
@@ -10,7 +14,9 @@
     </div>
 @endif
 
-<form method="POST" action="{{ $action }}" enctype="multipart/form-data" class="grid gap-8 lg:grid-cols-12">
+<form method="POST" action="{{ $action }}" enctype="multipart/form-data" class="grid gap-8 lg:grid-cols-12"
+      x-data="{ uploadProblem: '' }"
+      @submit="if (uploadProblem) { $event.preventDefault(); document.getElementById('photo-upload').scrollIntoView({ behavior: 'smooth', block: 'center' }); }">
     @csrf
     @if ($isEdit) @method('PATCH') @endif
 
@@ -73,7 +79,7 @@
                                     <option value="{{ $opt }}" @selected($s['value'] === $opt)>{{ $opt }}</option>
                                 @endforeach
                             </select>
-                            <x-icon name="chevron-down" class="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-cream/40" />
+                            <x-icon name="chevron-down" class="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-cream/65" />
                         </div>
                         @error($s['name']) <p class="field-hint text-rose-300">{{ $message }}</p> @enderror
                     </div>
@@ -138,7 +144,7 @@
 
             {{-- Zoeken --}}
             <div class="relative mt-4">
-                <x-icon name="search" class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-cream/40" />
+                <x-icon name="search" class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-cream/65" />
                 <input type="text" x-model="q" placeholder="Zoek een optie…" aria-label="Zoek een optie"
                        class="field-input pl-9" @keydown.enter.prevent>
             </div>
@@ -174,23 +180,49 @@
         {{-- Foto's uploaden --}}
         <section class="surface p-6">
             <h2 class="font-display text-lg font-semibold text-cream">Foto's toevoegen</h2>
-            <div class="mt-4" x-data="{ files: [] }">
+            <div class="mt-4" id="photo-upload"
+                 x-data="{
+                    files: [],
+                    maxFile: {{ $maxFileBytes }},
+                    maxPost: {{ $maxPostBytes }},
+                    pick(list) { this.files = Array.from(list).map(f => ({ name: f.name, size: f.size, url: URL.createObjectURL(f) })); },
+                    mb(b) { return (b / 1048576).toLocaleString('nl-NL', { maximumFractionDigits: 1 }) + ' MB'; },
+                    get total() { return this.files.reduce((sum, f) => sum + f.size, 0); },
+                    get problem() {
+                        const big = this.files.filter(f => f.size > this.maxFile);
+                        if (big.length) return `${big.length === 1 ? 'Eén foto is' : big.length + ' foto’s zijn'} te groot (max ${this.mb(this.maxFile)} per foto).`;
+                        if (this.files.length > 12) return 'Maximaal 12 foto’s per keer. Upload de rest daarna.';
+                        if (this.total > this.maxPost * 0.95) return `Samen ${this.mb(this.total)}: te veel in één keer (max ${this.mb(this.maxPost)}). Upload ze in twee keer.`;
+                        return '';
+                    },
+                 }"
+                 x-effect="uploadProblem = problem">
                 <label @dragover.prevent @drop.prevent="$refs.input.files = $event.dataTransfer.files; $refs.input.dispatchEvent(new Event('change'))"
                        class="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-[4px] border border-dashed border-hairline bg-graphite-800 px-6 py-10 text-center transition hover:border-brass-500/50">
-                    <x-icon name="image" class="h-8 w-8 text-cream/40" />
+                    <x-icon name="image" class="h-8 w-8 text-cream/65" />
                     <span class="text-sm text-cream/70">Sleep foto's hierheen of <span class="text-brass-300">blader</span></span>
-                    <span class="font-mono text-[0.7rem] uppercase tracking-wider text-cream/70">JPG, PNG of WebP · max 4MB</span>
+                    <span class="font-mono text-[0.7rem] uppercase tracking-wider text-cream/70">
+                        JPG, PNG of WebP · max {{ round($maxFileBytes / 1048576) }} MB per foto · wordt automatisch verkleind
+                    </span>
                     <input x-ref="input" type="file" name="images[]" multiple accept="image/jpeg,image/png,image/webp" class="sr-only"
-                           @change="files = Array.from($event.target.files).map(f => ({ name: f.name, url: URL.createObjectURL(f) }))">
+                           @change="pick($event.target.files)">
                 </label>
+
+                <p x-show="problem" x-cloak x-text="problem" role="alert"
+                   class="mt-3 rounded-[3px] border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-sm text-rose-200"></p>
 
                 <div x-show="files.length" x-cloak class="mt-4 grid grid-cols-3 gap-3 sm:grid-cols-4">
                     <template x-for="(f, idx) in files" :key="idx">
-                        <div class="aspect-[4/3] overflow-hidden rounded-[3px] border border-hairline">
-                            <img :src="f.url" alt="" class="h-full w-full object-cover">
-                        </div>
+                        <figure class="overflow-hidden rounded-[3px] border"
+                                :class="f.size > maxFile ? 'border-rose-500' : 'border-hairline'">
+                            <img :src="f.url" alt="" class="aspect-[4/3] h-auto w-full object-cover">
+                            <figcaption class="truncate px-2 py-1 font-mono text-[0.65rem]"
+                                        :class="f.size > maxFile ? 'text-rose-300' : 'text-cream/65'"
+                                        x-text="mb(f.size)"></figcaption>
+                        </figure>
                     </template>
                 </div>
+                @error('images') <p class="field-hint text-rose-300">{{ $message }}</p> @enderror
                 @error('images.*') <p class="field-hint text-rose-300">{{ $message }}</p> @enderror
             </div>
         </section>
@@ -209,7 +241,7 @@
                             <option value="{{ $status->value }}" @selected(old('status', $car->status?->value ?? 'available') === $status->value)>{{ $status->label() }}</option>
                         @endforeach
                     </select>
-                    <x-icon name="chevron-down" class="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-cream/40" />
+                    <x-icon name="chevron-down" class="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-cream/65" />
                 </div>
             </div>
 
@@ -246,11 +278,12 @@
                     @if ($image->is_primary)
                         <span class="absolute left-2 top-2 rounded-[3px] bg-brass-500 px-2 py-0.5 font-mono text-[0.65rem] uppercase tracking-wider text-cream">Omslag</span>
                     @endif
-                    <div class="absolute inset-x-0 bottom-0 flex items-center justify-between gap-2 bg-ink/80 p-2 opacity-0 backdrop-blur-sm transition group-hover:opacity-100">
+                    {{-- Altijd zichtbaar: hover bestaat niet op telefoon/tablet --}}
+                    <div class="flex items-center justify-between gap-2 border-t border-hairline bg-graphite-800 px-2 py-1.5">
                         @unless ($image->is_primary)
                             <form method="POST" action="{{ route('admin.cars.images.primary', [$car, $image]) }}">
                                 @csrf @method('PATCH')
-                                <button type="submit" class="font-mono text-[0.65rem] uppercase tracking-wider text-brass-300 hover:text-brass-200">Als omslag</button>
+                                <button type="submit" class="py-1 font-mono text-[0.65rem] uppercase tracking-wider text-brass-300 hover:text-brass-200">Als omslag</button>
                             </form>
                         @else
                             <span></span>
@@ -258,7 +291,7 @@
                         <form method="POST" action="{{ route('admin.cars.images.destroy', [$car, $image]) }}"
                               onsubmit="return confirm('Deze foto verwijderen?');">
                             @csrf @method('DELETE')
-                            <button type="submit" class="text-rose-300 hover:text-rose-200"><x-icon name="trash" class="h-4 w-4" /></button>
+                            <button type="submit" aria-label="Foto {{ $loop->iteration }} verwijderen" class="rounded-[3px] p-1.5 text-rose-300 hover:bg-rose-500/10 hover:text-rose-200"><x-icon name="trash" class="h-4 w-4" /></button>
                         </form>
                     </div>
                 </div>

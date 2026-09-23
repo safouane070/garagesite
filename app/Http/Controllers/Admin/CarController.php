@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\CarRequest;
 use App\Models\Car;
 use App\Models\CarImage;
+use App\Support\ImageOptimizer;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -170,7 +171,8 @@ class CarController extends Controller
         $order = (int) $car->images()->max('sort_order');
 
         foreach ($request->file('images') as $file) {
-            $path = $file->store("cars/{$car->slug}", 'public');
+            // Verkleind + rechtgedraaid opslaan (zie ImageOptimizer).
+            $path = ImageOptimizer::store($file, "cars/{$car->slug}");
 
             $car->images()->create([
                 'path' => $path,
