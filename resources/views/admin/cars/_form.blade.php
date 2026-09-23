@@ -150,7 +150,7 @@
             </div>
 
             {{-- Aanvink-lijst --}}
-            <div class="mt-4 max-h-80 overflow-y-auto rounded-[4px] border border-hairline bg-graphite-800 p-2 [scrollbar-width:thin]">
+            <div class="mt-4 max-h-80 scroll-thin overflow-y-auto rounded-[4px] border border-hairline bg-graphite-800 p-2">
                 <div class="grid gap-x-4 sm:grid-cols-2">
                     <template x-for="opt in filtered" :key="opt">
                         <label class="flex cursor-pointer items-center gap-2.5 rounded-[3px] px-2 py-1.5 text-sm text-cream/85 transition hover:bg-graphite-700">

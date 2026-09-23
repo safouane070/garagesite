@@ -99,7 +99,7 @@
             </a>
         </div>
 
-        <div class="mt-10 flex snap-x snap-mandatory gap-6 overflow-x-auto px-5 pb-4 sm:px-8 [scrollbar-width:thin]">
+        <div class="mt-10 flex snap-x snap-mandatory gap-6 scroll-thin overflow-x-auto px-5 pb-4 sm:px-8">
             @foreach ($newest as $car)
                 <div class="w-[280px] shrink-0 snap-start sm:w-[330px]">
                     <x-car-card :car="$car" />
