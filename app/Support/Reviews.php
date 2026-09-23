@@ -32,4 +32,27 @@ class Reviews
 
         return config('brand.testimonials', []);
     }
+
+    public const SUMMARY = 'reviews-summary.json';
+
+    /**
+     * Google-score en aantal reviews: de laatst opgehaalde stand, anders de
+     * vaste waarden uit config/brand.php.
+     *
+     * @return array{rating:float,count:int}
+     */
+    public static function summary(): array
+    {
+        $fallback = ['rating' => (float) config('brand.reviews.rating'), 'count' => (int) config('brand.reviews.count')];
+
+        try {
+            $data = Storage::exists(self::SUMMARY) ? json_decode((string) Storage::get(self::SUMMARY), true) : null;
+        } catch (\Throwable $e) {
+            $data = null;
+        }
+
+        return isset($data['rating'], $data['count']) && $data['count'] > 0
+            ? ['rating' => (float) $data['rating'], 'count' => (int) $data['count']]
+            : $fallback;
+    }
 }

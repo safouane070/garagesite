@@ -80,9 +80,24 @@ class DealerSite
         return rtrim((string) config('brand.dealer_site_url'), '/');
     }
 
+    /**
+     * WordPress geeft absolute links terug met z'n eigen site-adres. Staat dat nog
+     * op het domein dat deze site inmiddels heeft overgenomen, dan zouden we onszelf
+     * ophalen: zulke links gaan naar de echte bron (DEALER_SITE_URL).
+     */
+    private static function onDealer(string $url): string
+    {
+        $parts = parse_url($url);
+        if (($parts['host'] ?? null) !== parse_url(config('app.url'), PHP_URL_HOST)) {
+            return $url;
+        }
+
+        return self::base() . ($parts['path'] ?? '/') . (isset($parts['query']) ? '?' . $parts['query'] : '');
+    }
+
     public static function page(string $url): ?string
     {
-        $resp = self::http()->get($url);
+        $resp = self::http()->get(self::onDealer($url));
 
         return $resp->ok() ? $resp->body() : null;
     }
@@ -99,7 +114,7 @@ class DealerSite
 
     public static function download(string $url): ?string
     {
-        $resp = self::http()->timeout(40)->get($url);
+        $resp = self::http()->timeout(40)->get(self::onDealer($url));
 
         return $resp->ok() ? $resp->body() : null;
     }

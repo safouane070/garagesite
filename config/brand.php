@@ -107,10 +107,13 @@ return [
     ],
 
     // Wettelijk verplicht op de website van een bedrijf (Handelsregisterwet):
-    // KvK-nummer, en btw-nummer als het bedrijf btw-plichtig is. Staat in de footer zodra ingevuld.
+    // KvK-nummer en btw-nummer, in de footer. Geverifieerd op 2026-09-23: KvK via
+    // het BOVAG-ledenregister, btw via EU VIES (op naam + adres van de zaak).
+    // (De oude site toont het btw-nummer ten onrechte als "KvK".)
     'company' => [
-        'kvk' => env('BRAND_KVK'),
-        'vat' => env('BRAND_VAT'),
+        'legal_name' => env('BRAND_LEGAL_NAME', 'BS Rijswijk Automotive B.V.'),
+        'kvk'        => env('BRAND_KVK', '95760733'),
+        'vat'        => env('BRAND_VAT', 'NL867282368B01'),
     ],
 
     // Bron voor `cars:sync`: de WordPress-site waar de voorraad nu op staat.

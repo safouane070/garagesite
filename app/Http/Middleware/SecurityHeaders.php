@@ -40,6 +40,15 @@ class SecurityHeaders
         ]);
         $response->headers->set('Content-Security-Policy', $csp);
 
+        if ($request->isSecure()) {
+            $response->headers->set('Strict-Transport-Security', 'max-age=31536000');
+        }
+
+        // Test-/stagingomgeving mag nooit in Google belanden (dubbele content met de echte site).
+        if (! app()->isProduction()) {
+            $response->headers->set('X-Robots-Tag', 'noindex, nofollow');
+        }
+
         return $response;
     }
 }

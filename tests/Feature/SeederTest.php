@@ -19,7 +19,7 @@ class SeederTest extends TestCase
 
         $this->artisan('db:seed', ['--force' => true])->assertSuccessful(); // zoals in DEPLOY.md
 
-        $admin = User::firstWhere('email', 'admin@autobedrijfrijswijk.test');
+        $admin = User::firstWhere('email', config('brand.contact.email')); // echt adres: wachtwoord-reset werkt
         $this->assertNotNull($admin);
         $this->assertFalse(Hash::check('password', $admin->password));
         $this->assertSame(0, Car::count());

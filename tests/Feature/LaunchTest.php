@@ -36,12 +36,27 @@ class LaunchTest extends TestCase
         }
     }
 
-    public function test_footer_shows_kvk_and_vat_once_filled_in(): void
+    /** www (CNAME naar dezelfde server) → één canoniek adres, pad en query blijven behouden. */
+    public function test_www_redirects_to_the_canonical_host_in_production(): void
     {
-        $this->get('/')->assertDontSee('KvK');
+        config(['app.url' => 'https://autobedrijfrijswijk.nl']);
+        $this->app['env'] = 'production';
 
-        config(['brand.company.kvk' => '12345678', 'brand.company.vat' => 'NL001234567B01']);
-        $this->get('/')->assertSee('· KvK 12345678 · btw NL001234567B01')->assertDontSee('@if');
+        $this->get('http://www.autobedrijfrijswijk.nl/aanbod?merk=audi')
+            ->assertStatus(301)->assertRedirect('https://autobedrijfrijswijk.nl/aanbod?merk=audi');
+        $this->get('https://autobedrijfrijswijk.nl/contact')->assertOk();
+    }
+
+    /** Wettelijk verplicht: juridische naam, KvK en btw in de footer en in de bedrijfsgegevens voor Google. */
+    public function test_footer_and_structured_data_show_company_registration(): void
+    {
+        $this->get('/')
+            ->assertSee('BS Rijswijk Automotive B.V. · Alle rechten voorbehouden · KvK 95760733 · btw NL867282368B01')
+            ->assertSee('"vatID":"NL867282368B01"', false)
+            ->assertSee('"streetAddress":"Poldermeesterstraat 16","postalCode":"2288 GV"', false);
+
+        config(['brand.company.kvk' => null, 'brand.company.vat' => null]);
+        $this->get('/')->assertDontSee('KvK')->assertDontSee('btw N');
     }
 
     /** Op het eigen domein zou de sync zichzelf uitlezen: hij moet weigeren zonder iets te wijzigen. */

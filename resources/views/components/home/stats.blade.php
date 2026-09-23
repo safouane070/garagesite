@@ -2,7 +2,7 @@
     // Uitsluitend echte, uit de data afgeleide cijfers — niets verzonnen.
     // Zelfde telling als de aanbodpagina: alles wat niet verkocht is.
     $available = \App\Models\Car::where('status', '!=', \App\Enums\CarStatus::Sold->value)->count();
-    $reviews = (int) config('brand.reviews.count');
+    $reviews = \App\Support\Reviews::summary()['count'];
     $warranty = (int) config('brand.trust.warranty_months');
 
     $tiles = [
