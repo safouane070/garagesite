@@ -124,6 +124,12 @@ class Car extends Model
             ->orderBy('sort_order');
     }
 
+    /** Aanvragen die over deze auto gingen. */
+    public function leads(): HasMany
+    {
+        return $this->hasMany(Lead::class);
+    }
+
     /** De omslagfoto: de primaire foto, anders de eerste. */
     public function primaryImage(): HasOne
     {

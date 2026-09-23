@@ -115,13 +115,3 @@
         @endif
     </div>
 </section>
-
-@once
-    <script>
-        document.addEventListener('alpine:init', () => {
-            if (! Alpine.store('lead')) {
-                Alpine.store('lead', { type: 'vraag' });
-            }
-        });
-    </script>
-@endonce

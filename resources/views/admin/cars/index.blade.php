@@ -41,6 +41,25 @@
         </a>
     @endif
 
+    {{-- Inzicht: wat trekt de meeste aandacht --}}
+    @if ($popular->isNotEmpty() && $popular->first()->views > 0)
+        <section class="mt-6 rounded-[4px] border border-hairline">
+            <h2 class="border-b border-hairline px-4 py-3 font-mono text-[0.7rem] uppercase tracking-wider text-cream/65">Meest bekeken</h2>
+            <ol class="divide-y divide-hairline">
+                @foreach ($popular as $p)
+                    <li class="flex items-center justify-between gap-4 px-4 py-2.5 text-sm">
+                        <a href="{{ route('admin.cars.edit', $p) }}" class="min-w-0 truncate text-cream hover:text-brass-300">
+                            <span class="mr-2 font-mono text-xs text-cream/50">{{ $loop->iteration }}.</span>{{ $p->title() }}
+                        </a>
+                        <span class="shrink-0 font-mono text-xs text-cream/70 tabular">
+                            {{ number_format($p->views, 0, ',', '.') }} × bekeken · {{ $p->leads_count }} {{ $p->leads_count === 1 ? 'aanvraag' : 'aanvragen' }}
+                        </span>
+                    </li>
+                @endforeach
+            </ol>
+        </section>
+    @endif
+
     {{-- Voorraad + filter --}}
     @if ($cars->isEmpty())
         <div class="mt-8 flex flex-col items-center justify-center rounded-[4px] border border-hairline px-6 py-20 text-center">
@@ -100,13 +119,15 @@
 
             {{-- Tabel --}}
             <div class="overflow-x-auto" x-show="matched > 0">
-                <table class="w-full min-w-[720px] text-left">
+                <table class="w-full min-w-[880px] text-left">
                     <thead>
                         <tr class="border-b border-hairline bg-graphite-800 font-mono text-[0.7rem] uppercase tracking-wider text-cream/65">
                             <th class="px-4 py-3 font-medium">Auto</th>
                             <th class="px-4 py-3 font-medium">Bouwjaar</th>
                             <th class="px-4 py-3 font-medium">Prijs</th>
                             <th class="px-4 py-3 font-medium">Status</th>
+                            <th class="px-4 py-3 text-right font-medium" title="Weergaven van de detailpagina">Bekeken</th>
+                            <th class="px-4 py-3 text-right font-medium">Aanvragen</th>
                             <th class="px-4 py-3 text-right font-medium">Acties</th>
                         </tr>
                     </thead>
@@ -120,7 +141,7 @@
                                     <div class="flex items-center gap-3">
                                         <div class="h-12 w-16 shrink-0 overflow-hidden rounded-[3px] border border-hairline bg-graphite-800">
                                             @if ($car->primaryImage)
-                                                <img src="{{ $car->primaryImage->url() }}" alt="" class="h-full w-full object-cover">
+                                                <img src="{{ $car->primaryImage->thumbUrl() }}" alt="" loading="lazy" class="h-full w-full object-cover">
                                             @else
                                                 <div class="flex h-full w-full items-center justify-center text-cream/25"><x-icon name="car" class="h-5 w-5" /></div>
                                             @endif
@@ -149,6 +170,9 @@
                                         </div>
                                     </form>
                                 </td>
+
+                                <td class="px-4 py-3 text-right font-mono text-sm text-cream/75 tabular">{{ number_format($car->views, 0, ',', '.') }}</td>
+                                <td class="px-4 py-3 text-right font-mono text-sm tabular {{ $car->leads_count ? 'text-brass-300' : 'text-cream/40' }}">{{ $car->leads_count }}</td>
 
                                 {{-- Acties --}}
                                 <td class="px-4 py-3">
