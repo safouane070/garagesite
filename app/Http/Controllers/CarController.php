@@ -5,10 +5,14 @@ namespace App\Http\Controllers;
 use App\Enums\CarStatus;
 use App\Models\Car;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 class CarController extends Controller
 {
+    /** Crawlers en link-previews (WhatsApp, Facebook, …) zijn geen bezoekers. */
+    private const BOTS = '/bot|crawl|spider|slurp|preview|facebookexternalhit|whatsapp|curl|wget|python|headless/i';
+
     /**
      * Overzichtspagina. We laden de volledige collectie en filteren/sorteren
      * client-side met Alpine — instant, zonder page reload. De initiële
@@ -59,9 +63,16 @@ class CarController extends Controller
     }
 
     /** Detailpagina met alle specs en de foto-carousel. */
-    public function show(Car $car): View
+    public function show(Request $request, Car $car): View
     {
         $car->load('images');
+
+        // Weergave tellen: zonder cookies of IP-adres. Bots en de ingelogde
+        // beheerder tellen niet mee. Buiten Eloquent om, zodat updated_at (en
+        // daarmee de sitemap) niet bij elke weergave verandert.
+        if (! $request->user() && ! preg_match(self::BOTS, (string) $request->userAgent())) {
+            DB::table('cars')->where('id', $car->id)->increment('views');
+        }
 
         // Vergelijkbare auto's: zelfde merk of carrosserie, exclusief deze.
         $related = Car::available()
