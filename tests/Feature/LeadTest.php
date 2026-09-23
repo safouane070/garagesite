@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Mail\LeadConfirmation;
 use App\Mail\LeadReceived;
 use App\Models\Car;
 use App\Models\Lead;
@@ -36,7 +37,10 @@ class LeadTest extends TestCase
             'email' => 'jan@example.com',
         ]);
 
-        Mail::assertSent(LeadReceived::class);
+        // Beide mails via de wachtrij (niet tijdens het versturen van het formulier).
+        Mail::assertQueued(LeadReceived::class, fn ($m) => $m->hasTo(config('brand.contact.email')));
+        Mail::assertQueued(LeadConfirmation::class, fn ($m) => $m->hasTo('jan@example.com'));
+        Mail::assertNothingSent();
     }
 
     public function test_honeypot_blocks_bots_and_stores_nothing(): void
@@ -51,7 +55,7 @@ class LeadTest extends TestCase
         ])->assertSessionHasErrors('website');
 
         $this->assertSame(0, Lead::count());
-        Mail::assertNothingSent();
+        Mail::assertNothingOutgoing();
     }
 
     public function test_name_and_email_are_required_with_dutch_messages(): void
@@ -91,5 +95,36 @@ class LeadTest extends TestCase
         ]);
 
         (new LeadReceived($lead))->assertSeeInText('donderdag 24 december 2026');
+    }
+
+    /** De klant krijgt een bevestiging met wat hij aanvroeg; antwoorden gaan naar de zaak. */
+    public function test_customer_confirmation_mentions_request_and_replies_go_to_the_dealer(): void
+    {
+        $car = Car::factory()->create(['status' => 'available']);
+        $lead = Lead::create([
+            'car_id' => $car->id, 'type' => 'proefrit', 'name' => "Els O'Brien",
+            'email' => 'els@example.com', 'preferred_date' => '2026-12-24',
+        ]);
+
+        $mail = new LeadConfirmation($lead);
+        $mail->assertSeeInText("Hallo Els O'Brien");
+        $mail->assertSeeInText('Proefrit aanvragen');
+        $mail->assertSeeInText($car->title());
+        $mail->assertSeeInText('donderdag 24 december 2026');
+        $mail->assertSeeInText('om de afspraak te bevestigen');
+        $mail->assertDontSeeInText('@if');
+        $mail->assertHasReplyTo(config('brand.contact.email'));
+    }
+
+    /** Hapert zelfs het inplannen, dan ziet de bezoeker tóch de bevestiging en staat de lead vast. */
+    public function test_queue_failure_does_not_block_the_visitor(): void
+    {
+        Mail::shouldReceive('to')->andThrow(new \RuntimeException('wachtrij onbereikbaar'));
+
+        $this->post(route('leads.store'), ['type' => 'vraag', 'name' => 'Jan', 'email' => 'jan@example.com'])
+            ->assertRedirect()
+            ->assertSessionHas('lead_sent', true);
+
+        $this->assertSame(1, Lead::count());
     }
 }
