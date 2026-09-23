@@ -43,11 +43,11 @@ export default {
             },
             fontFamily: {
                 // Display: koppen, prijzen, het merkembleem.
-                display: ['"Space Grotesk"', ...defaultTheme.fontFamily.sans],
+                display: ['"Space Grotesk Variable"', '"Space Grotesk"', ...defaultTheme.fontFamily.sans],
                 // UI/lopende tekst.
-                sans: ['Inter', ...defaultTheme.fontFamily.sans],
+                sans: ['"Inter Variable"', 'Inter', ...defaultTheme.fontFamily.sans],
                 // Mono: technische spec-labels — geeft het "spec sheet"-karakter.
-                mono: ['"JetBrains Mono"', ...defaultTheme.fontFamily.mono],
+                mono: ['"JetBrains Mono Variable"', '"JetBrains Mono"', ...defaultTheme.fontFamily.mono],
             },
             boxShadow: {
                 // Diepe kaartschaduw, afgestemd op een donker canvas.

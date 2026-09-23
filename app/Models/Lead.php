@@ -4,10 +4,18 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\MassPrunable;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Lead extends Model
 {
+    use MassPrunable;
+
+    /** Bewaartermijn (AVG): na afhandeling, en in elk geval na aanmaak. */
+    public const KEEP_HANDLED_MONTHS = 12;
+
+    public const KEEP_MAX_MONTHS = 24;
+
     /** Onderwerpen die de bezoeker in het formulier kan kiezen. */
     public const TYPES = [
         'vraag'        => 'Algemene vraag',
@@ -56,5 +64,17 @@ class Lead extends Model
     public function isHandled(): bool
     {
         return $this->handled_at !== null;
+    }
+
+    /**
+     * Wat `model:prune` (dagelijks ingepland) wist: afgehandelde aanvragen na
+     * 12 maanden, en álle aanvragen na 24 maanden — persoonsgegevens niet
+     * langer bewaren dan nodig (AVG).
+     */
+    public function prunable(): Builder
+    {
+        return static::query()
+            ->where('handled_at', '<', now()->subMonths(self::KEEP_HANDLED_MONTHS))
+            ->orWhere('created_at', '<', now()->subMonths(self::KEEP_MAX_MONTHS));
     }
 }

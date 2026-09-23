@@ -65,14 +65,15 @@
                 </a>
             </div>
 
-            {{-- Kaart --}}
-            <div class="min-h-[320px] overflow-hidden rounded-[4px] border border-hairline">
-                <iframe
-                    title="Route naar {{ config('app.name') }}"
-                    src="https://www.google.com/maps?q={{ urlencode(config('brand.maps.query')) }}&output=embed"
-                    class="h-full min-h-[320px] w-full"
-                    style="border:0" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
-            </div>
+            {{-- Kaart: pas na een klik (AVG) --}}
+            <x-consent-embed
+                src="https://www.google.com/maps?q={{ urlencode(config('brand.maps.query')) }}&output=embed"
+                title="Route naar {{ config('app.name') }}" provider="Google Maps" height="420px"
+                button="Kaart laden" icon="map-pin"
+                fallback-url="https://www.google.com/maps/dir/?api=1&destination={{ urlencode(config('brand.maps.query')) }}"
+                fallback-label="Route in Google Maps">
+                <p class="font-display text-lg font-semibold text-cream">{{ config('brand.contact.address') }}</p>
+            </x-consent-embed>
         </div>
     </section>
 
