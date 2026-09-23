@@ -1,0 +1,13 @@
+# Vangnet voor webhosting waar de webroot niet op public/ kan (bv. TransIP: de
+# projectmap = www/). Alles gaat naar public/, zodat .env, de code en storage/
+# nooit direct op te vragen zijn. Staat de webroot wél op public/, dan doet dit
+# bestand niets.
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteRule ^(.*)$ public/$1 [L]
+</IfModule>
+
+# Zonder mod_rewrite: liever niets tonen dan de broncode.
+<IfModule !mod_rewrite.c>
+    Require all denied
+</IfModule>

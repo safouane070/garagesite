@@ -22,8 +22,11 @@ class DatabaseSeeder extends Seeder
             }
         }
 
+        // Productie: standaard het echte zaak-adres, zodat "wachtwoord vergeten" werkt.
+        $email = env('ADMIN_EMAIL') ?: (app()->isLocal() ? 'admin@autobedrijfrijswijk.test' : config('brand.contact.email'));
+
         User::updateOrCreate(
-            ['email' => env('ADMIN_EMAIL', 'admin@autobedrijfrijswijk.test')],
+            ['email' => $email],
             ['name' => 'Garage Beheerder', 'password' => Hash::make($password)],
         );
 

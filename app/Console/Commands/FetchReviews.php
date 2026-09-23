@@ -47,6 +47,14 @@ class FetchReviews extends Command
             return self::FAILURE;
         }
 
+        // Totaalscore uit de widget-voet: "<strong>4.7</strong> van 5, … <strong>227 recensies</strong>".
+        if (preg_match('#<strong>([0-5][.,]\d)</strong>\s*van 5.*?<strong>(\d+)\s+recensies#s', $resp->body(), $s)) {
+            Storage::put(Reviews::SUMMARY, json_encode(['rating' => (float) str_replace(',', '.', $s[1]), 'count' => (int) $s[2]]));
+            $this->info("Google-score {$s[1]} uit {$s[2]} recensies.");
+        } else {
+            $this->warn('Totaalscore niet gevonden — vaste waarden uit config blijven staan.');
+        }
+
         $reviews = $this->parse($resp->body(), (int) $this->option('min'));
 
         if (empty($reviews)) {

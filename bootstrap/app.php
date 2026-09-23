@@ -12,7 +12,9 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        $middleware->web(append: [
+        $middleware->web(prepend: [
+            \App\Http\Middleware\CanonicalHost::class,
+        ], append: [
             \App\Http\Middleware\SecurityHeaders::class,
         ]);
     })

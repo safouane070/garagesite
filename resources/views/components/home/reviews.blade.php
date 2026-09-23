@@ -1,6 +1,5 @@
 @php
-    $rating = (float) config('brand.reviews.rating');
-    $count = (int) config('brand.reviews.count');
+    ['rating' => $rating, 'count' => $count] = \App\Support\Reviews::summary();
     $reviewUrl = config('brand.reviews.url');
     $ratingNl = str_replace('.', ',', (string) $rating);
     $fillPct = max(0, min(100, $rating / 5 * 100));

@@ -40,3 +40,20 @@ jobs:
 
       - name: Tests
         run: php artisan test
+
+      # Kant-en-klaar pakket voor webhosting zonder Node/Composer: uitpakken op de
+      # server, eigen .env erbij, migreren. Te downloaden onder Actions → deze run → Artifacts.
+      - name: Releasepakket
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist --no-progress
+          php artisan view:clear
+          rm -f .env
+          zip -rq release.zip . -x '.git/*' 'node_modules/*' 'tests/*' '.github/*' '*.log'
+
+      - uses: actions/upload-artifact@v4
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        with:
+          name: release
+          path: release.zip
+          retention-days: 30

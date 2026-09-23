@@ -33,6 +33,10 @@ class SitemapController extends Controller
     /** robots.txt met een absolute sitemap-URL (relatieve paden negeert Google). */
     public function robots(): Response
     {
+        if (! app()->isProduction()) {
+            return response("User-agent: *\nDisallow: /\n")->header('Content-Type', 'text/plain');
+        }
+
         $body = implode("\n", [
             'User-agent: *',
             'Disallow: /admin',

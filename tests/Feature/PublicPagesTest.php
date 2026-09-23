@@ -37,9 +37,18 @@ class PublicPagesTest extends TestCase
             ->assertSee(route('contact'))
             ->assertSee(route('privacy'));
 
+        // Test-/stagingomgeving: alles dicht voor zoekmachines.
+        $this->get('/robots.txt')->assertOk()->assertSee('Disallow: /')->assertDontSee('Sitemap:');
+        $this->get('/')->assertHeader('X-Robots-Tag', 'noindex, nofollow');
+
+        // Productie: indexeerbaar, met sitemap, en https-only.
+        $this->app['env'] = 'production';
         $this->get('/robots.txt')
             ->assertOk()
-            ->assertSee('Sitemap: ' . route('sitemap'));
+            ->assertSee('Sitemap: ' . route('sitemap'))
+            ->assertDontSee("Disallow: /\n", false);
+        $this->get('/')->assertHeaderMissing('X-Robots-Tag');
+        $this->get('https://localhost/')->assertHeader('Strict-Transport-Security', 'max-age=31536000');
     }
 
     /** Verkochte auto's horen niet in het publieke aanbod. */

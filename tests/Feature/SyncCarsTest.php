@@ -111,6 +111,21 @@ class SyncCarsTest extends TestCase
         $this->assertStringContainsString('navigatie, LED-koplampen en panoramadak', $car->description);
     }
 
+    /**
+     * Na de overstap: deze site draait op het oude domein, WordPress op een subdomein
+     * maar geeft nog links met het oude domein terug. Alles moet van het subdomein komen.
+     */
+    public function test_after_domain_switch_everything_is_fetched_from_the_dealer_subdomain(): void
+    {
+        config(['app.url' => 'https://autobedrijfrijswijk.nl', 'brand.dealer_site_url' => 'https://voorraad.autobedrijfrijswijk.nl']);
+        $this->vehicle('volkswagen-golf-1-5-tsi-r-line-pano-camera');
+
+        $this->artisan('cars:sync')->assertSuccessful();
+
+        $this->assertCount(2, Car::firstWhere('dealer_slug', 'volkswagen-golf-1-5-tsi-r-line-pano-camera')->images);
+        Http::assertNotSent(fn (Request $r) => parse_url($r->url(), PHP_URL_HOST) === 'autobedrijfrijswijk.nl');
+    }
+
     public function test_car_that_disappears_is_marked_sold_and_manual_car_is_left_alone(): void
     {
         $this->vehicle('audi-a3-sportback', ['title' => 'Audi A3 Sportback 35 TFSI', 'km' => 10000]);
