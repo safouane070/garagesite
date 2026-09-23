@@ -24,7 +24,7 @@
                     <span x-text="count === 1 ? 'wagen' : 'wagens'"></span>
                 </span>
                 <span class="h-1 w-1 rounded-full bg-brass-500"></span>
-                <span x-show="!hasActiveFilters">direct leverbaar</span>
+                <span x-show="!hasActiveFilters">op voorraad</span>
                 <span x-show="hasActiveFilters" x-cloak class="text-brass-300">gefilterd</span>
             </div>
         </div>
@@ -186,16 +186,20 @@
             // dezelfde weergave herstelt. De URL is hier de bron van waarheid.
             hydrateFromUrl() {
                 const p = new URLSearchParams(location.search);
-                const clamp = (v, lo, hi) => Math.min(Math.max(v, lo), hi);
+                // Onzin in de URL (bv. price_min=abc) negeren i.p.v. "€ NaN" tonen.
+                const clamp = (v, lo, hi, d) => Number.isFinite(v) ? Math.min(Math.max(v, lo), hi) : d;
                 if (p.has('q')) this.search = p.get('q');
                 if (p.has('brand')) this.brand = p.get('brand');
                 if (p.has('body_type')) this.body = p.get('body_type');
                 if (p.has('fuel_type')) this.fuels = p.get('fuel_type').split(',').filter(Boolean);
-                if (p.has('price_min')) this.price[0] = clamp(+p.get('price_min'), this.bounds.priceMin, this.bounds.priceMax);
-                if (p.has('price_max')) this.price[1] = clamp(+p.get('price_max'), this.bounds.priceMin, this.bounds.priceMax);
-                if (p.has('year_min')) this.year[0] = clamp(+p.get('year_min'), this.bounds.yearMin, this.bounds.yearMax);
-                if (p.has('year_max')) this.year[1] = clamp(+p.get('year_max'), this.bounds.yearMin, this.bounds.yearMax);
+                if (p.has('price_min')) this.price[0] = clamp(+p.get('price_min'), this.bounds.priceMin, this.bounds.priceMax, this.price[0]);
+                if (p.has('price_max')) this.price[1] = clamp(+p.get('price_max'), this.bounds.priceMin, this.bounds.priceMax, this.price[1]);
+                if (p.has('year_min')) this.year[0] = clamp(+p.get('year_min'), this.bounds.yearMin, this.bounds.yearMax, this.year[0]);
+                if (p.has('year_max')) this.year[1] = clamp(+p.get('year_max'), this.bounds.yearMin, this.bounds.yearMax, this.year[1]);
                 if (p.has('sort')) this.sort = p.get('sort');
+                // Omgedraaid bereik (min > max) rechtzetten.
+                this.price.sort((a, b) => a - b);
+                this.year.sort((a, b) => a - b);
             },
 
             // Schrijft de actieve filters terug naar de URL (zonder page reload).

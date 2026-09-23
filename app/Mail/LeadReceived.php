@@ -34,6 +34,7 @@ class LeadReceived extends Mailable
 
     public function content(): Content
     {
-        return new Content(view: 'emails.lead-received');
+        // Platte tekst: de template leunt op regeleinden en uitlijning.
+        return new Content(text: 'emails.lead-received');
     }
 }
