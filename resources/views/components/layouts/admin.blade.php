@@ -82,6 +82,22 @@
         </div>
     @endif
 
+    {{-- Technische storing die aanvragen raakt (mail/cron): altijd zichtbaar, niet weg te klikken. --}}
+    @php $problems = \App\Support\SystemStatus::problems(); @endphp
+    @if ($problems)
+        <div role="alert" class="border-b border-rose-500/30 bg-rose-500/10">
+            <div class="container-x py-3 text-sm text-rose-100">
+                <p class="flex items-center gap-2 font-medium"><x-icon name="mail" class="h-4 w-4" /> Let op: er hapert iets achter de schermen.</p>
+                <ul class="mt-1 list-disc pl-10 text-rose-100/85">
+                    @foreach ($problems as $problem)
+                        <li>{{ $problem }}</li>
+                    @endforeach
+                </ul>
+                <p class="mt-1 pl-6 text-rose-100/70">Aanvragen worden wel bewaard: je vindt ze altijd onder Aanvragen. Geef dit door aan je websitebeheerder.</p>
+            </div>
+        </div>
+    @endif
+
     <main class="container-x py-8 lg:py-10">
         {{ $slot }}
     </main>

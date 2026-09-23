@@ -25,5 +25,9 @@ Schedule::command('cars:sync')->dailyAt('06:00')->withoutOverlapping()
 // worker: de minuut-cron start 'm kort, hij stopt zodra de wachtrij leeg is.
 Schedule::command('queue:work --stop-when-empty --tries=3 --max-time=50')->everyMinute()->withoutOverlapping();
 
+// Hartslag: bewijst dat de cron draait (gecontroleerd door /up en het beheer, zie SystemStatus).
+Schedule::call(fn () => \Illuminate\Support\Facades\Cache::put(\App\Support\SystemStatus::HEARTBEAT_KEY, time(), now()->addDay()))
+    ->everyMinute()->name('heartbeat');
+
 // AVG: oude aanvragen opruimen volgens de bewaartermijn (Lead::prunable()).
 Schedule::command('model:prune', ['--model' => [\App\Models\Lead::class]])->daily();
