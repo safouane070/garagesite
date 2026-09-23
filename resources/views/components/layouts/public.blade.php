@@ -2,6 +2,7 @@
     'title' => null,
     'description' => null,
     'ogImage' => null,
+    'whatsappText' => null,
 ])
 
 @php
@@ -81,7 +82,7 @@
         Naar hoofdinhoud
     </a>
 
-    <header x-data="{ open: false, scrolled: false }"
+    <header x-data="{ open: false, scrolled: false }" @keydown.escape.window="open = false"
             x-init="
                 const onScroll = () => scrolled = window.scrollY > 8;
                 onScroll();
@@ -127,21 +128,21 @@
                     <x-icon name="phone" class="h-3.5 w-3.5" /> {{ config('brand.contact.phone') }}
                 </a>
 
-                <x-whatsapp-button />
+                <x-whatsapp-button :text="$whatsappText" />
 
                 @auth
                     <a href="{{ route('admin.dashboard') }}" class="btn btn-outline hidden sm:inline-flex">Beheer</a>
                 @endauth
 
                 <button @click="open = !open" type="button"
-                        class="btn btn-ghost -mr-2 lg:hidden" :aria-expanded="open" aria-label="Menu">
+                        class="btn btn-ghost -mr-2 lg:hidden" :aria-expanded="open" aria-controls="mobiel-menu" aria-label="Menu">
                     <x-icon name="menu" x-show="!open" class="h-5 w-5" />
                     <x-icon name="x" x-show="open" x-cloak class="h-5 w-5" />
                 </button>
             </div>
         </div>
 
-        <div x-show="open" x-cloak
+        <div id="mobiel-menu" x-show="open" x-cloak
              x-transition:enter="transition ease-out duration-200"
              x-transition:enter-start="opacity-0 -translate-y-2"
              x-transition:enter-end="opacity-100 translate-y-0"
@@ -238,6 +239,6 @@
     </footer>
 
     {{-- Zwevende WhatsApp-knop, site-breed --}}
-    <x-whatsapp-button floating />
+    <x-whatsapp-button floating :text="$whatsappText" />
 </body>
 </html>
