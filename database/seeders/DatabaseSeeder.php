@@ -5,24 +5,33 @@ namespace Database\Seeders;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
 class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        // Admin-account voor de garage-eigenaar (zie README voor inloggegevens).
+        // Beheeraccount. Lokaal het bekende demo-wachtwoord ("password", zie
+        // README); in productie ADMIN_PASSWORD uit .env of een willekeurig
+        // wachtwoord dat éénmalig in de console verschijnt.
+        $password = 'password';
+        if (! app()->isLocal()) {
+            $password = env('ADMIN_PASSWORD') ?: Str::password(16, symbols: false);
+            if (! env('ADMIN_PASSWORD')) {
+                $this->command?->warn("Wachtwoord beheeraccount (bewaar dit!): {$password}");
+            }
+        }
+
         User::updateOrCreate(
-            ['email' => 'admin@autobedrijfrijswijk.test'],
-            [
-                'name' => 'Garage Beheerder',
-                'password' => Hash::make('password'),
-            ]
+            ['email' => env('ADMIN_EMAIL', 'admin@autobedrijfrijswijk.test')],
+            ['name' => 'Garage Beheerder', 'password' => Hash::make($password)],
         );
 
-        // Demo-auto's inclusief gegenereerde foto's.
-        $this->call(CarSeeder::class);
-
-        // Vult de occasions aan met opties, extra specs en verkocht-status.
-        $this->call(CarEnrichmentSeeder::class);
+        // Voorraad: lokaal een demo-seed. In productie komt de voorraad uit
+        // `php artisan cars:sync` (de echte, actuele voorraad van de dealersite).
+        if (app()->isLocal()) {
+            $this->call(CarSeeder::class);
+            $this->call(CarEnrichmentSeeder::class);
+        }
     }
 }

@@ -21,7 +21,9 @@ Een complete autogarage-website gebouwd met **Laravel 13**, **MySQL/MariaDB**, *
 - **Diensten**-pagina (inkoop, verkoop, aankoopbemiddeling, zoekopdracht)
 - **Financial lease**-pagina met de externe FinancialLease-rekenwidget (maandbedrag-indicatie)
 - **Contact**-pagina met formulier en Google Maps, plus `over-ons`, `volkswagen-specialist`, `privacybeleid` en `algemene-voorwaarden`
-- Aanvragen worden opgeslagen én naar de zaak gemaild (`Reply-To` = klant)
+- Aanvragen worden opgeslagen, via de wachtrij naar de zaak gemaild (`Reply-To` = klant) en de klant krijgt een bevestiging
+- Detailpagina met schermvullende fotoweergave (vegen, pijltjes, Escape)
+- **AVG:** fonts zelf gehost, Google Maps en het lease-aanbod laden pas na een klik, aanvragen worden na de bewaartermijn automatisch gewist, weergaven worden geteld zonder cookies of IP-adres
 - SEO: per-auto `Vehicle`- en site-brede `AutoDealer`-schema (JSON-LD), Open Graph, canonical, dynamische `sitemap.xml` + `robots.txt` en beveiligingsheaders (CSP e.a.)
 - Volledig Nederlands: validatiemeldingen, e-mails, tijdzone (`Europe/Amsterdam`) en eigen foutpagina's (404, 413, 419, 429, 500, 503) met een weg terug
 - WhatsApp-knop die op een detailpagina opent met een vooraf ingevuld bericht over díe auto
@@ -29,9 +31,11 @@ Een complete autogarage-website gebouwd met **Laravel 13**, **MySQL/MariaDB**, *
 
 **Admin** (`/admin`, na inloggen)
 - **Aanvragen-inbox** (`/admin/aanvragen`): open/afgehandeld, voorkeursdatum, auto, direct beantwoorden per mail of bellen; teller van open aanvragen in de navigatie
+- **Automatische voorraad** (`cars:sync`, dagelijks): nieuwe auto's van de dealersite erbij (met foto's en opties), verkochte op "verkocht", prijswijzigingen bijgewerkt; stopt zelf bij een verdachte bron
+- **Inzicht:** weergaven en aanvragen per auto, plus "Meest bekeken" op het dashboard
 - Dashboard met voorraadoverzicht en statistieken
 - Auto's toevoegen / bewerken / verwijderen (CRUD)
-- Meerdere foto's uploaden per auto (ook grote telefoonfoto's: automatisch rechtgedraaid, verkleind tot max. 2000 px en als WebP opgeslagen), omslagfoto instellen, foto's verwijderen
+- Meerdere foto's uploaden per auto (ook grote telefoonfoto's: automatisch rechtgedraaid, verkleind tot max. 2000 px, als WebP opgeslagen, met miniatuur), volgorde aanpassen (de eerste is de omslag), foto's verwijderen
 - Waarschuwing vóór het versturen als foto's te groot zijn (limieten komen live uit de PHP-configuratie)
 - Uitrusting/opties per auto aanvinken uit een bestaande lijst
 - Snelle statuswijziging (beschikbaar / gereserveerd / verkocht)
@@ -73,7 +77,7 @@ php artisan migrate --seed
 php artisan storage:link
 ```
 
-> De seeder vult de demo met de **echte voorraad van Autobedrijf Rijswijk**: hij leest de openbare Marktplaats-listings van de dealer uit (`database/seeders/rijswijk_listings.json`), mapt de kenmerken naar onze velden en slaat de foto's lokaal op. Lukt het ophalen niet (bv. geen internet), dan valt die auto automatisch terug op nette, in-huisstijl SVG-placeholders — de seeder faalt nooit. `CarEnrichmentSeeder` vult daarna opties, extra specs en verkocht-status aan.
+> **Lokaal** vult de seeder de demo met de voorraad van Autobedrijf Rijswijk (in productie maakt hij alleen het beheeraccount aan; de voorraad komt dan uit `php artisan cars:sync`, zie [DEPLOY.md](DEPLOY.md)). De demo-seeder leest de openbare Marktplaats-listings van de dealer uit (`database/seeders/rijswijk_listings.json`), mapt de kenmerken naar onze velden en slaat de foto's lokaal op. Lukt het ophalen niet (bv. geen internet), dan valt die auto automatisch terug op nette, in-huisstijl SVG-placeholders — de seeder faalt nooit. `CarEnrichmentSeeder` vult daarna opties, extra specs en verkocht-status aan.
 
 ---
 
@@ -125,7 +129,10 @@ app/
   Http/Requests/                 # CarRequest + StoreLeadRequest (validatie)
   Http/Middleware/SecurityHeaders.php  # CSP en overige beveiligingsheaders
   Mail/LeadReceived.php          # Aanvraag-mail naar de zaak
-  Support/DealerListing.php      # Parser voor de Marktplaats-listings
+  Support/DealerSite.php         # Voorraad van de dealersite (REST-lijst + voertuigpagina's)
+  Support/CarDescription.php     # Unieke beschrijving uit de echte gegevens van een auto
+  Support/ErrorAlert.php         # Foutmelding per mail in productie (gedempt)
+  Console/Commands/SyncCars.php  # cars:sync — dagelijkse voorraad-synchronisatie
   Support/Reviews.php            # Google-reviews inlezen (config-gedreven)
   Support/PlaceholderImage.php   # SVG-vangnet voor foto's
   Support/ImageOptimizer.php     # Uploads rechtdraaien (EXIF), verkleinen, WebP
@@ -140,6 +147,9 @@ resources/views/
   home.blade.php, cars/          # Publieke etalage
   pages/                         # diensten, financial-lease, contact, over-ons, vw-specialist, privacy, voorwaarden
   admin/cars/, admin/leads/      # Voorraad + formulieren, aanvragen-inbox
+resources/js/components/         # Alpine-componenten: aanbodfilter, galerij/lightbox, teller
+scripts/live-check.py            # Browsercheck (Playwright) van site + beheer, desktop en mobiel
+.github/workflows/tests.yml      # CI: tests + build bij elke push
   errors/                        # Nederlandse foutpagina's (404, 413, 419, 429, 500, 503)
 ```
 
