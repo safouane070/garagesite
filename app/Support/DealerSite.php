@@ -28,7 +28,8 @@ class DealerSite
         'Ford', 'Renault', 'Opel', 'Toyota', 'Nissan', 'Mazda', 'Hyundai', 'MINI', 'Mini',
     ];
 
-    private const MAX_PHOTOS = 10;
+    /** Alle foto's (de dealer zet er 20–40 per auto, interieur achteraan); dit is alleen een vangrail. */
+    private const MAX_PHOTOS = 60;
 
     /**
      * De volledige actuele voorraadlijst. Gooit een exception als ook maar één

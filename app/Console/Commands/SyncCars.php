@@ -9,6 +9,7 @@ use App\Support\DealerSite;
 use App\Support\ImageOptimizer;
 use Illuminate\Console\Command;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -36,7 +37,8 @@ class SyncCars extends Command
         {--force : Ook doorgaan als verdacht veel auto's verdwenen lijken}
         {--limit=0 : Maximaal zoveel nieuwe auto's aanmaken (0 = alle)}
         {--sell-unmatched : Zet niet-verkochte auto's die nergens aan te koppelen zijn op verkocht (eenmalig, na controle)}
-        {--require-parse-ratio= : Faal als minder dan dit deel van de nieuwe auto's leesbaar is (0-1)}";
+        {--require-parse-ratio= : Faal als minder dan dit deel van de nieuwe auto's leesbaar is (0-1)}
+        {--refresh-photos : Alle gekoppelde auto's opnieuw lezen en onvolledige fotogalerijen aanvullen}";
 
     protected $description = 'Synchroniseert de voorraad met de dealersite (nieuw, verkocht, prijswijzigingen).';
 
@@ -196,7 +198,7 @@ class SyncCars extends Command
         foreach ($cars as $car) {
             $v = $vehicles[$car->dealer_slug];
             $modified = Carbon::parse($v['modified']);
-            if ($car->dealer_modified_at && $modified->lte($car->dealer_modified_at)) {
+            if (! $this->option('refresh-photos') && $car->dealer_modified_at && $modified->lte($car->dealer_modified_at)) {
                 continue;
             }
 
@@ -234,7 +236,44 @@ class SyncCars extends Command
         $car->dealer_modified_at = $modified;
         $car->save();
 
+        if (count($data['photos']) !== $car->images()->count() && $this->replacePhotos($car, $data['photos'])) {
+            $changed = true;
+        }
+
         return $changed;
+    }
+
+    /**
+     * Galerij gelijk trekken met de dealersite (bv. 5 of 10 foto's terwijl de dealer
+     * er 30 heeft, met het interieur achteraan). Eerst alles downloaden; pas als dat
+     * compleet is (of in elk geval méér oplevert) worden de oude foto's in één keer
+     * vervangen. Mislukt het, dan blijft de oude galerij staan.
+     */
+    private function replacePhotos(Car $car, array $urls): bool
+    {
+        $old = $car->images()->get();
+        $new = $this->storePhotos($urls, "cars/{$car->slug}");
+
+        if (count($new) !== count($urls) && count($new) <= $old->count()) {
+            foreach ($new as $stored) {
+                Storage::disk('public')->delete(array_filter(Arr::only($stored, ['path', ...array_keys(ImageOptimizer::VARIANTS)])));
+            }
+            $this->warn("  foto's niet vervangen (download onvolledig): {$car->title()}");
+
+            return false;
+        }
+
+        DB::transaction(function () use ($car, $old, $new) {
+            $car->images()->whereKey($old->modelKeys())->delete();
+            foreach ($new as $i => $stored) {
+                $car->images()->create($stored + ['is_primary' => $i === 0, 'sort_order' => $i]);
+            }
+        });
+        $old->each->deleteFiles();
+
+        $this->line("  foto's: {$car->title()} {$old->count()} → " . count($new));
+
+        return true;
     }
 
     /**
@@ -302,6 +341,9 @@ class SyncCars extends Command
                 $paths[] = ImageOptimizer::store(new UploadedFile($tmp, basename(parse_url($url, PHP_URL_PATH)), null, null, true), $dir);
             } finally {
                 @unlink($tmp);
+                // De HTTP-client houdt elk antwoord (±1 MB foto) vast in kringverwijzingen;
+                // zonder dit loopt het geheugen per auto ±25 MB op tot de limiet.
+                gc_collect_cycles();
             }
         }
 

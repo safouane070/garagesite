@@ -18,6 +18,8 @@ class SyncCarsTest extends TestCase
 
     private bool $listFails = false;
 
+    private bool $photosFail = false;
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -48,7 +50,7 @@ class SyncCarsTest extends TestCase
                 return Http::response($this->page($this->dealer[$m[1]]));
             }
             if (str_contains($url, '/wp-content/uploads/')) {
-                return Http::response($this->jpeg());
+                return $this->photosFail ? Http::response('', 503) : Http::response($this->jpeg());
             }
 
             return Http::response('', 404);
@@ -152,6 +154,55 @@ class SyncCarsTest extends TestCase
         $this->artisan('cars:sync')->assertSuccessful();
 
         $this->assertSame(17950, (int) $car->fresh()->price);
+    }
+
+    /** Auto met 1 oude foto (bv. uit de Marktplaats-import); de dealer heeft er 2. */
+    private function carWithOnePhoto(string $slug, string $modifiedAt): Car
+    {
+        $car = $this->car(['slug' => $slug, 'dealer_slug' => $slug, 'dealer_modified_at' => $modifiedAt]);
+        Storage::disk('public')->put("cars/{$slug}/oud.webp", 'x');
+        $car->images()->create(['path' => "cars/{$slug}/oud.webp", 'is_primary' => true, 'sort_order' => 0]);
+
+        return $car;
+    }
+
+    public function test_incomplete_gallery_is_replaced_by_the_full_dealer_gallery(): void
+    {
+        $this->vehicle('volkswagen-polo', ['title' => 'Volkswagen Polo 1.0 TSI', 'modified' => '2026-09-22T09:00:00']);
+        $car = $this->carWithOnePhoto('volkswagen-polo', '2026-09-01 00:00:00');
+
+        $this->artisan('cars:sync')->assertSuccessful();
+
+        $images = $car->fresh()->images;
+        $this->assertCount(2, $images);
+        $this->assertTrue($images->first()->is_primary);
+        Storage::disk('public')->assertMissing('cars/volkswagen-polo/oud.webp');
+        Storage::disk('public')->assertExists($images->pluck('path')->all());
+    }
+
+    /** Eenmalige inhaalslag: ook auto's die op de dealersite niet gewijzigd zijn. */
+    public function test_refresh_photos_also_rereads_unchanged_cars(): void
+    {
+        $this->vehicle('volkswagen-polo', ['title' => 'Volkswagen Polo 1.0 TSI', 'modified' => '2026-09-01T00:00:00']);
+        $car = $this->carWithOnePhoto('volkswagen-polo', '2026-09-01 00:00:00');
+
+        $this->artisan('cars:sync')->assertSuccessful();
+        $this->assertCount(1, $car->fresh()->images); // gewone run: niet gewijzigd → niet opnieuw gelezen
+
+        $this->artisan('cars:sync', ['--refresh-photos' => true])->assertSuccessful();
+        $this->assertCount(2, $car->fresh()->images);
+    }
+
+    public function test_failed_photo_downloads_keep_the_old_gallery(): void
+    {
+        $this->photosFail = true;
+        $this->vehicle('volkswagen-polo', ['title' => 'Volkswagen Polo 1.0 TSI', 'modified' => '2026-09-22T09:00:00']);
+        $car = $this->carWithOnePhoto('volkswagen-polo', '2026-09-01 00:00:00');
+
+        $this->artisan('cars:sync')->assertSuccessful();
+
+        $this->assertSame(['cars/volkswagen-polo/oud.webp'], $car->fresh()->images->pluck('path')->all());
+        Storage::disk('public')->assertExists('cars/volkswagen-polo/oud.webp');
     }
 
     /** Andere slug (Marktplaats vs. dealer), zelfde auto: koppelen, niet dubbel aanmaken. */
