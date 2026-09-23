@@ -264,38 +264,50 @@
     </div>
 </form>
 
-{{-- Bestaande foto's beheren (alleen bij bewerken) --}}
+{{-- Bestaande foto's beheren (alleen bij bewerken). De eerste foto is de omslag. --}}
 @if ($isEdit && $car->images->isNotEmpty())
     <section class="surface mt-8 p-6">
         <h2 class="font-display text-lg font-semibold text-cream">Huidige foto's</h2>
-        <p class="mt-1 text-sm text-cream/60">Stel de omslagfoto in of verwijder foto's.</p>
-        <div class="mt-5 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+        <p class="mt-1 text-sm text-cream/60">De eerste foto is de omslag. Verschuif met de pijltjes of zet een foto direct vooraan.</p>
+        <ol class="mt-5 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
             @foreach ($car->images as $image)
-                <div class="group relative overflow-hidden rounded-[4px] border {{ $image->is_primary ? 'border-brass-500' : 'border-hairline' }}">
-                    <div class="aspect-[4/3] overflow-hidden bg-graphite-800">
-                        <img src="{{ $image->url() }}" alt="" class="h-full w-full object-cover">
+                @php $first = $loop->first; $last = $loop->last; @endphp
+                <li class="overflow-hidden rounded-[4px] border {{ $first ? 'border-brass-500' : 'border-hairline' }}">
+                    <div class="relative aspect-[4/3] overflow-hidden bg-graphite-800">
+                        <img src="{{ $image->thumbUrl() }}" alt="Foto {{ $loop->iteration }}" loading="lazy" class="h-full w-full object-cover">
+                        <span class="absolute left-2 top-2 rounded-[3px] px-2 py-0.5 font-mono text-[0.65rem] uppercase tracking-wider
+                                     {{ $first ? 'bg-brass-500 text-cream' : 'bg-scrim/70 text-onscrim' }}">
+                            {{ $first ? 'Omslag' : $loop->iteration }}
+                        </span>
                     </div>
-                    @if ($image->is_primary)
-                        <span class="absolute left-2 top-2 rounded-[3px] bg-brass-500 px-2 py-0.5 font-mono text-[0.65rem] uppercase tracking-wider text-cream">Omslag</span>
-                    @endif
                     {{-- Altijd zichtbaar: hover bestaat niet op telefoon/tablet --}}
-                    <div class="flex items-center justify-between gap-2 border-t border-hairline bg-graphite-800 px-2 py-1.5">
-                        @unless ($image->is_primary)
+                    <div class="flex items-center gap-1 border-t border-hairline bg-graphite-800 px-1.5 py-1.5">
+                        <form method="POST" action="{{ route('admin.cars.images.move', [$car, $image]) }}">
+                            @csrf @method('PATCH')
+                            <input type="hidden" name="direction" value="left">
+                            <button type="submit" @disabled($first) aria-label="Foto {{ $loop->iteration }} naar voren"
+                                    class="rounded-[3px] p-1.5 text-cream/70 hover:bg-white/5 hover:text-cream disabled:opacity-25"><x-icon name="chevron-left" class="h-4 w-4" /></button>
+                        </form>
+                        <form method="POST" action="{{ route('admin.cars.images.move', [$car, $image]) }}">
+                            @csrf @method('PATCH')
+                            <input type="hidden" name="direction" value="right">
+                            <button type="submit" @disabled($last) aria-label="Foto {{ $loop->iteration }} naar achteren"
+                                    class="rounded-[3px] p-1.5 text-cream/70 hover:bg-white/5 hover:text-cream disabled:opacity-25"><x-icon name="chevron-right" class="h-4 w-4" /></button>
+                        </form>
+                        @unless ($first)
                             <form method="POST" action="{{ route('admin.cars.images.primary', [$car, $image]) }}">
                                 @csrf @method('PATCH')
-                                <button type="submit" class="py-1 font-mono text-[0.65rem] uppercase tracking-wider text-brass-300 hover:text-brass-200">Als omslag</button>
+                                <button type="submit" class="px-1.5 py-1 font-mono text-[0.65rem] uppercase tracking-wider text-brass-300 hover:text-brass-200">Omslag</button>
                             </form>
-                        @else
-                            <span></span>
                         @endunless
-                        <form method="POST" action="{{ route('admin.cars.images.destroy', [$car, $image]) }}"
+                        <form method="POST" action="{{ route('admin.cars.images.destroy', [$car, $image]) }}" class="ml-auto"
                               onsubmit="return confirm('Deze foto verwijderen?');">
                             @csrf @method('DELETE')
                             <button type="submit" aria-label="Foto {{ $loop->iteration }} verwijderen" class="rounded-[3px] p-1.5 text-rose-300 hover:bg-rose-500/10 hover:text-rose-200"><x-icon name="trash" class="h-4 w-4" /></button>
                         </form>
                     </div>
-                </div>
+                </li>
             @endforeach
-        </div>
+        </ol>
     </section>
 @endif

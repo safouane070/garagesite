@@ -82,9 +82,15 @@
                          vindbaar voor de browser (snellere eerste weergave). --}}
                     <img src="{{ $images->first()->url() }}" alt="{{ $car->title() }} · foto 1"
                          :src="current" :alt="{{ \Illuminate\Support\Js::from($car->title() . ' · foto ') }} + (i + 1)"
-                         fetchpriority="high" decoding="async"
-                         class="photo-fx h-full w-full object-cover">
+                         fetchpriority="high" decoding="async" @click="open()"
+                         class="photo-fx h-full w-full cursor-zoom-in object-cover">
                     <div class="pointer-events-none absolute inset-0 bg-gradient-to-t from-scrim/30 to-transparent"></div>
+
+                    {{-- Schermvullend bekijken (ook met toetsenbord) --}}
+                    <button type="button" @click="open()" aria-label="Foto's schermvullend bekijken"
+                            class="absolute bottom-4 right-4 inline-flex items-center gap-2 rounded-[3px] bg-scrim/70 px-3 py-2 font-mono text-[0.7rem] uppercase tracking-wider text-onscrim backdrop-blur-md transition hover:bg-scrim/90">
+                        <x-icon name="maximize" class="h-4 w-4" /> Vergroot
+                    </button>
 
                     {{-- Statusbadge --}}
                     <div class="absolute left-4 top-4"><x-status-badge :status="$car->status" class="backdrop-blur-md" /></div>
@@ -114,6 +120,42 @@
                 @endif
             </div>
 
+            {{-- Lightbox: naar <body> verplaatst zodat de rest "inert" kan worden --}}
+            @if ($images->isNotEmpty())
+                <template x-teleport="body">
+                    <div x-show="full" x-cloak x-transition.opacity.duration.200ms
+                         role="dialog" aria-modal="true" aria-label="Foto's van {{ $car->title() }}"
+                         class="fixed inset-0 z-[60] flex flex-col bg-black/95"
+                         @keydown.escape.window="close()"
+                         @keydown.arrow-left.window="full && prev()" @keydown.arrow-right.window="full && next()"
+                         @touchstart.passive="touchStart($event)" @touchend.passive="touchEnd($event)">
+                        <div class="flex items-center justify-between px-4 py-3 font-mono text-xs text-white/75">
+                            <span><span x-text="i + 1"></span> / <span x-text="images.length"></span> · {{ $car->title() }}</span>
+                            <button type="button" x-ref="closeFull" @click="close()" aria-label="Sluiten"
+                                    class="flex h-11 w-11 items-center justify-center rounded-full text-white transition hover:bg-white/10">
+                                <x-icon name="x" class="h-6 w-6" />
+                            </button>
+                        </div>
+                        <div class="relative flex min-h-0 flex-1 items-center justify-center px-2 pb-6" @click.self="close()">
+                            <img :src="current" :alt="{{ \Illuminate\Support\Js::from($car->title() . ' · foto ') }} + (i + 1)"
+                                 class="max-h-full max-w-full select-none object-contain">
+                            <template x-if="images.length > 1">
+                                <div>
+                                    <button type="button" @click="prev()" aria-label="Vorige foto"
+                                            class="absolute left-3 top-1/2 flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full bg-white/10 text-white transition hover:bg-white/20">
+                                        <x-icon name="chevron-left" class="h-6 w-6" />
+                                    </button>
+                                    <button type="button" @click="next()" aria-label="Volgende foto"
+                                            class="absolute right-3 top-1/2 flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full bg-white/10 text-white transition hover:bg-white/20">
+                                        <x-icon name="chevron-right" class="h-6 w-6" />
+                                    </button>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                </template>
+            @endif
+
             {{-- Thumbnails --}}
             @if ($images->count() > 1)
                 <div class="mt-3 grid grid-cols-4 gap-3 sm:grid-cols-6">
@@ -122,7 +164,7 @@
                                 :class="i === {{ $index }} ? 'border-brass-500 ring-1 ring-brass-500' : 'border-hairline opacity-70 hover:opacity-100'"
                                 class="aspect-[4/3] overflow-hidden rounded-[3px] border transition"
                                 aria-label="Toon foto {{ $index + 1 }}">
-                            <img src="{{ $image->url() }}" alt="" loading="lazy" class="h-full w-full object-cover">
+                            <img src="{{ $image->thumbUrl() }}" alt="" loading="lazy" class="h-full w-full object-cover">
                         </button>
                     @endforeach
                 </div>
@@ -316,25 +358,4 @@
             </div>
         </section>
     @endif
-
-    <script>
-        document.addEventListener('alpine:init', () => {
-            Alpine.data('gallery', (config) => ({
-                images: config.images,
-                i: 0,
-                touchX: null,
-                get current() { return this.images[this.i]; },
-                next() { if (this.images.length > 1) this.i = (this.i + 1) % this.images.length; },
-                prev() { if (this.images.length > 1) this.i = (this.i - 1 + this.images.length) % this.images.length; },
-                go(n) { this.i = n; },
-                touchStart(e) { this.touchX = e.changedTouches[0].clientX; },
-                touchEnd(e) {
-                    if (this.touchX === null) return;
-                    const dx = e.changedTouches[0].clientX - this.touchX;
-                    if (Math.abs(dx) > 40) { dx < 0 ? this.next() : this.prev(); }
-                    this.touchX = null;
-                },
-            }));
-        });
-    </script>
 </x-layouts.public>

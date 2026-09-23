@@ -92,7 +92,7 @@
                             <div class="flex w-full shrink-0 items-center gap-3 rounded-[3px] border border-hairline bg-graphite-800/60 p-3 lg:w-72">
                                 <div class="h-12 w-16 shrink-0 overflow-hidden rounded-[3px] bg-graphite-800">
                                     @if ($lead->car->primaryImage)
-                                        <img src="{{ $lead->car->primaryImage->url() }}" alt="" class="h-full w-full object-cover" loading="lazy">
+                                        <img src="{{ $lead->car->primaryImage->thumbUrl() }}" alt="" class="h-full w-full object-cover" loading="lazy">
                                     @endif
                                 </div>
                                 <div class="min-w-0">
