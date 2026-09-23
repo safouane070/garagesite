@@ -27,9 +27,12 @@
     {{-- Foto --}}
     <div class="relative aspect-[4/3] overflow-hidden bg-graphite-800">
         @if ($cover)
-            <img src="{{ $cover->url() }}"
+            {{-- Miniatuur; de browser pakt zelf de grote foto op een scherp scherm. --}}
+            <img src="{{ $cover->thumbUrl() }}"
+                 @if ($cover->srcset()) srcset="{{ $cover->srcset() }}" sizes="(min-width: 1280px) 400px, (min-width: 640px) 50vw, 100vw" @endif
+                 @if ($cover->width) width="{{ $cover->width }}" height="{{ $cover->height }}" @endif
                  alt="{{ $car->title() }} · {{ $car->year }}, {{ $car->color }}"
-                 loading="lazy"
+                 loading="lazy" decoding="async"
                  class="photo-fx h-full w-full object-cover group-hover:scale-[1.05] {{ $isSold ? 'opacity-60 saturate-[0.4]' : '' }}">
         @else
             <div class="flex h-full w-full flex-col items-center justify-center gap-2 text-cream/25">

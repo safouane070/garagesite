@@ -22,7 +22,12 @@ class CarController extends Controller
      */
     public function index(): View
     {
-        $cars = Car::with('primaryImage')->latest()->get();
+        $cars = Car::with('primaryImage')->withCount('leads')->latest()->get();
+
+        // Inzicht: welke auto's trekken de meeste aandacht (weergaven + aanvragen).
+        $popular = $cars->where('status', '!=', CarStatus::Sold)
+            ->sortByDesc(fn (Car $c) => [$c->views, $c->leads_count])
+            ->take(5)->values();
 
         $stats = [
             'total' => $cars->count(),
@@ -37,7 +42,7 @@ class CarController extends Controller
             's' => $car->status->value,
         ])->values();
 
-        return view('admin.cars.index', compact('cars', 'stats', 'items'));
+        return view('admin.cars.index', compact('cars', 'stats', 'items', 'popular'));
     }
 
     /** Formulier voor een nieuwe auto. */
@@ -101,32 +106,46 @@ class CarController extends Controller
         return back()->with('status', "Status van “{$car->title()}” is gewijzigd.");
     }
 
-    /** Eén foto verwijderen. */
+    /** Eén foto verwijderen (incl. miniatuur); de volgorde blijft sluitend. */
     public function destroyImage(Car $car, CarImage $image): RedirectResponse
     {
         abort_unless($image->car_id === $car->id, 404);
 
-        Storage::disk('public')->delete($image->path);
-        $wasPrimary = $image->is_primary;
+        $image->deleteFiles();
         $image->delete();
-
-        // Was dit de omslagfoto? Promoveer dan de eerstvolgende.
-        if ($wasPrimary && $next = $car->images()->first()) {
-            $next->update(['is_primary' => true]);
-        }
+        $this->reorder($car, $car->images()->get());
 
         return back()->with('status', 'Foto verwijderd.');
     }
 
-    /** Een foto als omslagfoto instellen. */
+    /** Een foto als omslag instellen = vooraan zetten (de eerste foto ís de omslag). */
     public function setPrimaryImage(Car $car, CarImage $image): RedirectResponse
     {
         abort_unless($image->car_id === $car->id, 404);
 
-        $car->images()->update(['is_primary' => false]);
-        $image->update(['is_primary' => true]);
+        $images = $car->images()->get();
+        $this->reorder($car, $images->reject(fn ($i) => $i->id === $image->id)->prepend($image));
 
         return back()->with('status', 'Omslagfoto ingesteld.');
+    }
+
+    /** Foto één plek naar links of rechts schuiven. */
+    public function moveImage(Request $request, Car $car, CarImage $image): RedirectResponse
+    {
+        abort_unless($image->car_id === $car->id, 404);
+        $direction = $request->validate(['direction' => ['required', 'in:left,right']])['direction'];
+
+        $images = $car->images()->get()->values();
+        $from = $images->search(fn ($i) => $i->id === $image->id);
+        $to = $direction === 'left' ? $from - 1 : $from + 1;
+
+        if ($to >= 0 && $to < $images->count()) {
+            $order = $images->all();
+            [$order[$from], $order[$to]] = [$order[$to], $order[$from]];
+            $this->reorder($car, collect($order));
+        }
+
+        return back()->with('status', 'Volgorde aangepast.');
     }
 
     // ----- Interne helpers -----------------------------------------------
@@ -171,16 +190,24 @@ class CarController extends Controller
         $order = (int) $car->images()->max('sort_order');
 
         foreach ($request->file('images') as $file) {
-            // Verkleind + rechtgedraaid opslaan (zie ImageOptimizer).
-            $path = ImageOptimizer::store($file, "cars/{$car->slug}");
-
-            $car->images()->create([
-                'path' => $path,
+            // Verkleind + rechtgedraaid opslaan, met miniatuur (zie ImageOptimizer).
+            $car->images()->create(ImageOptimizer::store($file, "cars/{$car->slug}") + [
                 'is_primary' => ! $hasPrimary, // eerste foto ooit wordt omslag
                 'sort_order' => ++$order,
             ]);
 
             $hasPrimary = true;
+        }
+    }
+
+    /**
+     * Legt een volgorde vast: sort_order 0..n-1 en alleen de eerste is omslag.
+     * Zo zijn "volgorde" en "omslag" nooit met elkaar in tegenspraak.
+     */
+    private function reorder(Car $car, \Illuminate\Support\Collection $images): void
+    {
+        foreach ($images->values() as $i => $img) {
+            $img->update(['sort_order' => $i, 'is_primary' => $i === 0]);
         }
     }
 }

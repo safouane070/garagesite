@@ -54,6 +54,7 @@ Route::middleware('auth')->group(function () {
         Route::patch('cars/{car}/status', [AdminCarController::class, 'updateStatus'])->name('cars.status');
         Route::delete('cars/{car}/images/{image}', [AdminCarController::class, 'destroyImage'])->name('cars.images.destroy');
         Route::patch('cars/{car}/images/{image}/primary', [AdminCarController::class, 'setPrimaryImage'])->name('cars.images.primary');
+        Route::patch('cars/{car}/images/{image}/move', [AdminCarController::class, 'moveImage'])->name('cars.images.move');
 
         // Aanvragen-inbox (leads van de site).
         Route::get('aanvragen', [AdminLeadController::class, 'index'])->name('leads.index');
