@@ -161,7 +161,7 @@
                 </p>
             </div>
             <div class="flex flex-wrap gap-3 lg:col-span-4 lg:justify-end">
-                <a href="{{ route('diensten') }}" class="btn btn-primary">Plaats een zoekopdracht</a>
+                <a href="{{ route('diensten') }}#contact" class="btn btn-primary">Plaats een zoekopdracht</a>
                 <a href="tel:{{ config('brand.contact.phone_href') }}" class="btn btn-outline">Bel ons</a>
             </div>
         </div>

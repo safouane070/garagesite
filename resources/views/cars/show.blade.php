@@ -50,7 +50,8 @@
     ];
 @endphp
 
-<x-layouts.public :title="$car->title()" :description="$metaDescription" :og-image="$ogImage">
+<x-layouts.public :title="$car->title()" :description="$metaDescription" :og-image="$ogImage"
+    :whatsapp-text="'Hallo, ik heb interesse in de ' . $car->title() . ' (' . $car->formattedPrice() . '): ' . route('cars.show', $car)">
     @push('head')
         <script type="application/ld+json">
             {!! json_encode($vehicleLd, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_HEX_TAG) !!}
@@ -77,7 +78,11 @@
                  @keydown.arrow-left.prevent="prev()" @keydown.arrow-right.prevent="next()"
                  @touchstart.passive="touchStart($event)" @touchend.passive="touchEnd($event)">
                 @if ($images->isNotEmpty())
-                    <img :src="current" :alt="'{{ $car->title() }} · foto ' + (i + 1)"
+                    {{-- Eerste foto staat al in de HTML: zichtbaar zonder JS en direct
+                         vindbaar voor de browser (snellere eerste weergave). --}}
+                    <img src="{{ $images->first()->url() }}" alt="{{ $car->title() }} · foto 1"
+                         :src="current" :alt="{{ \Illuminate\Support\Js::from($car->title() . ' · foto ') }} + (i + 1)"
+                         fetchpriority="high" decoding="async"
                          class="photo-fx h-full w-full object-cover">
                     <div class="pointer-events-none absolute inset-0 bg-gradient-to-t from-scrim/30 to-transparent"></div>
 
@@ -117,7 +122,7 @@
                                 :class="i === {{ $index }} ? 'border-brass-500 ring-1 ring-brass-500' : 'border-hairline opacity-70 hover:opacity-100'"
                                 class="aspect-[4/3] overflow-hidden rounded-[3px] border transition"
                                 aria-label="Toon foto {{ $index + 1 }}">
-                            <img src="{{ $image->url() }}" alt="" class="h-full w-full object-cover">
+                            <img src="{{ $image->url() }}" alt="" loading="lazy" class="h-full w-full object-cover">
                         </button>
                     @endforeach
                 </div>
@@ -178,16 +183,23 @@
 
                 {{-- CTA: snelacties die het contactformulier-onderwerp kiezen --}}
                 @if ($car->status !== \App\Enums\CarStatus::Sold)
-                    <div class="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2" x-data>
-                        <button type="button" @click="$store.lead.type='proefrit'; document.getElementById('contact').scrollIntoView({behavior:'smooth'})" class="btn btn-primary">
+                    {{-- Echte links naar het formulier (werkt ook zonder JS); met JS kiest de
+                         knop meteen het onderwerp en zet de cursor in het naamveld. --}}
+                    <div class="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2" x-data="{
+                            pick(type) {
+                                this.$store.lead.type = type;
+                                this.$nextTick(() => document.getElementById('lead-name')?.focus({ preventScroll: true }));
+                            },
+                         }">
+                        <a href="#contact" @click="pick('proefrit')" class="btn btn-primary">
                             <x-icon name="calendar" class="h-4 w-4" /> Proefrit aanvragen
-                        </button>
-                        <button type="button" @click="$store.lead.type='bezichtiging'; document.getElementById('contact').scrollIntoView({behavior:'smooth'})" class="btn btn-outline">
+                        </a>
+                        <a href="#contact" @click="pick('bezichtiging')" class="btn btn-outline">
                             <x-icon name="check" class="h-4 w-4" /> Bezichtiging plannen
-                        </button>
-                        <button type="button" @click="$store.lead.type='inruil'; document.getElementById('contact').scrollIntoView({behavior:'smooth'})" class="btn btn-outline">
+                        </a>
+                        <a href="#contact" @click="pick('inruil')" class="btn btn-outline">
                             <x-icon name="repeat" class="h-4 w-4" /> Inruil bespreken
-                        </button>
+                        </a>
                         <a href="tel:{{ config('brand.contact.phone_href') }}" class="btn btn-outline">
                             <x-icon name="phone" class="h-4 w-4" /> Bel ons
                         </a>
@@ -213,7 +225,8 @@
     <div class="container-x grid gap-12 border-t border-hairline py-14 lg:grid-cols-12">
         <div class="lg:col-span-7">
             <h2 class="font-display text-2xl font-bold text-cream">Over deze {{ $car->brand }}</h2>
-            <p class="mt-4 leading-relaxed text-cream/70">{{ $car->description ?: 'Geen beschrijving beschikbaar.' }}</p>
+            {{-- whitespace-pre-line: alinea's die de beheerder intypt blijven alinea's. --}}
+            <p class="mt-4 whitespace-pre-line leading-relaxed text-cream/70">{{ $car->description ?: 'Geen beschrijving beschikbaar.' }}</p>
         </div>
 
         <div class="lg:col-span-5">

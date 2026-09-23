@@ -35,7 +35,7 @@
                         Elke occasion is ook via financial lease te rijden. Het exacte maandbedrag hangt af van looptijd,
                         aanbetaling en slottermijn. Bekijk hiernaast een indicatie of vraag een persoonlijk voorstel aan.
                     </p>
-                    <a href="{{ route('contact') }}" class="btn btn-primary mt-5">
+                    <a href="{{ route('contact', ['onderwerp' => 'financiering']) }}#contact" class="btn btn-primary mt-5">
                         Vraag een voorstel aan <x-icon name="arrow-right" class="h-4 w-4" />
                     </a>
                 </div>
