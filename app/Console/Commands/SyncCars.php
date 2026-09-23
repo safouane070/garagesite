@@ -11,6 +11,7 @@ use Illuminate\Console\Command;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
 /**
@@ -236,44 +237,60 @@ class SyncCars extends Command
         return $changed;
     }
 
+    /**
+     * Crash-bestendig: eerst alle foto's als bestanden binnenhalen, pas daarna
+     * de auto + fotoregels in één transactie. Valt het proces halverwege om
+     * (bv. geheugen), dan staat er géén halve auto in de database; de volgende
+     * run ruimt de losse bestanden op en probeert het opnieuw.
+     */
     private function createFromDealer(array $v, array $data): bool
     {
-        $car = null;
-        try {
-            $car = Car::create([
-                'brand' => $data['brand'], 'model' => $data['model'], 'variant' => $data['variant'],
-                'year' => $data['year'], 'price' => $data['price'], 'mileage' => $data['mileage'],
-                'fuel_type' => $data['fuel_type'], 'transmission' => $data['transmission'],
-                'color' => $data['color'], 'body_type' => $data['body_type'],
-                'specs' => $data['specs'] ?: null, 'options' => $data['options'] ?: null,
-                'status' => CarStatus::Available, 'is_featured' => false,
-                'dealer_slug' => $v['slug'], 'dealer_modified_at' => Carbon::parse($v['modified']),
-            ]);
-            $car->update(['description' => CarDescription::for($car)]);
+        $slug = Car::makeUniqueSlug(trim("{$data['brand']} {$data['model']} {$data['variant']}"));
+        $dir = "cars/{$slug}";
 
-            $stored = $this->storePhotos($car, $data['photos']);
-            if ($stored === 0) {
+        try {
+            Storage::disk('public')->deleteDirectory($dir); // resten van een eerdere mislukte poging
+            $paths = $this->storePhotos($data['photos'], $dir);
+            if ($paths === []) {
                 throw new \RuntimeException('geen enkele foto te downloaden');
             }
-            $this->line("  nieuw: {$car->title()} ({$stored} foto's)");
+
+            $car = DB::transaction(function () use ($v, $data, $slug, $paths) {
+                $car = Car::create([
+                    'slug' => $slug,
+                    'brand' => $data['brand'], 'model' => $data['model'], 'variant' => $data['variant'],
+                    'year' => $data['year'], 'price' => $data['price'], 'mileage' => $data['mileage'],
+                    'fuel_type' => $data['fuel_type'], 'transmission' => $data['transmission'],
+                    'color' => $data['color'], 'body_type' => $data['body_type'],
+                    'specs' => $data['specs'] ?: null, 'options' => $data['options'] ?: null,
+                    'status' => CarStatus::Available, 'is_featured' => false,
+                    'dealer_slug' => $v['slug'], 'dealer_modified_at' => Carbon::parse($v['modified']),
+                ]);
+                $car->description = CarDescription::for($car);
+                $car->save();
+
+                foreach ($paths as $i => $stored) {
+                    $car->images()->create($stored + ['is_primary' => $i === 0, 'sort_order' => $i]);
+                }
+
+                return $car;
+            });
+
+            $this->line("  nieuw: {$car->title()} (" . count($paths) . " foto's)");
 
             return true;
         } catch (\Throwable $e) {
-            // Nooit een halve auto laten staan.
-            if ($car) {
-                Storage::disk('public')->deleteDirectory("cars/{$car->slug}");
-                $car->images()->delete();
-                $car->delete();
-            }
+            Storage::disk('public')->deleteDirectory($dir);
             $this->warn("  overgeslagen ({$e->getMessage()}): {$v['title']}");
 
             return false;
         }
     }
 
-    private function storePhotos(Car $car, array $urls): int
+    /** @return list<array{path:string,thumb_path:?string,width:?int,height:?int}> in galerijvolgorde */
+    private function storePhotos(array $urls, string $dir): array
     {
-        $stored = 0;
+        $paths = [];
         foreach ($urls as $url) {
             $binary = DealerSite::download($url);
             if ($binary === null) {
@@ -282,16 +299,13 @@ class SyncCars extends Command
             $tmp = tempnam(sys_get_temp_dir(), 'dealer');
             file_put_contents($tmp, $binary);
             try {
-                $path = ImageOptimizer::store(new UploadedFile($tmp, basename(parse_url($url, PHP_URL_PATH)), null, null, true), "cars/{$car->slug}");
+                $paths[] = ImageOptimizer::store(new UploadedFile($tmp, basename(parse_url($url, PHP_URL_PATH)), null, null, true), $dir);
             } finally {
                 @unlink($tmp);
             }
-
-            $car->images()->create(['path' => $path, 'is_primary' => $stored === 0, 'sort_order' => $stored]);
-            $stored++;
         }
 
-        return $stored;
+        return $paths;
     }
 
     /** Voertuigpagina ophalen + uitlezen. Array = gegevens, string = reden. */

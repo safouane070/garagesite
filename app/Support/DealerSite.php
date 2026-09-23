@@ -207,10 +207,18 @@ class DealerSite
 
         preg_match_all('#https?://[^"\'\s)]+/' . $id[1] . '-(\d+)(-\d+x\d+|-scaled)?\.(jpe?g|webp)#i', $html, $m, PREG_SET_ORDER);
 
-        // Per fotonummer de grootste variant: origineel > "-scaled" > grootste WxH.
+        // Per fotonummer de grootste *webversie* (hoogstens 2048 px breed). Het
+        // camera-origineel kan tientallen megapixels zijn: traag en geheugenvretend.
+        // Alleen als er geen webversie is, valt het terug op "-scaled" of het origineel.
         $best = [];
         foreach ($m as [$url, $n, $size]) {
-            $rank = $size === '' ? PHP_INT_MAX : ($size === '-scaled' ? PHP_INT_MAX - 1 : (int) Str::before(ltrim($size, '-'), 'x'));
+            $width = $size === '' || $size === '-scaled' ? 0 : (int) Str::before(ltrim($size, '-'), 'x');
+            $rank = match (true) {
+                $width > 0 && $width <= 2048 => 10_000 + $width,
+                $size === '-scaled' => 2,
+                $size === '' => 1,
+                default => 0, // webversie breder dan 2048: liever niet
+            };
             if (! isset($best[$n]) || $rank > $best[$n][0]) {
                 $best[$n] = [$rank, $url];
             }
