@@ -25,6 +25,9 @@ Schedule::command('cars:sync')->dailyAt('06:00')->withoutOverlapping()
 // worker: de minuut-cron start 'm kort, hij stopt zodra de wachtrij leeg is.
 Schedule::command('queue:work --stop-when-empty --tries=3 --max-time=50')->everyMinute()->withoutOverlapping();
 
+// Opslag: van auto's die >60 dagen verkocht zijn blijft alleen de omslagfoto.
+Schedule::command('cars:prune-photos')->dailyAt('05:30');
+
 // Hartslag: bewijst dat de cron draait (gecontroleerd door /up en het beheer, zie SystemStatus).
 Schedule::call(fn () => \Illuminate\Support\Facades\Cache::put(\App\Support\SystemStatus::HEARTBEAT_KEY, time(), now()->addDay()))
     ->everyMinute()->name('heartbeat');

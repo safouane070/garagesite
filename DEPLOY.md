@@ -61,8 +61,8 @@ Begin met `.env.example` en vul in:
 Vast ingebouwd in productie (niets voor nodig): cookies alleen over https, links via https, HSTS,
 en `www.` → hoofddomein (301).
 
-**Schijfruimte:** reken op ±1,2 GB voor de foto's (±2500 foto's in 4 maten). Kies een pakket met
-ruim voldoende opslag.
+**Schijfruimte:** reken op ±1,2 GB voor de foto's (±2500 foto's in 4 maten). Dat groeit niet mee met
+de verkopen: na 60 dagen verkocht blijft alleen de omslagfoto. 3 GB of meer is ruim voldoende.
 
 **PHP-instellingen** (anders falen foto-uploads vanaf een telefoon):
 - [ ] `upload_max_filesize` ≥ 16M, `post_max_size` ≥ 64M, `memory_limit` ≥ 256M
@@ -113,8 +113,9 @@ php artisan config:cache && php artisan route:cache && php artisan view:cache
 ```
 * * * * * cd /pad/naar/project && php artisan schedule:run >> /dev/null 2>&1
 ```
-Die draait de wachtrij (mails), dagelijks 06:00 `cars:sync`, dagelijks het wissen van oude
-aanvragen (AVG) en wekelijks de reviews + Google-score.
+Die draait de wachtrij (mails), een hartslag voor de bewaking, dagelijks 06:00 `cars:sync`,
+dagelijks het inkorten van galerijen van auto's die >60 dagen verkocht zijn (opslag), het wissen
+van oude aanvragen (AVG) en wekelijks de reviews + Google-score.
 
 ## 5. Eerst op een testadres
 - [ ] Maak `nieuw.autobedrijfrijswijk.nl` (TransIP → DNS, A/AAAA naar de nieuwe hosting) en zet de
