@@ -89,8 +89,12 @@ De mail van de zaak zit al bij Google en SPF staat Google al toe — dus via Goo
 - [ ] SPF: **niets wijzigen** (Google staat er al in). Nooit een tweede SPF-record toevoegen.
 - [ ] DMARC: laat `p=none` staan tot DKIM werkt en mail-tester 9/10+ geeft; daarna eventueel
       `v=DMARC1; p=quarantine; rua=mailto:info@autobedrijfrijswijk.nl`.
-- [ ] Test: formulier invullen → de zaak krijgt de aanvraag, de klant de bevestiging. Score via
-      <https://www.mail-tester.com> (doel 9/10+).
+- [ ] Controle in één opdracht (instellingen + SPF/DKIM/DMARC + beide mails echt versturen):
+  ```bash
+  php artisan mail:test jouw@adres.nl        # verwacht: MAIL TEST OK
+  php artisan mail:test test-xxxx@srv1.mail-tester.com   # adres van mail-tester.com → spamscore (doel 9/10+)
+  ```
+- [ ] Daarna nog één keer echt: formulier invullen op de site → aanvraag bij de zaak, bevestiging bij de klant.
 
 ## 4. Database, account en voorraad
 ```bash
@@ -141,7 +145,15 @@ aanvragen (AVG) en wekelijks de reviews + Google-score.
 (zie de tabel bovenaan). Binnen ±5 minuten staat de WordPress-site er weer. Laat die dus
 minstens een maand bestaan.
 
-## 7. Daarna
+## 7. Bewaking (5 minuten, gratis)
+- [ ] Account op <https://uptimerobot.com> → **New monitor** → type *HTTP(s)*, URL
+      `https://autobedrijfrijswijk.nl/up`, interval 5 minuten, melding naar je e-mail (en app).
+- [ ] `/up` geeft een fout zodra de database, de **cron** of de **mail** hapert (hartslag van de
+      scheduler, vastzittende of mislukte mails). Een stilgevallen cron = aanvragen die niet gemaild
+      worden; dat zie je zo binnen 10 minuten. Hetzelfde verschijnt als rode melding in het beheer.
+- [ ] Vastzittende mails na het oplossen opnieuw versturen: `php artisan queue:retry all`.
+
+## 8. Daarna
 - [ ] `https://autobedrijfrijswijk.nl/.env` → 404 · een foutpagina toont geen debug-info
 - [ ] Backups: dagelijks, bestanden **en** database (controlepaneel van de hosting); vóór elke update extra
 - [ ] Updates: push naar GitHub → Actions draait tests + build en maakt een nieuw releasepakket
