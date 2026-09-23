@@ -19,6 +19,7 @@
             ['label' => 'Voorraad', 'icon' => 'car', 'route' => 'admin.dashboard', 'active' => request()->routeIs('admin.dashboard', 'admin.cars.*')],
             ['label' => 'Aanvragen', 'icon' => 'inbox', 'route' => 'admin.leads.index', 'active' => request()->routeIs('admin.leads.*'), 'badge' => $openLeads],
             ['label' => 'Profiel', 'icon' => 'user', 'route' => 'profile.edit', 'active' => request()->routeIs('profile.*')],
+            ['label' => 'Hulp', 'icon' => 'file-text', 'route' => 'admin.help', 'active' => request()->routeIs('admin.help')],
         ];
     @endphp
     <header class="sticky top-0 z-40 border-b border-hairline bg-ink/85 backdrop-blur-lg">

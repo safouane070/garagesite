@@ -31,6 +31,7 @@ Een complete autogarage-website gebouwd met **Laravel 13**, **MySQL/MariaDB**, *
 
 **Admin** (`/admin`, na inloggen)
 - **Aanvragen-inbox** (`/admin/aanvragen`): open/afgehandeld, voorkeursdatum, auto, direct beantwoorden per mail of bellen; teller van open aanvragen in de navigatie
+- **Hulp** (`/admin/hulp`): korte handleiding voor de eigenaar — auto's, foto's, verkocht zetten, aanvragen, wachtwoord
 - **Automatische voorraad** (`cars:sync`, dagelijks): nieuwe auto's van de dealersite erbij (met foto's en opties), verkochte op "verkocht", prijswijzigingen bijgewerkt; stopt zelf bij een verdachte bron
 - **Inzicht:** weergaven en aanvragen per auto, plus "Meest bekeken" op het dashboard
 - Dashboard met voorraadoverzicht en statistieken

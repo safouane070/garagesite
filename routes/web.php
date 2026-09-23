@@ -71,6 +71,8 @@ Route::middleware('auth')->group(function () {
         Route::get('aanvragen', [AdminLeadController::class, 'index'])->name('leads.index');
         Route::patch('aanvragen/{lead}/afgehandeld', [AdminLeadController::class, 'toggle'])->name('leads.toggle');
         Route::delete('aanvragen/{lead}', [AdminLeadController::class, 'destroy'])->name('leads.destroy');
+
+        Route::view('hulp', 'admin.help')->name('help');
     });
 
     // Profielbeheer (van Breeze).
