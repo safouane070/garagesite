@@ -32,8 +32,9 @@ enum CarStatus: string
     {
         // Gevulde pillen met witte tekst: leesbaar op wit én over foto's.
         return match ($this) {
-            self::Available => 'text-white bg-emerald-600 ring-emerald-700/40',
-            self::Reserved => 'text-white bg-amber-600 ring-amber-700/40',
+            // -700: wit haalt daarop de WCAG-contrasteis (4,5:1); -600 bleef steken op ±3,8.
+            self::Available => 'text-white bg-emerald-700 ring-emerald-800/40',
+            self::Reserved => 'text-white bg-amber-700 ring-amber-800/40',
             self::Sold => 'text-white bg-rose-600 ring-rose-700/40',
         };
     }

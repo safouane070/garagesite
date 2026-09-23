@@ -141,7 +141,7 @@
                                     <div class="flex items-center gap-3">
                                         <div class="h-12 w-16 shrink-0 overflow-hidden rounded-[3px] border border-hairline bg-graphite-800">
                                             @if ($car->primaryImage)
-                                                <img src="{{ $car->primaryImage->thumbUrl() }}" alt="" loading="lazy" class="h-full w-full object-cover">
+                                                <img src="{{ $car->primaryImage->xsUrl() }}" alt="" loading="lazy" class="h-full w-full object-cover">
                                             @else
                                                 <div class="flex h-full w-full items-center justify-center text-cream/25"><x-icon name="car" class="h-5 w-5" /></div>
                                             @endif

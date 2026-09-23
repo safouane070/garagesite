@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use App\Support\ImageOptimizer;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
@@ -13,7 +14,7 @@ class CarImage extends Model
     /** @use HasFactory<\Database\Factories\CarImageFactory> */
     use HasFactory;
 
-    protected $fillable = ['car_id', 'path', 'thumb_path', 'width', 'height', 'is_primary', 'sort_order'];
+    protected $fillable = ['car_id', 'path', 'xs_path', 'thumb_path', 'md_path', 'width', 'height', 'is_primary', 'sort_order'];
 
     protected function casts(): array
     {
@@ -50,22 +51,35 @@ class CarImage extends Model
         return $this->thumb_path ? Storage::disk('public')->url($this->thumb_path) : $this->url();
     }
 
+    /** Kleinste variant (240 px) voor fotostrookjes en lijstjes. */
+    public function xsUrl(): string
+    {
+        return $this->xs_path ? Storage::disk('public')->url($this->xs_path) : $this->thumbUrl();
+    }
+
     /**
-     * srcset voor responsieve kaartjes: de browser kiest zelf miniatuur of
-     * volledige foto (bv. een scherp telefoonscherm krijgt de grote).
+     * srcset voor responsieve foto's: de browser kiest zelf de kleinste maat die
+     * scherp genoeg is (telefoon → 640/1024, groot scherm → volledige foto).
      */
     public function srcset(): ?string
     {
-        if (! $this->thumb_path || ! $this->width) {
+        if (! $this->width) {
             return null;
         }
 
-        return $this->thumbUrl() . ' ' . \App\Support\ImageOptimizer::THUMB_WIDTH . 'w, ' . $this->url() . ' ' . $this->width . 'w';
+        $set = [];
+        foreach (ImageOptimizer::VARIANTS as $column => [$width]) {
+            if ($this->{$column} && $column !== 'xs_path') {
+                $set[] = Storage::disk('public')->url($this->{$column}) . " {$width}w";
+            }
+        }
+
+        return $set === [] ? null : implode(', ', [...$set, $this->url() . " {$this->width}w"]);
     }
 
-    /** Foto en miniatuur van schijf verwijderen. */
+    /** Foto en alle verkleinde varianten van schijf verwijderen. */
     public function deleteFiles(): void
     {
-        Storage::disk('public')->delete(array_filter([$this->path, $this->thumb_path]));
+        Storage::disk('public')->delete(array_filter([$this->path, ...array_map(fn ($c) => $this->{$c}, array_keys(ImageOptimizer::VARIANTS))]));
     }
 }

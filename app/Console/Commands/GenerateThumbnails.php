@@ -7,8 +7,8 @@ use App\Support\ImageOptimizer;
 use Illuminate\Console\Command;
 
 /**
- * Geeft bestaande foto's (van vóór de miniaturen) alsnog een miniatuur en hun
- * afmetingen. Idempotent: foto's die al afmetingen hebben worden overgeslagen.
+ * Geeft bestaande foto's alsnog hun verkleinde varianten (xs/miniatuur/md) en
+ * afmetingen. Idempotent: foto's die al compleet zijn worden overgeslagen.
  */
 class GenerateThumbnails extends Command
 {
@@ -20,7 +20,10 @@ class GenerateThumbnails extends Command
     {
         [$done, $skipped] = [0, 0];
 
-        CarImage::whereNull('width')->chunkById(100, function ($images) use (&$done, &$skipped) {
+        $xs = ImageOptimizer::VARIANTS['xs_path'][0] * 1.2;
+        CarImage::whereNull('width')
+            ->orWhere(fn ($q) => $q->whereNull('xs_path')->where('width', '>', $xs))
+            ->chunkById(100, function ($images) use (&$done, &$skipped) {
             foreach ($images as $image) {
                 $info = ImageOptimizer::describeStored($image->path);
                 if ($info === null) {

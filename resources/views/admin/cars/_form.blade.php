@@ -37,7 +37,7 @@
                     @error('model') <p class="field-hint text-rose-300">{{ $message }}</p> @enderror
                 </div>
                 <div class="sm:col-span-2">
-                    <label class="field-label" for="variant">Uitvoering <span class="text-cream/30">(optioneel)</span></label>
+                    <label class="field-label" for="variant">Uitvoering <span class="text-cream/60">(optioneel)</span></label>
                     <input id="variant" name="variant" value="{{ old('variant', $car->variant) }}" class="field-input" placeholder="bv. M Sport">
                     @error('variant') <p class="field-hint text-rose-300">{{ $message }}</p> @enderror
                 </div>
