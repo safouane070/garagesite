@@ -21,7 +21,16 @@ use Illuminate\Support\Facades\Storage;
  */
 class PruneGoneCars extends Command
 {
-    protected $signature = 'cars:prune-gone {--dry-run : Toon alleen wat verwijderd zou worden}';
+    protected $signature = "cars:prune-gone
+        {--dry-run : Toon alleen wat verwijderd zou worden}
+        {--force : Verwijder ook als verdacht veel auto's als verdwenen oogt}";
+
+    /**
+     * Veiligheidsdrempel: oogt meer dan dit deel van de gecontroleerde auto's als
+     * verdwenen, dan is de dealersite eerder veranderd (nieuwe URL-structuur,
+     * storing) dan dat de voorraad echt weg is. Dan stoppen we i.p.v. alles te wissen.
+     */
+    private const MAX_GONE_RATIO = 0.5;
 
     protected $description = 'Verwijdert auto\'s waarvan de voertuig-pagina op de dealersite verdwenen is (404/410).';
 
@@ -38,12 +47,14 @@ class PruneGoneCars extends Command
         $candidates = $cars->filter(fn (Car $c) => empty($c->options));
 
         $gone = [];
+        $checked = 0;
         foreach ($candidates as $car) {
             $slug = $assignment[$car->id] ?? null;
             // Geen dealer-slug om te controleren: laten staan, niet gokken.
             if (! $slug) {
                 continue;
             }
+            $checked++;
 
             if (in_array($this->pageStatus(DealerListing::BASE . $slug . '/'), [404, 410], true)) {
                 $gone[] = $car;
@@ -58,6 +69,17 @@ class PruneGoneCars extends Command
         $this->line(($dry ? 'ZOU VERWIJDEREN' : 'VERWIJDEREN') . ' — ' . count($gone) . " auto's (weg van de dealersite):");
         foreach ($gone as $car) {
             $this->line("  · {$car->title()}");
+        }
+
+        if ($checked > 2 && count($gone) / $checked > self::MAX_GONE_RATIO && ! $this->option('force')) {
+            $this->error(sprintf(
+                "Gestopt: %d van de %d gecontroleerde auto's oogt verdwenen. Dat wijst eerder op een "
+                . 'veranderde of haperende dealersite dan op een lege voorraad. Controleer de site; '
+                . 'weet je het zeker, draai dan opnieuw met --force.',
+                count($gone), $checked
+            ));
+
+            return self::FAILURE;
         }
 
         if ($dry) {
