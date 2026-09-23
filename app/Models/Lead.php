@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Lead extends Model
@@ -39,5 +40,21 @@ class Lead extends Model
     public function typeLabel(): string
     {
         return self::TYPES[$this->type] ?? 'Aanvraag';
+    }
+
+    /** Nog niet afgehandelde aanvragen (de "inbox" van de beheerder). */
+    public function scopeOpen(Builder $query): Builder
+    {
+        return $query->whereNull('handled_at');
+    }
+
+    public function scopeHandled(Builder $query): Builder
+    {
+        return $query->whereNotNull('handled_at');
+    }
+
+    public function isHandled(): bool
+    {
+        return $this->handled_at !== null;
     }
 }

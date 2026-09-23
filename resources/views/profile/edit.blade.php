@@ -18,10 +18,5 @@
             </div>
         </div>
 
-        <div class="surface p-6 sm:p-8">
-            <div class="max-w-xl">
-                @include('profile.partials.delete-user-form')
-            </div>
-        </div>
     </div>
 </x-layouts.admin>
