@@ -1,0 +1,34 @@
+# Bereikbaarheidsbewaking zonder extra account: elke 10 minuten /up van de live
+# site controleren. /up faalt ook als de cron stilligt of mails vastzitten (zie
+# App\Support\SystemStatus). Mislukt het, dan mailt GitHub de eigenaar van deze
+# workflow automatisch (instelling: GitHub → Settings → Notifications → Actions).
+#
+# Aanzetten na de livegang (één keer):
+#   gh variable set SITE_URL --body https://autobedrijfrijswijk.nl
+# Zolang SITE_URL niet gezet is, doet deze workflow niets.
+name: bereikbaarheid
+
+on:
+  schedule:
+    - cron: '*/10 * * * *'
+  workflow_dispatch:
+
+jobs:
+  up:
+    if: vars.SITE_URL != ''
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Controleer /up (3 pogingen, geen vals alarm bij één haperende request)
+        env:
+          SITE_URL: ${{ vars.SITE_URL }}
+        run: |
+          for attempt in 1 2 3; do
+            # "|| true": GitHub draait met bash -e; een mislukte curl mag de herhaalpogingen niet afbreken.
+            code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 20 "$SITE_URL/up") || true
+            if [ "$code" = "200" ]; then echo "OK ($SITE_URL/up → 200)"; exit 0; fi
+            echo "Poging $attempt: HTTP $code"
+            sleep 30
+          done
+          echo "::error::$SITE_URL/up geeft HTTP $code: site onbereikbaar, of database/cron/mail hapert. Kijk in het beheer (rode melding) en in storage/logs."
+          exit 1

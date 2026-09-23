@@ -146,13 +146,22 @@ van oude aanvragen (AVG) en wekelijks de reviews + Google-score.
 (zie de tabel bovenaan). Binnen ±5 minuten staat de WordPress-site er weer. Laat die dus
 minstens een maand bestaan.
 
-## 7. Bewaking (5 minuten, gratis)
-- [ ] Account op <https://uptimerobot.com> → **New monitor** → type *HTTP(s)*, URL
-      `https://autobedrijfrijswijk.nl/up`, interval 5 minuten, melding naar je e-mail (en app).
-- [ ] `/up` geeft een fout zodra de database, de **cron** of de **mail** hapert (hartslag van de
-      scheduler, vastzittende of mislukte mails). Een stilgevallen cron = aanvragen die niet gemaild
-      worden; dat zie je zo binnen 10 minuten. Hetzelfde verschijnt als rode melding in het beheer.
+## 7. Bewaking (ingebouwd, gratis, geen extra account)
+De GitHub-workflow `.github/workflows/uptime.yml` controleert elke 10 minuten `/up`. Die faalt zodra
+de site onbereikbaar is of de database, de **cron** of de **mail** hapert (hartslag van de scheduler,
+vastzittende of mislukte mails). GitHub mailt dan automatisch wie de workflow het laatst wijzigde.
+- [ ] Na de livegang één keer aanzetten:
+  ```bash
+  gh variable set SITE_URL --body https://autobedrijfrijswijk.nl
+  ```
+  (of GitHub → repo → Settings → Secrets and variables → Actions → Variables). Zonder `SITE_URL` doet hij niets.
+- [ ] Testen: GitHub → Actions → *bereikbaarheid* → **Run workflow** → groen = in orde.
+- [ ] Mailmeldingen van Actions staan aan: GitHub → Settings → Notifications → Actions.
+- Kanttekeningen: GitHub start geplande runs soms 5–15 minuten later dan gepland, en zet ze
+  in een openbare repo uit na 60 dagen zonder commits (weer aan via Actions → *Enable workflow*).
+  Wil je sneller of via sms/app gewaarschuwd worden: UptimeRobot (gratis) op dezelfde `/up`.
 - [ ] Vastzittende mails na het oplossen opnieuw versturen: `php artisan queue:retry all`.
+- Hetzelfde probleem verschijnt ook als rode melding bovenaan het beheer.
 
 ## 8. Daarna
 - [ ] `https://autobedrijfrijswijk.nl/.env` → 404 · een foutpagina toont geen debug-info
