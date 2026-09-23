@@ -4,15 +4,24 @@ namespace App\Mail;
 
 use App\Models\Lead;
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Address;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
-class LeadReceived extends Mailable
+/**
+ * Aanvraag naar de zaak. Via de wachtrij: het "Bedankt"-scherm wacht zo nooit
+ * op een trage of haperende mailserver, en mislukte pogingen worden herhaald.
+ */
+class LeadReceived extends Mailable implements ShouldQueue
 {
     use Queueable, SerializesModels;
+
+    public int $tries = 3;
+
+    public array $backoff = [60, 300];
 
     public function __construct(public Lead $lead)
     {

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreLeadRequest;
+use App\Mail\LeadConfirmation;
 use App\Mail\LeadReceived;
 use App\Models\Lead;
 use Illuminate\Http\RedirectResponse;
@@ -25,12 +26,14 @@ class LeadController extends Controller
 
         $lead = Lead::create($data);
 
-        // De lead staat veilig in de database; mail is "best effort". Een
-        // mailprobleem (SMTP onbereikbaar) mag de bevestiging niet blokkeren.
+        // De lead staat veilig in de database (en in /admin/aanvragen). Mails gaan
+        // via de wachtrij, zodat de bezoeker nooit op de mailserver wacht; lukt
+        // zelfs het inplannen niet, dan blokkeert dat de bevestiging niet.
         try {
-            Mail::to(config('brand.contact.email'))->send(new LeadReceived($lead));
+            Mail::to(config('brand.contact.email'))->queue(new LeadReceived($lead));
+            Mail::to($lead->email, $lead->name)->queue(new LeadConfirmation($lead));
         } catch (\Throwable $e) {
-            Log::warning('Lead-mail niet verzonden: ' . $e->getMessage(), ['lead_id' => $lead->id]);
+            Log::warning('Lead-mail niet ingepland: ' . $e->getMessage(), ['lead_id' => $lead->id]);
         }
 
         return back()
