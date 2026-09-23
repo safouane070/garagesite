@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\CarRequest;
 use App\Models\Car;
 use App\Models\CarImage;
+use App\Support\CarDescription;
 use App\Support\ImageOptimizer;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -55,6 +56,7 @@ class CarController extends Controller
     public function store(CarRequest $request): RedirectResponse
     {
         $car = Car::create($this->carData($request));
+        $this->describeIfEmpty($car);
 
         $this->storeImages($car, $request);
 
@@ -75,6 +77,7 @@ class CarController extends Controller
     public function update(CarRequest $request, Car $car): RedirectResponse
     {
         $car->update($this->carData($request));
+        $this->describeIfEmpty($car);
 
         $this->storeImages($car, $request);
 
@@ -180,6 +183,14 @@ class CarController extends Controller
     }
 
     /** Geüploade foto's opslaan en als CarImage koppelen. */
+    /** Beschrijving leeg gelaten: maak er een uit de echte gegevens (uniek per auto, goed voor Google). */
+    private function describeIfEmpty(Car $car): void
+    {
+        if (CarDescription::isReplaceable($car->description)) {
+            $car->update(['description' => CarDescription::for($car)]);
+        }
+    }
+
     private function storeImages(Car $car, CarRequest $request): void
     {
         if (! $request->hasFile('images')) {

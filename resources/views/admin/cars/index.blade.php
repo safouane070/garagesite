@@ -186,7 +186,8 @@
                                             <x-icon name="pencil" class="h-4 w-4" />
                                         </a>
                                         <form method="POST" action="{{ route('admin.cars.destroy', $car) }}"
-                                              onsubmit="return confirm({{ \Illuminate\Support\Js::from('“' . $car->title() . '” definitief verwijderen?') }});">
+                                              onsubmit="return confirm({{ \Illuminate\Support\Js::from('“' . $car->title() . '” definitief verwijderen?'
+                                                  . ($car->dealer_slug && config('brand.dealer_site_url') ? "\n\nLet op: deze auto komt van de dealersite. Staat hij daar nog, dan komt hij morgen terug. Verkocht? Zet de status dan op Verkocht." : '')) }});">
                                             @csrf @method('DELETE')
                                             <button type="submit" title="Verwijderen" aria-label="{{ $car->title() }} verwijderen"
                                                     class="flex h-8 w-8 items-center justify-center rounded-[3px] text-cream/65 transition hover:bg-rose-500/10 hover:text-rose-300">
