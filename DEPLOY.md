@@ -3,6 +3,18 @@
 Doorloop dit vóór elke livegang. De meeste stappen zijn eenmalig instellen;
 daarna is het afvinken.
 
+## 0. Eerst beslissen: waar komt de voorraad vandaan na de overstap?
+De voorraad-sync leest nu de WordPress-site op `autobedrijfrijswijk.nl`. Neemt deze site dat domein
+over, dan is die bron weg. Kies vóór de livegang één van de twee:
+- [ ] **WordPress-site blijft draaien op een ander adres** (bv. `voorraad.autobedrijfrijswijk.nl`, alleen
+      voor de import) → `DEALER_SITE_URL=https://voorraad.autobedrijfrijswijk.nl`. Daar blijft de eigenaar
+      auto's invoeren; deze site neemt ze elke ochtend over.
+- [ ] **Voorraad voortaan alleen via /admin** → `DEALER_SITE_URL=` (leeg): de sync staat dan uit.
+
+Wijst `DEALER_SITE_URL` naar dit domein zelf, dan weigert de sync (en krijg je een foutmail).
+Oude WordPress-adressen (`/occasions/`, `/privacy-policy/`, `/voertuig/…`) worden automatisch
+doorgestuurd; de juridische pdf's staan in `public/docs/`.
+
 ## 1. Omgeving (`.env` op de server)
 - [ ] `APP_ENV=production`
 - [ ] `APP_DEBUG=false`  ← **belangrijk**: anders lekken stacktraces naar bezoekers
@@ -10,9 +22,17 @@ daarna is het afvinken.
 - [ ] `APP_KEY` gezet (`php artisan key:generate` als die leeg is)
 - [ ] Database-gegevens (`DB_*`) van de productie-database ingevuld
 - [ ] `QUEUE_CONNECTION=database` (aanvraag-mails via de wachtrij, zie 5b)
-- [ ] `LOG_STACK=daily` (logbestanden per dag, 14 dagen bewaard)
+- [ ] `LOG_STACK=daily` (logbestanden per dag, 14 dagen bewaard) en `LOG_LEVEL=warning`
+- [ ] `SESSION_SECURE_COOKIE=true` (login-cookie alleen over https)
 - [ ] `ERROR_ALERT_EMAIL=` het adres dat een mail krijgt bij een fout of een mislukte voorraad-sync
-- [ ] Optioneel `ADMIN_EMAIL` / `ADMIN_PASSWORD` voor het beheeraccount (anders zie stap 4)
+- [ ] `ADMIN_EMAIL=` een **echt** mailadres van de eigenaar — anders werkt "wachtwoord vergeten" niet
+      (de standaard `admin@autobedrijfrijswijk.test` bestaat niet). `ADMIN_PASSWORD` optioneel (zie stap 4)
+
+## 1a. Webserver (Hostinger)
+- [ ] De map `public/` moet de webroot zijn (hPanel → Websites → domein → documentroot op
+      `…/public` zetten). Staat de hele projectmap in `public_html`, dan zijn `.env` en de code
+      van buitenaf op te vragen.
+- [ ] SSL aan + "HTTPS forceren" aan (hPanel → Beveiliging → SSL).
 
 ## 1b. PHP-instellingen (anders falen foto-uploads vanaf een telefoon)
 Bij Hostinger: hPanel → Geavanceerd → PHP-configuratie.
@@ -40,6 +60,7 @@ Bij Hostinger: hPanel → Geavanceerd → PHP-configuratie.
 - [ ] `BRAND_REVIEW_RATING` / `BRAND_REVIEW_COUNT` gelijk aan het Google-profiel
 - [ ] `BRAND_FL_STOCK_ID` = de FinancialLease.nl dealer-feed van de zaak (nu 1262)
 - [ ] Openingstijden in `config/brand.php` (`opening_hours`) kloppen
+- [ ] `BRAND_KVK` (en `BRAND_VAT`) ingevuld — wettelijk verplicht, verschijnt in de footer
 
 ## 4. Build, database en voorraad (op de server)
 ```bash

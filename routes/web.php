@@ -7,6 +7,7 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\LeadController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SitemapController;
+use App\Models\Car;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -22,6 +23,16 @@ Route::get('/aanbod/{car}', [CarController::class, 'show'])->name('cars.show');
 Route::post('/aanvraag', [LeadController::class, 'store'])
     ->middleware('throttle:6,1')
     ->name('leads.store');
+
+// Adressen van de oude WordPress-site (staan in Google en in gedeelde links):
+// permanent doorsturen zodat bezoekers en zoekposities niet op een 404 stranden.
+Route::permanentRedirect('/occasions', '/aanbod');
+Route::permanentRedirect('/privacy-policy', '/privacybeleid');
+Route::get('/voertuig/{slug}', function (string $slug) {
+    $car = Car::firstWhere('dealer_slug', $slug);
+
+    return $car ? redirect()->route('cars.show', $car, 301) : redirect()->route('cars.index', status: 301);
+});
 
 Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap');
 Route::get('/robots.txt', [SitemapController::class, 'robots'])->name('robots');

@@ -106,9 +106,15 @@ return [
         'error_email' => env('ERROR_ALERT_EMAIL'),
     ],
 
-    // Officiële juridische documenten van de zaak (we verzinnen geen eigen tekst).
-    'legal' => [
-        'terms_url'   => env('BRAND_TERMS_URL', 'https://autobedrijfrijswijk.nl/algemene-voorwaarden/'),
-        'privacy_url' => env('BRAND_PRIVACY_URL', 'https://autobedrijfrijswijk.nl/privacy-policy/'),
+    // Wettelijk verplicht op de website van een bedrijf (Handelsregisterwet):
+    // KvK-nummer, en btw-nummer als het bedrijf btw-plichtig is. Staat in de footer zodra ingevuld.
+    'company' => [
+        'kvk' => env('BRAND_KVK'),
+        'vat' => env('BRAND_VAT'),
     ],
+
+    // Bron voor `cars:sync`: de WordPress-site waar de voorraad nu op staat.
+    // Vervangt déze site straks het domein, dan moet de WordPress-site op een
+    // ander adres blijven draaien (bv. een subdomein) of de sync uit (leeg laten).
+    'dealer_site_url' => env('DEALER_SITE_URL', 'https://autobedrijfrijswijk.nl'),
 ];

@@ -19,7 +19,7 @@
                     <li>We tellen hoe vaak een auto bekeken wordt, zonder cookies en zonder je IP-adres op te slaan.</li>
                 </ul>
             </div>
-            <a href="{{ config('brand.legal.privacy_url') }}" target="_blank" rel="noopener" class="btn btn-primary">
+            <a href="{{ asset('docs/privacybeleid.pdf') }}" target="_blank" rel="noopener" class="btn btn-primary">
                 Lees ons privacybeleid <x-icon name="arrow-up-right" class="h-4 w-4" />
             </a>
             <p class="text-sm text-cream/55">
