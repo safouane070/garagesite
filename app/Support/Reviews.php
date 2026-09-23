@@ -19,18 +19,22 @@ class Reviews
      */
     public static function all(): array
     {
+        $reviews = config('brand.testimonials', []);
         try {
             if (Storage::exists(self::CACHE)) {
                 $data = json_decode((string) Storage::get(self::CACHE), true);
                 if (is_array($data) && $data !== []) {
-                    return $data;
+                    $reviews = $data;
                 }
             }
         } catch (\Throwable $e) {
             // Storage onbereikbaar: val terug op de config-lijst.
         }
 
-        return config('brand.testimonials', []);
+        // Verborgen reviews (brand.reviews.hidden), ongeacht hoofdletters.
+        $hidden = array_map('mb_strtolower', config('brand.reviews.hidden', []));
+
+        return array_values(array_filter($reviews, fn ($r) => ! in_array(mb_strtolower($r['name'] ?? ''), $hidden, true)));
     }
 
     public const SUMMARY = 'reviews-summary.json';

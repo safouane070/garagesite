@@ -77,6 +77,9 @@ return [
         // `php artisan reviews:fetch`, dat de echte reviews ophaalt en cachet.
         // Niet in de HTML embed (we tonen ze in eigen stijl), puur als bron.
         'trustindex_widget_id' => env('BRAND_TRUSTINDEX_WIDGET', 'd143df026f54805b969687b3cea'),
+        // Niet tonen op de site (naam zoals op Google). Echte reviews, maar ze komen
+        // over als nep: "Gemeente Den Haag" die een G63 kocht.
+        'hidden' => ['Gemeente Den Haag'],
     ],
 
     // Financial lease loopt via onze leasepartner FinancialLease.nl (widget met
@@ -94,7 +97,6 @@ return [
         ['name' => 'Teus Dekker', 'rating' => 5, 'text' => 'Een paar weken geleden een andere auto gekocht bij Van Rijswijk. Keurig netjes geholpen. Er word alle tijd voor je genomen om alle opties die er zijn goed door te nemen. Uiterst vriendelijk personeel. En ook niet onbelangrijk, de prijzen zijn superscherp. Bij een volgende aanschaf zal ik als eerste naar Van Rijswijk gaan.'],
         ['name' => 'Enis Aliov', 'rating' => 5, 'text' => 'Vorige maand een Tesla Model 3 gekocht bij Autobedrijf Rijswijk. Alles is eerlijk en netjes nagekomen, precies zoals afgesproken. Inmiddels een heerlijke vakantie achter de rug met de Tesla, zonder ook maar één probleem. Top service en zeker een aanrader!'],
         ['name' => 'Martijn Jellema', 'rating' => 5, 'text' => 'Gewoon goed bedrijf, heb hier een super mooie T-Roc gekocht van 2022, super blij mee. Zou dit bedrijf zeker aanraden aan wie een leuke occasion zoekt, want ze hebben van alles staan.'],
-        ['name' => 'Gemeente Den Haag', 'rating' => 5, 'text' => 'Onlangs een prachtige Mercedes-AMG G63 gekocht bij BS Autobedrijf in Rijswijk. Wat een geweldige auto! Ik ben ontzettend tevreden over de service en de manier waarop ik ben geholpen. Alles was netjes geregeld en het contact was professioneel en vriendelijk. Zeker een aanrader.'],
         ['name' => 'Seko 1907', 'rating' => 5, 'text' => 'Hele mooie GLC 400e gekocht. Vanaf \'t begin tot einde goed geholpen. Ceasar en Dennis hebben passie voor auto\'s, denken keurig netjes mee en zijn zeer vriendelijk! Ga zo door heren.'],
         ['name' => 'MBM Bouwservice B.V.', 'rating' => 5, 'text' => 'De heren hebben mij zo goed geholpen, vriendelijk en servicegericht. Ik was niet van plan om iets te kopen, meer oriënterend. 6 maanden later besloot ik toch een auto te kopen voor mijn dochter. Ik wist precies waar ik moest zijn. Dankjewel Dennis.'],
         ['name' => 'Joze Marbus', 'rating' => 4, 'text' => 'Zeer vriendelijke ontvangst, heeft alle tijd genomen voor de uitleg. Nette inruilprijs. Kortom een fijne deal en tevreden met de aankoop.'],
@@ -114,6 +116,13 @@ return [
         'legal_name' => env('BRAND_LEGAL_NAME', 'BS Rijswijk Automotive B.V.'),
         'kvk'        => env('BRAND_KVK', '95760733'),
         'vat'        => env('BRAND_VAT', 'NL867282368B01'),
+    ],
+
+    // Bezoekersstatistiek zonder cookies (Plausible, of zelf gehost via PLAUSIBLE_SCRIPT).
+    // Leeg = uit. Het script en de CSP-uitzondering verschijnen pas als het domein gezet is.
+    'analytics' => [
+        'plausible_domain' => env('PLAUSIBLE_DOMAIN'),
+        'plausible_script' => env('PLAUSIBLE_SCRIPT', 'https://plausible.io/js/script.js'),
     ],
 
     // Bron voor `cars:sync`: de WordPress-site waar de voorraad nu op staat.

@@ -7,6 +7,18 @@
         </div>
     </div>
 
+    {{-- Herkomst: welke kanalen leveren aanvragen op (laatste 90 dagen) --}}
+    @if ($sources->isNotEmpty())
+        <section class="mt-6 rounded-[4px] border border-hairline px-4 py-3" aria-label="Herkomst van aanvragen">
+            <h2 class="font-mono text-[0.7rem] uppercase tracking-wider text-cream/65">Herkomst · laatste 90 dagen</h2>
+            <ul class="mt-2 flex flex-wrap gap-x-5 gap-y-1 text-sm text-cream/80">
+                @foreach ($sources as $source => $total)
+                    <li><span class="text-cream">{{ $source }}</span> <span class="font-mono text-cream/60 tabular">{{ $total }}</span></li>
+                @endforeach
+            </ul>
+        </section>
+    @endif
+
     {{-- Tabs --}}
     @php
         $tabs = ['open' => 'Open', 'afgehandeld' => 'Afgehandeld', 'alle' => 'Alle'];
@@ -67,6 +79,15 @@
                                     {{ $lead->created_at->diffForHumans() }}
                                 </time>
                             </div>
+                            @if ($lead->source)
+                                <p class="mt-2 font-mono text-[0.7rem] text-cream/60">
+                                    {{ implode(' · ', array_filter([
+                                        'Via ' . $lead->source,
+                                        $lead->landing_page ? 'binnen op ' . $lead->landing_page : null,
+                                        $lead->form_page && $lead->form_page !== $lead->landing_page ? 'formulier op ' . $lead->form_page : null,
+                                    ])) }}
+                                </p>
+                            @endif
 
                             <p class="mt-3 font-display text-lg font-semibold text-cream">{{ $lead->name }}</p>
                             <div class="mt-1 flex flex-wrap gap-x-5 gap-y-1 text-sm">

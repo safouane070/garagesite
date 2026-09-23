@@ -24,15 +24,20 @@ class SecurityHeaders
         $response->headers->set('X-Permitted-Cross-Domain-Policies', 'none');
         $response->headers->set('Permissions-Policy', 'geolocation=(), microphone=(), camera=()');
 
+        // Statistiek (optioneel): alleen de host van het ingestelde script erbij.
+        $analytics = config('brand.analytics.plausible_domain')
+            ? ' ' . preg_replace('#^(https?://[^/]+).*$#', '$1', (string) config('brand.analytics.plausible_script'))
+            : '';
+
         $csp = implode('; ', [
             "default-src 'self'",
-            "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+            "script-src 'self' 'unsafe-inline' 'unsafe-eval'{$analytics}",
             "style-src 'self' 'unsafe-inline'",
             "font-src 'self'", // fonts zelf gehost (AVG)
             // blob: voor de upload-preview in het beheer (URL.createObjectURL).
             "img-src 'self' data: blob: https:",
             "frame-src https://www.google.com https://iframe.financiallease.nl https://www.financiallease.nl",
-            "connect-src 'self'",
+            "connect-src 'self'{$analytics}",
             "base-uri 'self'",
             "form-action 'self'",
             "object-src 'none'",

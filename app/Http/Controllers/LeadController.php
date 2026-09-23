@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Middleware\RememberLeadSource;
 use App\Http\Requests\StoreLeadRequest;
 use App\Mail\LeadConfirmation;
 use App\Mail\LeadReceived;
@@ -23,6 +24,12 @@ class LeadController extends Controller
         if (! in_array($data['type'], Lead::DATE_TYPES, true)) {
             $data['preferred_date'] = null;
         }
+
+        // Herkomst (zie RememberLeadSource) + de pagina waarop het formulier stond.
+        $referer = parse_url((string) $request->headers->get('referer'));
+        $data += ($request->session()->get(RememberLeadSource::KEY) ?? ['source' => 'Onbekend', 'landing_page' => null]) + [
+            'form_page' => ($referer['host'] ?? null) === $request->getHost() ? ($referer['path'] ?? '/') : null,
+        ];
 
         $lead = Lead::create($data);
 
