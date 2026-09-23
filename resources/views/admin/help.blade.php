@@ -12,10 +12,11 @@
             ],
             [
                 'icon' => 'image', 'title' => 'Foto’s',
-                'items' => [
+                'items' => array_filter([
                     'Foto’s mogen rechtstreeks van je telefoon: ze worden automatisch verkleind en rechtop gezet.',
                     'De eerste foto is de omslag (die zie je in het aanbod). Met ← en → verander je de volgorde, met “Omslag” zet je een foto meteen vooraan.',
-                ],
+                    $sync ? 'Auto’s van de dealersite krijgen al hun foto’s van de dealersite. Foto’s toevoegen of weghalen doe je daar: wijzig je de auto op de dealersite, dan neemt deze site de foto’s van daar opnieuw over.' : null,
+                ]),
             ],
             [
                 'icon' => 'tag', 'title' => 'Verkocht of gereserveerd',

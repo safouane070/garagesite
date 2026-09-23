@@ -5,10 +5,20 @@ const PAGE = 'body > header, body > main, body > footer';
 
 export default (config) => ({
     images: config.images,
+    srcsets: config.srcsets ?? [],
     i: 0,
     full: false,
     touchX: null,
     lastFocus: null,
+
+    // Actieve miniatuur in beeld houden (alleen horizontaal: de pagina zelf mag niet verspringen).
+    init() {
+        this.$watch('i', (n) => {
+            const strip = this.$refs.thumbs;
+            const thumb = strip?.children[n];
+            if (thumb) strip.scrollTo({ left: thumb.offsetLeft - (strip.clientWidth - thumb.clientWidth) / 2, behavior: 'smooth' });
+        });
+    },
 
     get current() { return this.images[this.i]; },
     next() { if (this.images.length > 1) this.i = (this.i + 1) % this.images.length; },

@@ -109,6 +109,19 @@
     @media (prefers-reduced-motion: reduce) {
         .photo-fx { transition: none; }
     }
+
+    /* Dunne, donkere scrollbalk in de huisstijl i.p.v. de witte systeembalk
+       (o.a. de fotostrook op de autopagina). */
+    .scroll-thin {
+        scrollbar-width: thin;
+        scrollbar-color: rgba(242, 238, 228, 0.18) transparent;
+    }
+    .scroll-thin:hover {
+        scrollbar-color: rgba(242, 238, 228, 0.35) transparent;
+    }
+    .scroll-thin::-webkit-scrollbar { height: 6px; }
+    .scroll-thin::-webkit-scrollbar-track { background: transparent; }
+    .scroll-thin::-webkit-scrollbar-thumb { background: rgba(242, 238, 228, 0.18); border-radius: 9999px; }
 }
 
 @layer components {

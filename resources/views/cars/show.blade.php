@@ -71,8 +71,9 @@
 
     <div class="container-x grid gap-10 py-8 lg:grid-cols-12 lg:gap-12">
         {{-- ═══ Galerij ═══ --}}
-        <div class="lg:col-span-7"
-             x-data="gallery({ images: @js($images->map->url()->values()) })">
+        {{-- min-w-0: anders rekt de fotostrook (tientallen miniaturen) de gridkolom op mobiel op. --}}
+        <div class="min-w-0 lg:col-span-7"
+             x-data="gallery({ images: @js($images->map->url()->values()), srcsets: @js($images->map->srcset()->values()) })">
             <div class="relative aspect-[16/10] overflow-hidden rounded-[4px] border border-hairline bg-graphite-800 focus:outline-none focus-visible:ring-2"
                  tabindex="0" role="group" aria-roledescription="carrousel" aria-label="Fotogalerij (pijltjestoetsen of vegen)"
                  @keydown.arrow-left.prevent="prev()" @keydown.arrow-right.prevent="next()"
@@ -80,8 +81,11 @@
                 @if ($images->isNotEmpty())
                     {{-- Eerste foto staat al in de HTML: zichtbaar zonder JS en direct
                          vindbaar voor de browser (snellere eerste weergave). --}}
+                    {{-- srcset: een telefoon laadt de 1024 px-versie i.p.v. de 2000 px-foto. --}}
                     <img src="{{ $images->first()->url() }}" alt="{{ $car->title() }} · foto 1"
-                         :src="current" :alt="{{ \Illuminate\Support\Js::from($car->title() . ' · foto ') }} + (i + 1)"
+                         @if ($images->first()->srcset()) srcset="{{ $images->first()->srcset() }}" @endif
+                         sizes="(min-width: 1024px) 58vw, calc(100vw - 2rem)"
+                         :src="current" :srcset="srcsets[i] || ''" :alt="{{ \Illuminate\Support\Js::from($car->title() . ' · foto ') }} + (i + 1)"
                          fetchpriority="high" decoding="async" @click="open()"
                          class="photo-fx h-full w-full cursor-zoom-in object-cover">
                     <div class="pointer-events-none absolute inset-0 bg-gradient-to-t from-scrim/30 to-transparent"></div>
@@ -158,13 +162,14 @@
 
             {{-- Thumbnails --}}
             @if ($images->count() > 1)
-                <div class="mt-3 grid grid-cols-4 gap-3 sm:grid-cols-6">
+                {{-- Eén scrollbare rij: 30+ foto's duwen de specs anders ver naar beneden. --}}
+                <div x-ref="thumbs" class="scroll-thin relative mt-3 flex snap-x gap-2 overflow-x-auto pb-2 sm:gap-3">
                     @foreach ($images as $index => $image)
                         <button type="button" @click="go({{ $index }})"
                                 :class="i === {{ $index }} ? 'border-brass-500 ring-1 ring-brass-500' : 'border-hairline opacity-70 hover:opacity-100'"
-                                class="aspect-[4/3] overflow-hidden rounded-[3px] border transition"
+                                class="aspect-[4/3] w-20 shrink-0 snap-start overflow-hidden rounded-[3px] border transition sm:w-24"
                                 aria-label="Toon foto {{ $index + 1 }}">
-                            <img src="{{ $image->thumbUrl() }}" alt="" loading="lazy" class="h-full w-full object-cover">
+                            <img src="{{ $image->xsUrl() }}" alt="" loading="lazy" class="h-full w-full object-cover">
                         </button>
                     @endforeach
                 </div>
@@ -213,12 +218,13 @@
                         ];
                     @endphp
                     @foreach ($highlights as $h)
-                        <div class="flex items-center gap-3 bg-graphite-800 p-4">
-                            <x-icon name="{{ $h['icon'] }}" class="h-5 w-5 shrink-0 text-brass-500/70" />
-                            <div class="min-w-0">
-                                <dt class="font-mono text-[0.65rem] uppercase tracking-wider text-cream/70">{{ $h['label'] }}</dt>
-                                <dd class="truncate text-sm font-medium text-white">{{ $h['value'] }}</dd>
-                            </div>
+                        {{-- Alleen dt/dd direct in de div (geldige definitielijst); het icoon zit in de dt. --}}
+                        <div class="relative min-w-0 bg-graphite-800 p-4 pl-12">
+                            <dt class="font-mono text-[0.65rem] uppercase tracking-wider text-cream/70">
+                                <x-icon name="{{ $h['icon'] }}" class="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-brass-500/70" />
+                                {{ $h['label'] }}
+                            </dt>
+                            <dd class="truncate text-sm font-medium text-white">{{ $h['value'] }}</dd>
                         </div>
                     @endforeach
                 </dl>
