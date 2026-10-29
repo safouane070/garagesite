@@ -87,6 +87,14 @@
         Naar hoofdinhoud
     </a>
 
+    @if (config('brand.demo'))
+        {{-- Portfolio-demo (met toestemming van de zaak): niet verwarren met de echte site. --}}
+        <div class="bg-brass-500 px-4 py-2 text-center text-sm text-cream">
+            Demo — portfolioproject van Safouane Lahoua. Aanvragen komen niet aan; de officiële site is
+            <a href="https://autobedrijfrijswijk.nl" class="underline">autobedrijfrijswijk.nl</a>.
+        </div>
+    @endif
+
     <header x-data="{ open: false, scrolled: false }" @keydown.escape.window="open = false"
             x-init="
                 const onScroll = () => scrolled = window.scrollY > 8;

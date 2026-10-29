@@ -1,0 +1,15 @@
+# Portfolio-demo op Render (gratis). Dashboard → New → Blueprint → deze repo.
+# Gratis plan: de site slaapt na ~15 min zonder bezoek; de eerste keer laden duurt dan ~1 min.
+# Geen scheduler op het gratis plan: de voorraad is die van het moment van deployen.
+services:
+  - type: web
+    name: garagesite-demo
+    runtime: docker
+    plan: free
+    branch: deploy/render-demo
+    healthCheckPath: /up
+    envVars:
+      - key: ADMIN_EMAIL
+        value: admin@autobedrijfrijswijk.test
+      - key: ADMIN_PASSWORD
+        sync: false
