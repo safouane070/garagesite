@@ -7,8 +7,11 @@ services:
     runtime: docker
     plan: free
     branch: deploy/render-demo
-    healthCheckPath: /up
+    # Niet /up: die geeft bewust 500 zonder draaiende cron, en die is er op het gratis plan niet.
+    healthCheckPath: /
     envVars:
+      - key: APP_NAME
+        value: Autobedrijf Rijswijk
       - key: ADMIN_EMAIL
         value: admin@autobedrijfrijswijk.test
       - key: ADMIN_PASSWORD
