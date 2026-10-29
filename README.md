@@ -4,11 +4,9 @@ Een complete autogarage-website gebouwd met **Laravel 13**, **MySQL/MariaDB**, *
 
 ---
 
-## 🚀 Live demo
+## Screenshot
 
 ![Autobedrijf Rijswijk — homepage](docs/screenshot-home.png)
-
-> _Binnenkort online — hier komt een link naar een live demo._
 
 ---
 
