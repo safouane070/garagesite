@@ -40,14 +40,14 @@ ENV APP_ENV=staging \
     CACHE_STORE=database \
     FILESYSTEM_DISK=local
 
-# Database + voorraad tijdens de build. Mislukt de sync (dealersite even weg),
+# Database + voorraad tijdens de build (20 auto's: ±50 s per auto met foto's, alles = ±2 uur). Mislukt de sync (dealersite even weg),
 # dan gaat de build door met een lege voorraad in plaats van te falen.
 RUN rm -f .env public/storage \
     && mkdir -p storage/app/public storage/framework/cache/data storage/framework/sessions storage/framework/views storage/logs \
     && touch database/database.sqlite \
     && APP_KEY=base64:$(head -c32 /dev/urandom | base64) sh -c '\
         php artisan migrate --force \
-        && (php artisan cars:sync || echo "cars:sync mislukt, voorraad leeg") \
+        && (php artisan cars:sync --limit=20 || echo "cars:sync mislukt, voorraad leeg") \
         && (php artisan reviews:fetch || echo "reviews:fetch mislukt") \
         && php artisan storage:link' \
     && chown -R www-data:www-data storage bootstrap/cache database
