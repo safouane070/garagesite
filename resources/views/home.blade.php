@@ -136,15 +136,16 @@
                 ['t' => 'Zoekopdracht', 'd' => 'Niet gevonden? Wij zoeken gericht naar jouw droomauto.'],
             ];
         @endphp
-        <ul class="mt-8 divide-y divide-hairline border-y border-hairline lg:grid lg:grid-cols-4 lg:divide-x lg:divide-y-0">
+        {{-- Index-rijen: titel, uitleg en pijl op één lijn (telefoon: uitleg onder de titel).
+             Vier kolommen naast elkaar lieten veel leegte en verweesde pijlen achter. --}}
+        <ul class="mt-8 border-t border-hairline">
             @foreach ($teaser as $s)
-                <li>
-                    <a href="{{ route('diensten') }}" class="group flex items-start justify-between gap-6 py-5 transition active:bg-cream/[0.03] lg:h-full lg:flex-col lg:px-6 lg:py-8 lg:first:pl-0">
-                        <span>
-                            <span class="block font-display text-lg font-semibold text-cream">{{ $s['t'] }}</span>
-                            <span class="mt-1 block text-sm leading-relaxed text-cream/65">{{ $s['d'] }}</span>
-                        </span>
-                        <x-icon name="arrow-right" class="mt-1 h-4 w-4 shrink-0 text-cream/40 transition group-hover:translate-x-0.5 group-hover:text-brass-300" />
+                <li class="border-b border-hairline">
+                    <a href="{{ route('diensten') }}"
+                       class="group -mx-3 grid grid-cols-[1fr_auto] items-center gap-x-6 gap-y-1 rounded-[3px] px-3 py-5 transition-colors duration-150 ease-out hover:bg-cream/[0.03] active:bg-cream/[0.05] sm:py-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)_auto] lg:gap-x-10">
+                        <span class="font-display text-lg font-semibold text-cream sm:text-xl">{{ $s['t'] }}</span>
+                        <span class="col-start-1 text-sm leading-relaxed text-cream/65 lg:col-start-2 lg:row-start-1 lg:text-base">{{ $s['d'] }}</span>
+                        <x-icon name="arrow-right" class="col-start-2 row-span-2 row-start-1 h-5 w-5 text-cream/40 transition duration-200 ease-out group-hover:translate-x-1 group-hover:text-brass-300 lg:col-start-3 lg:row-span-1" />
                     </a>
                 </li>
             @endforeach
