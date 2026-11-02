@@ -24,4 +24,18 @@ class SeederTest extends TestCase
         $this->assertFalse(Hash::check('password', $admin->password));
         $this->assertSame(0, Car::count());
     }
+
+    /** De demo seedt bij elke herstart: een zelf gekozen wachtwoord mag daarbij niet verdwijnen. */
+    public function test_reseeding_keeps_the_password_the_owner_chose(): void
+    {
+        $this->app['env'] = 'production';
+        $this->artisan('db:seed', ['--force' => true])->assertSuccessful();
+        $admin = User::firstWhere('email', config('brand.contact.email'));
+        $admin->update(['password' => 'eigen-gekozen-wachtwoord']);
+
+        $this->artisan('db:seed', ['--force' => true])->assertSuccessful();
+
+        $this->assertTrue(Hash::check('eigen-gekozen-wachtwoord', $admin->fresh()->password));
+        $this->assertSame(1, User::count());
+    }
 }

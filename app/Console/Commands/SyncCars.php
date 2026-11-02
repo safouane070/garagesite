@@ -75,7 +75,15 @@ class SyncCars extends Command
         }
 
         $managed = Car::whereNotNull('dealer_slug')->get()->merge($unlinked->whereIn('id', array_keys($slugLinks)));
-        $active = $managed->where('status', '!=', CarStatus::Sold);
+
+        // Weer op de dealersite én daar na ons "verkocht" nog bewerkt: de dealer had de
+        // advertentie even offline (bv. foto's wisselen) tijdens een sync. Zonder dit bleef
+        // zo'n auto voorgoed verkocht. Zette de beheerder hem zelf op verkocht en haalde de
+        // dealer de (ongewijzigde) advertentie nog niet weg, dan blijft hij verkocht.
+        $revived = $managed->filter(fn (Car $c) => $c->status === CarStatus::Sold
+            && $vehicles->has($c->dealer_slug)
+            && Carbon::parse($vehicles[$c->dealer_slug]['modified'])->gt($c->updated_at));
+        $active = $managed->filter(fn (Car $c) => $c->status !== CarStatus::Sold || $revived->contains($c));
         $pool = $unlinked->whereNotIn('id', array_keys($slugLinks))->values();
 
         // 2. Verdwenen van de dealersite — veiligheidscheck vóór enige wijziging.
@@ -109,8 +117,13 @@ class SyncCars extends Command
                 $car->update(['status' => CarStatus::Sold]);
                 $this->line("  verkocht: {$car->title()}");
             }
+            foreach ($revived as $car) {
+                $car->update(['status' => CarStatus::Available]);
+                $this->line("  weer te koop: {$car->title()}");
+            }
         } else {
             $gone->each(fn (Car $c) => $this->line("  zou op verkocht gaan: {$c->title()}"));
+            $revived->each(fn (Car $c) => $this->line("  zou weer te koop staan: {$c->title()}"));
         }
 
         $updated = $this->dry ? 0 : $this->updateChanged($active->diff($gone), $vehicles, $knownModels);

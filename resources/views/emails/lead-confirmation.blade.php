@@ -1,5 +1,7 @@
-{{-- Platte-tekstmail (text/plain), zie lead-received voor de {!! !!}-uitleg. --}}
-Hallo {!! $lead->name !!},
+{{-- Platte-tekstmail (text/plain), zie lead-received voor de {!! !!}-uitleg.
+     Bewust géén vrij ingevulde tekst (naam, bericht): deze mail gaat naar een adres dat
+     iedereen kan invullen, en mag dus geen tekst van een vreemde aan een ander doorgeven. --}}
+Hallo,
 
 Bedankt voor je aanvraag bij {!! config('app.name') !!}. We hebben 'm goed ontvangen.
 

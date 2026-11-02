@@ -146,6 +146,26 @@ class SyncCarsTest extends TestCase
         $this->assertSame('available', $manual->fresh()->status->value);
     }
 
+    /**
+     * Dealer haalde een advertentie even offline tijdens een sync (→ verkocht) en zette
+     * hem daarna bewerkt terug: weer te koop. Zette de beheerder een auto zelf op verkocht
+     * en staat de ongewijzigde advertentie nog online, dan blijft hij verkocht.
+     */
+    public function test_relisted_car_becomes_available_again_but_manual_sale_stands(): void
+    {
+        $this->vehicle('audi-q3-terug', ['title' => 'Audi Q3 35 TFSI', 'modified' => '2026-09-20T10:00:00']);
+        $this->vehicle('audi-q5-verkocht', ['title' => 'Audi Q5 40 TDI', 'modified' => '2026-09-20T10:00:00']);
+        $relisted = $this->car(['slug' => 'audi-q3-terug', 'dealer_slug' => 'audi-q3-terug', 'status' => 'sold',
+            'dealer_modified_at' => '2026-09-01 00:00:00', 'updated_at' => '2026-09-10 06:00:00']);
+        $soldByOwner = $this->car(['slug' => 'audi-q5-verkocht', 'dealer_slug' => 'audi-q5-verkocht', 'status' => 'sold',
+            'dealer_modified_at' => '2026-09-20 10:00:00', 'updated_at' => '2026-09-25 12:00:00']);
+
+        $this->artisan('cars:sync')->assertSuccessful();
+
+        $this->assertSame('available', $relisted->fresh()->status->value);
+        $this->assertSame('sold', $soldByOwner->fresh()->status->value);
+    }
+
     public function test_price_change_on_dealer_site_is_applied(): void
     {
         $this->vehicle('volkswagen-polo', ['title' => 'Volkswagen Polo 1.0 TSI', 'price' => 17950, 'modified' => '2026-09-22T09:00:00']);

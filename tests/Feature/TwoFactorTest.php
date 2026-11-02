@@ -102,6 +102,31 @@ class TwoFactorTest extends TestCase
         $this->assertGuest();
     }
 
+    /** Raden vanaf steeds een ander IP-adres helpt niet: de limiet geldt per account. */
+    public function test_code_guessing_is_limited_per_account_not_per_ip(): void
+    {
+        $user = $this->userWithTwoFactor();
+        $this->loginWithPassword($user);
+
+        foreach (range(1, 5) as $i) {
+            $this->withServerVariables(['REMOTE_ADDR' => "10.0.0.{$i}"])
+                ->post(route('two-factor.challenge'), ['code' => '000000'])->assertSessionHasErrors('code');
+        }
+
+        $this->withServerVariables(['REMOTE_ADDR' => '10.0.0.99'])
+            ->post(route('two-factor.challenge'), ['code' => $this->now($user)])->assertStatus(429);
+        $this->assertGuest();
+    }
+
+    /** "Inschakelen" opnieuw aanroepen mocht een actieve 2FA niet zonder wachtwoord wissen. */
+    public function test_enable_cannot_wipe_active_two_factor(): void
+    {
+        $user = $this->userWithTwoFactor();
+
+        $this->actingAs($user)->post(route('two-factor.enable'))->assertForbidden();
+        $this->assertTrue($user->fresh()->hasTwoFactor());
+    }
+
     public function test_disabling_needs_the_password_and_rescue_command_works(): void
     {
         $user = $this->userWithTwoFactor();

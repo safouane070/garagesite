@@ -22,7 +22,7 @@ Route::middleware('guest')->group(function () {
 
     // Tweede inlogstap bij tweestapsverificatie (code uit de app of herstelcode).
     Route::get('two-factor', [TwoFactorController::class, 'challenge'])->name('two-factor.challenge');
-    Route::post('two-factor', [TwoFactorController::class, 'verify'])->middleware('throttle:5,1');
+    Route::post('two-factor', [TwoFactorController::class, 'verify'])->middleware('throttle:two-factor');
 
     Route::get('forgot-password', [PasswordResetLinkController::class, 'create'])
         ->name('password.request');
