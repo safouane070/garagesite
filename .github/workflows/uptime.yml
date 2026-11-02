@@ -3,14 +3,17 @@
 # App\Support\SystemStatus). Mislukt het, dan mailt GitHub de eigenaar van deze
 # workflow automatisch (instelling: GitHub → Settings → Notifications → Actions).
 #
-# Aanzetten na de livegang (één keer):
-#   gh variable set SITE_URL --body https://autobedrijfrijswijk.nl
-# Zolang SITE_URL niet gezet is, doet deze workflow niets.
+# Staat uit tot de site live is: een geplande run zonder SITE_URL werd elke 10
+# minuten "skipped" en vulde het Actions-overzicht met lege runs.
+# Aanzetten na de livegang:
+#   1. gh variable set SITE_URL --body https://autobedrijfrijswijk.nl
+#   2. haal de # voor de twee regels onder "on:" (schedule + cron) weg.
+# Tot die tijd is hij handmatig te starten (workflow_dispatch).
 name: bereikbaarheid
 
 on:
-  schedule:
-    - cron: '*/10 * * * *'
+  # schedule:
+  #   - cron: '*/10 * * * *'
   workflow_dispatch:
 
 jobs:

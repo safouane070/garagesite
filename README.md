@@ -1,5 +1,7 @@
 # Autobedrijf Rijswijk — Autogarage website
 
+[![tests](https://github.com/safouane070/garagesite/actions/workflows/tests.yml/badge.svg)](https://github.com/safouane070/garagesite/actions/workflows/tests.yml)
+
 Een complete autogarage-website gebouwd met **Laravel 13**, **MySQL/MariaDB**, **Blade + Tailwind CSS** en **Alpine.js**. Met een publieke etalage (homepage, aanbod met live filtering, detailpagina met foto-carousel) en een beveiligde admin-omgeving (Laravel Breeze) voor volledig voorraadbeheer.
 
 ---
@@ -105,6 +107,23 @@ php artisan serve
 
 ---
 
+## Testen
+
+```bash
+php artisan test
+```
+
+De suite bestaat uit 125 PHPUnit-tests (24 testbestanden in `tests/Feature` en `tests/Unit`) en draait op een SQLite-database in het geheugen: je hebt er geen MySQL voor nodig. GitHub Actions draait ze bij elke push en pull request, samen met de productie-build (`.github/workflows/tests.yml`).
+
+Wat er onder andere wordt getest:
+
+- **Tweestapsverificatie** (`TwoFactorTest`): instellen met een geldige eerste code, inloggen vraagt de code na het wachtwoord, een code werkt maar één keer, herstelcodes werken precies één keer, uitzetten vraagt het wachtwoord.
+- **Voorraadsynchronisatie** (`SyncCarsTest`): nieuwe auto's met foto's en opties, verkochte auto's op "verkocht", prijswijzigingen, handmatig toegevoegde auto's blijven ongemoeid, stopt als de bron onbereikbaar of verdacht is, `--dry-run` wijzigt niets.
+- **Aanvraagformulier** (`LeadTest`): een bezoeker kan een aanvraag doen, de honeypot houdt bots tegen, validatiemeldingen zijn Nederlands, de bevestigingsmail gaat naar de klant, een mislukte wachtrij blokkeert de bezoeker niet.
+- Verder: inloggen en wachtwoordherstel, beheerrechten, foto-uploads, privacy (AVG), foutpagina's en de publieke pagina's.
+
+---
+
 ## Inloggen (admin)
 
 Na `php artisan migrate --seed` bestaat er een beheerdersaccount:
@@ -112,6 +131,8 @@ Na `php artisan migrate --seed` bestaat er een beheerdersaccount:
 | E-mail | Wachtwoord |
 |--------|------------|
 | `admin@autobedrijfrijswijk.test` | `password` |
+
+> Dit account bestaat alleen in je lokale demo-database (door de seeder). In productie maakt de seeder alleen het beheeraccount aan, met een eigen wachtwoord; gebruik `password` dus nooit op een echte server.
 
 Log in via **http://localhost:8000/login** en beheer de voorraad op **/admin**.
 Publieke registratie is bewust uitgeschakeld — extra accounts maak je via de seeder of `php artisan tinker`.
