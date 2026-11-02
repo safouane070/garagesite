@@ -24,7 +24,7 @@
         <div>
             <label class="field-label" for="email">E-mailadres</label>
             <input id="email" type="email" name="email" value="{{ old('email') }}" required autofocus
-                   autocomplete="username" class="field-input" placeholder="jij@garage.be">
+                   autocomplete="username" class="field-input" placeholder="jij@autobedrijfrijswijk.nl">
             @error('email') <p class="field-hint text-rose-300">{{ $message }}</p> @enderror
         </div>
 

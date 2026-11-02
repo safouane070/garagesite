@@ -26,6 +26,13 @@ class ProfileUpdateRequest extends FormRequest
                 'max:255',
                 Rule::unique(User::class)->ignore($this->user()->id),
             ],
+            // Nieuw e-mailadres = nieuw adres voor "wachtwoord vergeten". Zonder deze check
+            // kon iemand met een geleende/gestolen sessie het account overnemen.
+            'current_password' => [
+                Rule::requiredIf(fn () => $this->input('email') !== $this->user()->email),
+                'nullable',
+                'current_password',
+            ],
         ];
     }
 }

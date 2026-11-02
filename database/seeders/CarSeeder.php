@@ -27,6 +27,13 @@ class CarSeeder extends Seeder
 
     public function run(): void
     {
+        // Wist de hele voorraad + foto's: nooit op een server, ook niet met --force.
+        if (! app()->isLocal()) {
+            $this->command?->error('CarSeeder draait alleen lokaal (APP_ENV=local): hij wist de hele voorraad.');
+
+            return;
+        }
+
         Car::query()->delete();
         Storage::disk('public')->deleteDirectory('cars');
 
@@ -269,24 +276,26 @@ class CarSeeder extends Seeder
         };
     }
 
-    private function mapBody(string $v): string
+    /** Alleen waarden uit Car::BODY_TYPES: anders maakt opslaan in het beheer het veld stil leeg. */
+    private function mapBody(string $v): ?string
     {
         return match (true) {
             Str::contains($v, ['SUV', 'Terrein']) => 'SUV',
             Str::contains($v, 'Station') => 'Stationwagen',
             Str::contains($v, 'MPV') => 'MPV',
             Str::contains($v, ['Coupé', 'Coupe']) => 'Coupé',
-            Str::contains($v, 'Cabrio') => 'Cabriolet',
+            Str::contains($v, 'Cabrio') => 'Cabrio',
             Str::contains($v, 'Hatch') => 'Hatchback',
-            $v === '' => 'Onbekend',
-            default => $v,
+            Str::contains($v, ['Sedan', 'Limousine']) => 'Sedan',
+            default => null,
         };
     }
 
-    private function describe(string $brand, string $model, string $variant, string $body, int $year, int $mileage, int $pk, string $fuel, string $trans): string
+    private function describe(string $brand, string $model, string $variant, ?string $body, int $year, int $mileage, int $pk, string $fuel, string $trans): string
     {
         $km = number_format($mileage, 0, ',', '.');
         $power = $pk ? "{$pk} pk " : '';
+        $body ??= 'Auto';
 
         return trim("{$brand} {$model} {$variant} uit {$year}. {$body} met {$km} km op de teller, {$power}{$fuel} en {$trans}. "
             . 'Afgeleverd met onderhoudshistoriek, keuringsattest en BOVAG-garantie.');

@@ -30,6 +30,7 @@ class ProfileTest extends TestCase
             ->patch('/profile', [
                 'name' => 'Test User',
                 'email' => 'test@example.com',
+                'current_password' => 'password',
             ]);
 
         $response
@@ -41,6 +42,19 @@ class ProfileTest extends TestCase
         $this->assertSame('Test User', $user->name);
         $this->assertSame('test@example.com', $user->email);
         $this->assertNull($user->email_verified_at);
+    }
+
+    /** Een nieuw e-mailadres is het adres voor "wachtwoord vergeten": zonder wachtwoord mag dat niet. */
+    public function test_changing_email_needs_the_current_password(): void
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user)->patch('/profile', ['name' => $user->name, 'email' => 'aanvaller@example.com'])
+            ->assertSessionHasErrors('current_password');
+        $this->actingAs($user)->patch('/profile', ['name' => $user->name, 'email' => 'aanvaller@example.com', 'current_password' => 'fout'])
+            ->assertSessionHasErrors('current_password');
+
+        $this->assertNotSame('aanvaller@example.com', $user->fresh()->email);
     }
 
     public function test_email_verification_status_is_unchanged_when_the_email_address_is_unchanged(): void
