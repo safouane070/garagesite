@@ -91,6 +91,12 @@
                 @endforeach
             </div>
 
+            <div x-show="remaining > 0" x-cloak class="mt-10 flex justify-center">
+                <button @click="showMore()" type="button" class="btn btn-outline w-full sm:w-auto">
+                    Toon meer auto's <span class="tabular text-cream/60" x-text="'(' + remaining + ')'"></span>
+                </button>
+            </div>
+
             {{-- Nette empty state --}}
             <div x-show="count === 0" x-cloak class="flex flex-col items-center justify-center border border-dashed border-hairline px-6 py-20 text-center">
                 <span class="flex h-14 w-14 items-center justify-center rounded-full border border-hairline text-cream/70">

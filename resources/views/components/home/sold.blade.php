@@ -15,9 +15,12 @@
                 </a>
             </div>
 
-            <div class="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {{-- Telefoon: swipe-rail i.p.v. zes schermhoge kaarten onder elkaar. --}}
+            <div class="-mx-5 mt-10 flex snap-x snap-mandatory scroll-px-5 gap-4 overflow-x-auto px-5 pb-4 scroll-thin sm:mx-0 sm:grid sm:grid-cols-2 sm:gap-5 sm:overflow-visible sm:px-0 sm:pb-0 lg:grid-cols-3">
                 @foreach ($cars as $car)
-                    <x-car-card :car="$car" />
+                    <div class="w-[280px] shrink-0 snap-start sm:w-auto">
+                        <x-car-card :car="$car" />
+                    </div>
                 @endforeach
             </div>
         </div>

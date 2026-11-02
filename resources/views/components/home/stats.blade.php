@@ -19,7 +19,7 @@
             @if ($t['count'])
                 {{-- dt vóór dd (geldige HTML); flex-col-reverse zet het getal visueel bovenaan. --}}
                 <div class="flex flex-col-reverse" x-data="counter({{ (int) $t['value'] }})" x-init="observe()">
-                    <dt class="mt-2 font-mono text-[0.7rem] uppercase tracking-[0.15em] text-cream/60">{{ $t['label'] }}</dt>
+                    <dt class="mt-2 font-mono text-xs uppercase tracking-[0.15em] text-cream/60">{{ $t['label'] }}</dt>
                     <dd class="font-display text-4xl font-bold text-white tabular sm:text-5xl">
                         {{-- Echt getal staat al in de HTML (zonder JS / voor zoekmachines); JS telt het op. --}}
                         <span x-text="display">{{ number_format((int) $t['value'], 0, ',', '.') }}</span>{{ $t['suffix'] }}
@@ -27,7 +27,7 @@
                 </div>
             @else
                 <div class="flex flex-col-reverse">
-                    <dt class="mt-2 font-mono text-[0.7rem] uppercase tracking-[0.15em] text-cream/60">{{ $t['label'] }}</dt>
+                    <dt class="mt-2 font-mono text-xs uppercase tracking-[0.15em] text-cream/60">{{ $t['label'] }}</dt>
                     <dd class="font-display text-4xl font-bold text-white tabular sm:text-5xl">{{ $t['value'] }}</dd>
                 </div>
             @endif

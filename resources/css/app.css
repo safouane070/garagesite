@@ -112,8 +112,10 @@
         filter: saturate(0.92) contrast(1.07) brightness(0.9);
         transition: filter 0.5s cubic-bezier(0.22, 1, 0.36, 1), transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
     }
-    .group:hover .photo-fx {
-        filter: saturate(1.04) contrast(1.04) brightness(1);
+    @media (hover: hover) and (pointer: fine) {
+        .group:hover .photo-fx {
+            filter: saturate(1.04) contrast(1.04) brightness(1);
+        }
     }
     @media (prefers-reduced-motion: reduce) {
         .photo-fx { transition: none; }
@@ -147,15 +149,17 @@
         @apply mx-auto w-full max-w-container px-5 sm:px-8;
     }
 
-    /* Kleine, mono, uppercase kicker/label — terugkerend signatuurelement. */
+    /* Kleine, mono, uppercase kicker/label — terugkerend signatuurelement.
+       12px is de ondergrens: kleiner is op een telefoon niet meer te lezen. */
     .kicker {
-        @apply font-mono text-[0.7rem] uppercase tracking-[0.2em] text-brass-300;
+        @apply font-mono text-xs uppercase tracking-[0.16em] text-brass-300;
     }
 
     /* ---- Knoppen: crisp, kleine radius (geen pill-soep) ---- */
     .btn {
         @apply inline-flex items-center justify-center gap-2 rounded-[3px] px-5 py-2.5 text-sm font-medium
-               transition duration-200 ease-premium focus-visible:ring-2 disabled:cursor-not-allowed disabled:opacity-50;
+               transition duration-200 ease-premium focus-visible:ring-2 active:scale-[0.97]
+               disabled:cursor-not-allowed disabled:opacity-50 disabled:active:scale-100;
     }
     .btn-primary {
         @apply bg-brass-500 text-cream hover:bg-brass-600 active:bg-brass-700;
@@ -176,8 +180,9 @@
     }
 
     /* ---- Formuliervelden ---- */
+    /* Gewone zinsopbouw i.p.v. mono-kapitalen: een label moet je in één blik lezen. */
     .field-label {
-        @apply mb-1.5 block font-mono text-[0.7rem] font-medium uppercase tracking-[0.15em] text-cream/70;
+        @apply mb-1.5 block text-[0.8125rem] font-medium text-cream/75;
     }
     .field-input {
         @apply w-full rounded-[3px] border-graphite-500 bg-graphite-800 px-4 py-2.5 text-cream placeholder:text-cream/50

@@ -3,6 +3,8 @@
     'description' => null,
     'ogImage' => null,
     'whatsappText' => null,
+    // De pagina heeft een eigen vaste actiebalk onderin (mobiel): dan geen zwevende knop.
+    'actionBar' => false,
 ])
 
 @php
@@ -141,7 +143,8 @@
                     <x-icon name="phone" class="h-3.5 w-3.5" /> {{ config('brand.contact.phone') }}
                 </a>
 
-                <x-whatsapp-button :text="$whatsappText" />
+                {{-- Op mobiel staat WhatsApp al als zwevende knop (of in de actiebalk). --}}
+                <x-whatsapp-button :text="$whatsappText" class="hidden lg:flex" />
 
                 @auth
                     <a href="{{ route('admin.dashboard') }}" class="btn btn-outline hidden sm:inline-flex">Beheer</a>
@@ -252,6 +255,6 @@
     </footer>
 
     {{-- Zwevende WhatsApp-knop, site-breed --}}
-    <x-whatsapp-button floating :text="$whatsappText" />
+    <x-whatsapp-button floating :text="$whatsappText" @class(['max-lg:hidden' => $actionBar]) />
 </body>
 </html>

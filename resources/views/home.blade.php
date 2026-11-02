@@ -1,29 +1,33 @@
 <x-layouts.public>
     {{-- ═══════════ HERO · echte showroomfoto met tekst eroverheen ═══════════ --}}
-    <section class="relative -mt-[4.5rem] flex min-h-hero items-end overflow-hidden bg-ink pt-[4.5rem]">
+    <section class="relative -mt-[4.5rem] flex min-h-hero flex-col overflow-hidden bg-ink pt-[4.5rem] sm:flex-row sm:items-end">
         {{-- Echte foto van het wagenpark van de zaak --}}
         {{-- Staand scherm (telefoon): de middenuitsnede. object-cover toont daar toch alleen het
              midden van de vierkante foto; zelfde beeld, ±35% minder bytes voor de grootste afbeelding.
-             5/8: een iPhone in Safari (390×664 zichtbaar, door de balken) valt er ruim onder; de
-             uitsnede (0,7) dekt de hero (breedte / 90% hoogte ≤ 0,69) zonder op te rekken. --}}
-        <picture>
-            <source media="(max-aspect-ratio: 5/8)" srcset="{{ asset('images/hero-showroom-portrait.webp') }}" width="1120" height="1600">
-            <img src="{{ asset('images/hero-showroom.webp') }}" alt="Wagenpark van {{ config('app.name') }}"
-                 width="1600" height="1600" fetchpriority="high" decoding="async"
-                 class="absolute inset-0 h-full w-full object-cover object-center">
-        </picture>
-        {{-- Lichte overlay: alleen onderin/links donker voor tekst, boven blijft de foto helder --}}
-        <div class="pointer-events-none absolute inset-0 bg-gradient-to-t from-ink via-ink/40 to-ink/5"></div>
-        <div class="pointer-events-none absolute inset-0 bg-gradient-to-r from-ink/55 via-transparent to-transparent"></div>
+             Telefoon: de foto is een eigen strook boven de tekst, op breedte geschaald. Als
+             achtergrond viel de rij auto's (45–67% van de foto) precies achter de kop en werden
+             de buitenste auto's afgesneden. 62% houdt de rij in beeld van ±190px (iPhone in
+             Safari) tot ±350px strookhoogte. Vanaf sm: weer de volle achtergrondfoto. --}}
+        <div class="relative min-h-[12rem] flex-1 [mask-image:linear-gradient(to_bottom,#000_70%,transparent)] sm:absolute sm:inset-0 sm:[mask-image:none]">
+            <picture>
+                <source media="(max-aspect-ratio: 5/8)" srcset="{{ asset('images/hero-showroom-portrait.webp') }}" width="1120" height="1600">
+                <img src="{{ asset('images/hero-showroom.webp') }}" alt="Wagenpark van {{ config('app.name') }}"
+                     width="1600" height="1600" fetchpriority="high" decoding="async"
+                     class="absolute inset-0 h-full w-full object-cover object-[50%_62%] sm:object-center">
+            </picture>
+            {{-- Lichte overlay: alleen onderin/links donker voor tekst, boven blijft de foto helder --}}
+            <div class="pointer-events-none absolute inset-0 hidden bg-gradient-to-t from-ink via-ink/40 to-ink/5 sm:block"></div>
+            <div class="pointer-events-none absolute inset-0 hidden bg-gradient-to-r from-ink/55 via-transparent to-transparent sm:block"></div>
+        </div>
 
-        <div class="container-x relative py-16">
+        <div class="container-x relative pb-12 pt-2 sm:py-16">
             <div class="max-w-2xl" style="text-shadow: 0 2px 24px rgba(0,0,0,0.45)">
                 <h1 class="font-display text-[2.6rem] font-bold uppercase leading-[0.95] tracking-tight text-white sm:text-6xl lg:text-[4.6rem]">
                     Dé Duitse occasions<br>van Rijswijk
                 </h1>
 
                 {{-- USP's, zoals op de originele hero (kort, geen lange alinea) --}}
-                <ul class="mt-8 flex flex-wrap gap-x-6 gap-y-2">
+                <ul class="mt-6 flex flex-wrap gap-x-6 gap-y-2 sm:mt-8">
                     @foreach (['BOVAG-garantie', 'Geen afleverkosten', 'VAG-specialist'] as $usp)
                         <li class="inline-flex items-center gap-2 text-sm font-medium text-cream">
                             <x-icon name="check" class="h-4 w-4 text-brass-400" /> {{ $usp }}
@@ -31,7 +35,7 @@
                     @endforeach
                 </ul>
 
-                <div class="mt-9 flex flex-wrap items-center gap-4">
+                <div class="mt-7 flex flex-wrap items-center gap-3 sm:mt-9 sm:gap-4">
                     <a href="{{ route('cars.index') }}" class="btn btn-primary">
                         Bekijk het aanbod <x-icon name="arrow-right" class="h-4 w-4" />
                     </a>
@@ -60,9 +64,12 @@
                 </a>
             </div>
 
-            <div class="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {{-- Telefoon: swipe-rail (zoals "Net binnen") i.p.v. zes schermhoge kaarten onder elkaar. --}}
+            <div class="-mx-5 mt-10 flex snap-x snap-mandatory scroll-px-5 gap-4 overflow-x-auto px-5 pb-4 scroll-thin sm:mx-0 sm:grid sm:grid-cols-2 sm:gap-6 sm:overflow-visible sm:px-0 sm:pb-0 lg:grid-cols-3">
                 @foreach ($featured as $car)
-                    <x-car-card :car="$car" />
+                    <div class="w-[280px] shrink-0 snap-start sm:w-auto">
+                        <x-car-card :car="$car" />
+                    </div>
                 @endforeach
             </div>
         </section>

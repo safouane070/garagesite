@@ -22,6 +22,8 @@
         $car->fuel_type, $car->transmission, config('app.name'), $car->formattedPrice()
     ));
     $ogImage = $car->primaryImage?->url();
+    $forSale = $car->status !== \App\Enums\CarStatus::Sold;
+    $whatsappText = 'Hallo, ik heb interesse in de ' . $car->title() . ' (' . $car->formattedPrice() . '): ' . route('cars.show', $car);
 
     $vehicleLd = [
         '@context' => 'https://schema.org',
@@ -51,7 +53,7 @@
 @endphp
 
 <x-layouts.public :title="$car->title()" :description="$metaDescription" :og-image="$ogImage"
-    :whatsapp-text="'Hallo, ik heb interesse in de ' . $car->title() . ' (' . $car->formattedPrice() . '): ' . route('cars.show', $car)">
+    :whatsapp-text="$whatsappText" :action-bar="$forSale">
     @push('head')
         <script type="application/ld+json">
             {!! json_encode($vehicleLd, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_HEX_TAG) !!}
@@ -60,12 +62,13 @@
 
     {{-- Kruimelpad --}}
     <div class="container-x pt-6">
-        <nav class="flex items-center gap-2 font-mono text-[0.7rem] uppercase tracking-wider text-cream/70" aria-label="Kruimelpad">
+        <nav class="flex items-center gap-2 font-mono text-xs uppercase tracking-wider text-cream/70" aria-label="Kruimelpad">
             <a href="{{ route('home') }}" class="transition hover:text-brass-300">Home</a>
             <x-icon name="chevron-right" class="h-3 w-3" />
             <a href="{{ route('cars.index') }}" class="transition hover:text-brass-300">Aanbod</a>
-            <x-icon name="chevron-right" class="h-3 w-3" />
-            <span class="text-cream/70">{{ $car->title() }}</span>
+            {{-- De autonaam staat er direct onder als h1; op een telefoon liep dit over twee regels. --}}
+            <x-icon name="chevron-right" class="h-3 w-3 max-sm:hidden" />
+            <span class="text-cream/70 max-sm:hidden">{{ $car->title() }}</span>
         </nav>
     </div>
 
@@ -191,7 +194,7 @@
                 <div class="mt-6 border-y border-hairline py-5">
                     <div class="flex items-end justify-between">
                         <div>
-                            <span class="kicker text-[0.6rem]">Vraagprijs</span>
+                            <span class="kicker">Vraagprijs</span>
                             <span class="mt-1 block font-display text-4xl font-bold tracking-tight text-white tabular sm:text-5xl">
                                 {{ $car->formattedPrice() }}
                             </span>
@@ -220,7 +223,7 @@
                     @foreach ($highlights as $h)
                         {{-- Alleen dt/dd direct in de div (geldige definitielijst); het icoon zit in de dt. --}}
                         <div class="relative min-w-0 bg-graphite-800 p-4 pl-12">
-                            <dt class="font-mono text-[0.65rem] uppercase tracking-wider text-cream/70">
+                            <dt class="font-mono text-xs uppercase tracking-wider text-cream/70">
                                 <x-icon name="{{ $h['icon'] }}" class="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-brass-500/70" />
                                 {{ $h['label'] }}
                             </dt>
@@ -233,7 +236,7 @@
                 @if ($car->status !== \App\Enums\CarStatus::Sold)
                     {{-- Echte links naar het formulier (werkt ook zonder JS); met JS kiest de
                          knop meteen het onderwerp en zet de cursor in het naamveld. --}}
-                    <div class="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2" x-data="{
+                    <div id="snelacties" class="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2" x-data="{
                             pick(type) {
                                 this.$store.lead.type = type;
                                 this.$nextTick(() => document.getElementById('lead-name')?.focus({ preventScroll: true }));
@@ -260,7 +263,7 @@
                 @endif
 
                 {{-- Vertrouwensregel --}}
-                <div class="mt-5 flex flex-wrap gap-x-5 gap-y-2 font-mono text-[0.7rem] uppercase tracking-wider text-cream/70">
+                <div class="mt-5 flex flex-wrap gap-x-5 gap-y-2 font-mono text-xs uppercase tracking-wider text-cream/70">
                     <span class="inline-flex items-center gap-1.5"><x-icon name="shield-check" class="h-3.5 w-3.5 text-brass-500/70" /> BOVAG-garantie</span>
                     <span class="inline-flex items-center gap-1.5"><x-icon name="file-text" class="h-3.5 w-3.5 text-brass-500/70" /> Volledige historiek</span>
                     <span class="inline-flex items-center gap-1.5"><x-icon name="repeat" class="h-3.5 w-3.5 text-brass-500/70" /> Inruil mogelijk</span>
@@ -304,16 +307,23 @@
             @php $hasOptions = ! empty($car->options); @endphp
 
             @if ($hasOptions)
-                <div class="lg:col-span-8">
+                {{-- Tot ±60 opties: eerst 12, de rest op verzoek (anders schermen vol vinkjes vóór het formulier). --}}
+                <div class="lg:col-span-8" x-data="{ all: false }">
                     <h2 class="font-display text-2xl font-bold text-white">Uitrusting</h2>
                     <div class="mt-5 grid gap-x-6 gap-y-2.5 sm:grid-cols-2 lg:grid-cols-3">
                         @foreach ($car->options as $opt)
-                            <div class="flex items-start gap-2 text-sm text-cream/80">
+                            <div class="flex items-start gap-2 text-sm text-cream/80" @if ($loop->index >= 12) x-show="all" x-cloak @endif>
                                 <x-icon name="check" class="mt-0.5 h-4 w-4 shrink-0 text-brass-500/80" />
                                 <span>{{ $opt }}</span>
                             </div>
                         @endforeach
                     </div>
+                    @if (count($car->options) > 12)
+                        <button @click="all = !all" type="button" class="btn btn-outline mt-6 w-full sm:w-auto" :aria-expanded="all">
+                            <span x-text="all ? 'Toon minder' : 'Toon alle {{ count($car->options) }} opties'">Toon alle {{ count($car->options) }} opties</span>
+                            <x-icon name="chevron-down" class="h-4 w-4 transition-transform duration-200" x-bind:class="all && 'rotate-180'" />
+                        </button>
+                    @endif
                 </div>
             @endif
 
@@ -363,5 +373,43 @@
                 @endforeach
             </div>
         </section>
+    @endif
+
+    {{-- ═══ Vaste actiebalk (mobiel) ═══
+         Komt in beeld zodra de snelacties bovenin weggescrold zijn, en gaat weg bij het
+         formulier (daar staan de acties al). Vervangt op mobiel de zwevende WhatsApp-knop. --}}
+    @if ($forSale)
+        <div x-data="{ show: false }"
+             x-init="
+                const ctas = document.getElementById('snelacties'), form = document.getElementById('contact');
+                let past = false, atForm = false;
+                const update = () => show = past && !atForm;
+                // Opgerekte observatiegebieden: zo is elke passage een overgang, ook bij een
+                // sprong of snelle veeg (een gewoon gebied mist die als het element erover springt).
+                // past: de snelacties zijn boven het scherm verdwenen.
+                new IntersectionObserver(([e]) => { past = !e.isIntersecting; update(); },
+                    { rootMargin: '0px 0px 99999px 0px' }).observe(ctas);
+                // atForm: het formulier is in beeld gekomen of al gepasseerd.
+                if (form) new IntersectionObserver(([e]) => { atForm = e.isIntersecting; update(); },
+                    { rootMargin: '99999px 0px 0px 0px' }).observe(form);
+             "
+             :class="show ? 'translate-y-0' : 'translate-y-full'"
+             :inert="!show" x-cloak
+             class="fixed inset-x-0 bottom-0 z-40 border-t border-hairline bg-ink/90 pb-[env(safe-area-inset-bottom)] backdrop-blur-lg transition-transform duration-200 ease-out motion-reduce:transition-none lg:hidden">
+            <div class="container-x flex items-center gap-2 py-3">
+                <div class="min-w-0 flex-1">
+                    <p class="truncate text-xs text-cream/65">{{ $car->brand }} {{ $car->model }}</p>
+                    <p class="font-display text-xl font-bold leading-tight text-white tabular">{{ $car->formattedPrice() }}</p>
+                </div>
+                <a href="tel:{{ config('brand.contact.phone_href') }}" class="btn btn-outline h-11 w-11 shrink-0 px-0" aria-label="Bel ons">
+                    <x-icon name="phone" class="h-5 w-5" />
+                </a>
+                <x-whatsapp-button :text="$whatsappText" class="!h-11 !w-11 shrink-0 !rounded-[3px] border border-hairline" />
+                <a href="#contact" class="btn btn-primary h-11 shrink-0"
+                   @click="$store.lead.type = 'proefrit'; $nextTick(() => document.getElementById('lead-name')?.focus({ preventScroll: true }))">
+                    Proefrit
+                </a>
+            </div>
+        </div>
     @endif
 </x-layouts.public>

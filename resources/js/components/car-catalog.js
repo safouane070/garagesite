@@ -1,6 +1,9 @@
 // Aanbodpagina: filteren en sorteren gebeurt client-side (instant, zonder
 // page reload). De server rendert alle kaarten; dit component toont/verbergt
 // en herordent ze, en houdt de filters in de URL (deelbare links).
+// Per keer tonen we PAGE kaarten: 102 kaarten onder elkaar = 50.000px scrollen op een telefoon.
+const PAGE = 12;
+
 export default (config) => ({
     bounds: { priceMin: config.priceMin, priceMax: config.priceMax, yearMin: config.yearMin, yearMax: config.yearMax },
     search: '',
@@ -20,7 +23,9 @@ export default (config) => ({
     ],
     drawerOpen: false,
     count: config.total,
+    limit: PAGE,
     cards: [],
+    visible: [],
 
     sortLabel() { return (this.sortOptions.find((o) => o.v === this.sort) || {}).l || 'Sorteren'; },
     setSort(v) { this.sort = v; this.sortOpen = false; this.apply(); },
@@ -109,19 +114,32 @@ export default (config) => ({
         });
 
         this.count = visible.length;
+        this.visible = visible;
+        this.limit = PAGE; // nieuwe filter/sortering begint weer bij de eerste PAGE
 
         // Verbergen via inline display (wint van de flex-class op de kaart).
         this.cards.forEach((c) => { c.el.style.display = 'none'; c.el.classList.remove('cf-in'); });
         void grid.offsetWidth; // reflow -> herstart animatie
         visible.forEach((c, i) => {
-            c.el.style.display = '';
-            c.el.style.animationDelay = Math.min(i * 25, 300) + 'ms';
-            c.el.classList.add('cf-in');
+            if (i < this.limit) this.reveal(c, i);
             grid.appendChild(c.el); // herordenen volgens sortering
         });
 
         this.syncUrl();
     },
+
+    reveal(c, i) {
+        c.el.style.display = '';
+        c.el.style.animationDelay = Math.min(i * 25, 300) + 'ms';
+        c.el.classList.add('cf-in');
+    },
+
+    showMore() {
+        this.visible.slice(this.limit, this.limit + PAGE).forEach((c, i) => this.reveal(c, i));
+        this.limit += PAGE;
+    },
+
+    get remaining() { return Math.max(this.count - this.limit, 0); },
 
     reset() {
         this.search = '';

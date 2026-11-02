@@ -22,8 +22,8 @@
    data-featured="{{ $car->is_featured ? 1 : 0 }}"
    data-created="{{ optional($car->created_at)->timestamp ?? $car->id }}"
    class="group relative flex flex-col overflow-hidden rounded-[4px] border border-hairline bg-graphite-700/50
-          transition duration-300 ease-premium hover:-translate-y-1 hover:border-brass-500/40
-          hover:bg-graphite-700 focus-visible:ring-2">
+          transition-[transform,border-color,background-color] duration-200 ease-premium hover:-translate-y-1 hover:border-brass-500/40
+          hover:bg-graphite-700 active:scale-[0.98] focus-visible:ring-2">
 
     {{-- Foto --}}
     <div class="relative aspect-[4/3] overflow-hidden bg-graphite-800">
@@ -64,7 +64,7 @@
     </div>
 
     {{-- Specs in mono (secundair) --}}
-    <div class="mt-3 flex items-center gap-3 px-4 font-mono text-[0.7rem] text-cream/65">
+    <div class="mt-3 flex items-center gap-2 px-4 font-mono text-xs text-cream/65">
         <span class="inline-flex items-center gap-1.5"><x-icon name="gauge" class="h-3.5 w-3.5 text-cream/30" />{{ number_format($car->mileage, 0, ',', '.') }}</span>
         <span class="text-cream/15">/</span>
         <span class="inline-flex items-center gap-1.5"><x-icon name="fuel" class="h-3.5 w-3.5 text-cream/30" />{{ $car->fuel_type }}</span>
@@ -75,7 +75,7 @@
     {{-- Prijs: ademt, met duidelijke actie --}}
     <div class="mt-4 flex items-end justify-between border-t border-hairline px-4 py-3.5">
         <div>
-            <span class="kicker text-[0.6rem]">Vraagprijs</span>
+            <span class="kicker">Vraagprijs</span>
             <span class="mt-1 block font-display text-2xl font-bold tracking-tight text-white tabular">{{ $car->formattedPrice() }}</span>
         </div>
         <span class="mb-1 inline-flex h-9 w-9 items-center justify-center rounded-[3px] border border-hairline text-cream/65
