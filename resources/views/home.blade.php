@@ -1,3 +1,8 @@
+@php
+    ['rating' => $rating, 'count' => $reviewCount] = \App\Support\Reviews::summary();
+    $stock = \App\Models\Car::where('status', '!=', \App\Enums\CarStatus::Sold->value)->count();
+@endphp
+
 <x-layouts.public>
     {{-- ═══════════ HERO · echte showroomfoto met tekst eroverheen ═══════════ --}}
     <section class="relative -mt-[4.5rem] flex min-h-hero flex-col overflow-hidden bg-ink pt-[4.5rem] sm:flex-row sm:items-end">
@@ -48,13 +53,25 @@
         </div>
     </section>
 
-    {{-- ═══════════ CIJFERS ═══════════ --}}
-    <x-home.stats />
+    {{-- ═══════════ BEWIJS · één regel i.p.v. cijfertegels + vertrouwensband ═══════════
+         De beloftes (BOVAG, afleverkosten) staan al in de hero; hier alleen wat de hero
+         niet zegt: de echte Google-score en de echte voorraad. --}}
+    <div class="container-x flex flex-wrap items-center gap-x-4 gap-y-1 border-b border-hairline py-5 text-sm text-cream/70">
+        <a href="{{ config('brand.reviews.url') }}" target="_blank" rel="noopener" class="inline-flex items-center gap-1.5 transition hover:text-cream">
+            <x-icon name="star" class="h-4 w-4 text-brass-400" />
+            <span class="font-semibold text-cream tabular">{{ str_replace('.', ',', (string) $rating) }}</span>
+            · {{ $reviewCount }} Google-reviews
+        </a>
+        <span class="text-cream/25" aria-hidden="true">/</span>
+        <a href="{{ route('cars.index') }}" class="transition hover:text-cream">
+            <span class="font-semibold text-cream tabular">{{ $stock }}</span> auto's op voorraad
+        </a>
+    </div>
 
     {{-- ═══════════ AANRADERS ═══════════ --}}
     @if ($featured->count())
         <section class="container-x py-16 lg:py-24">
-            <div class="flex flex-wrap items-end justify-between gap-4 border-b border-hairline pb-6">
+            <div class="flex flex-wrap items-end justify-between gap-4">
                 <h2 class="font-display text-3xl font-bold uppercase tracking-tight text-cream sm:text-4xl">
                     Onze aanraders
                 </h2>
@@ -65,7 +82,7 @@
             </div>
 
             {{-- Telefoon: swipe-rail (zoals "Net binnen") i.p.v. zes schermhoge kaarten onder elkaar. --}}
-            <div class="-mx-5 mt-10 flex snap-x snap-mandatory scroll-px-5 gap-4 overflow-x-auto px-5 pb-4 scroll-thin sm:mx-0 sm:grid sm:grid-cols-2 sm:gap-6 sm:overflow-visible sm:px-0 sm:pb-0 lg:grid-cols-3">
+            <div class="-mx-5 mt-8 flex snap-x snap-mandatory scroll-px-5 gap-4 overflow-x-auto px-5 pb-4 scroll-thin sm:mx-0 sm:grid sm:grid-cols-2 sm:gap-x-6 sm:gap-y-10 sm:overflow-visible sm:px-0 sm:pb-0 lg:grid-cols-3">
                 @foreach ($featured as $car)
                     <div class="w-[280px] shrink-0 snap-start sm:w-auto">
                         <x-car-card :car="$car" />
@@ -75,48 +92,24 @@
         </section>
     @endif
 
-    {{-- ═══════════ VERTROUWEN · ingetogen band (geen kaartjes, geen gimmick) ═══════════ --}}
-    @php
-        $trust = [
-            ['icon' => 'shield-check', 't' => 'BOVAG-garantie', 'd' => 'Elke occasion met BOVAG-garantie en een geldige keuring.'],
-            ['icon' => 'tag', 't' => 'Geen afleverkosten', 'd' => 'De prijs die je ziet, is de prijs die je betaalt.'],
-            ['icon' => 'repeat', 't' => 'Inruil & financiering', 'd' => 'Een eerlijke inruilprijs en financiering die bij je past.'],
-        ];
-    @endphp
-    <section class="border-y border-hairline bg-graphite-800">
-        <div class="container-x grid gap-x-10 gap-y-8 py-12 md:grid-cols-3 lg:py-14">
-            @foreach ($trust as $item)
-                <div class="flex items-start gap-4 {{ ! $loop->last ? 'md:border-r md:border-hairline md:pr-10' : '' }}">
-                    <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-brass-500/35 text-brass-400">
-                        <x-icon name="{{ $item['icon'] }}" class="h-5 w-5" />
-                    </span>
-                    <div>
-                        <p class="font-display text-base font-semibold text-cream">{{ $item['t'] }}</p>
-                        <p class="mt-1.5 text-sm leading-relaxed text-cream/65">{{ $item['d'] }}</p>
-                    </div>
-                </div>
-            @endforeach
-        </div>
-    </section>
-
     {{-- ═══════════ NET BINNEN · scroll-rail ═══════════ --}}
     <section class="py-16 lg:py-20">
-        <div class="container-x flex items-end justify-between gap-4 border-b border-hairline pb-6">
+        <div class="container-x flex items-end justify-between gap-4">
             <h2 class="font-display text-3xl font-bold uppercase tracking-tight text-cream sm:text-4xl">Net binnengereden</h2>
             <a href="{{ route('cars.index') }}" class="group hidden items-center gap-2 text-sm text-cream/70 transition hover:text-brass-300 sm:inline-flex">
                 Bekijk alles <x-icon name="arrow-right" class="h-4 w-4 transition group-hover:translate-x-0.5" />
             </a>
         </div>
 
-        <div class="mt-10 flex snap-x snap-mandatory gap-6 scroll-thin overflow-x-auto px-5 pb-4 sm:px-8">
+        <div class="mt-8 flex snap-x snap-mandatory scroll-px-5 gap-4 scroll-thin overflow-x-auto px-5 pb-4 sm:scroll-px-8 sm:gap-6 sm:px-8">
             @foreach ($newest as $car)
                 <div class="w-[280px] shrink-0 snap-start sm:w-[330px]">
                     <x-car-card :car="$car" />
                 </div>
             @endforeach
-            <a href="{{ route('cars.index') }}" class="flex w-[200px] shrink-0 snap-start flex-col items-center justify-center gap-3 rounded-[4px] border border-dashed border-hairline text-cream/55 transition hover:border-brass-500/50 hover:text-brass-300">
+            <a href="{{ route('cars.index') }}" class="flex w-[160px] shrink-0 snap-start flex-col items-center justify-center gap-3 text-cream/60 transition hover:text-brass-300">
                 <span class="flex h-12 w-12 items-center justify-center rounded-full border border-hairline"><x-icon name="arrow-right" class="h-5 w-5" /></span>
-                <span class="font-mono text-xs uppercase tracking-wider">Bekijk alles</span>
+                <span class="text-sm">Bekijk alles</span>
             </a>
         </div>
     </section>
@@ -124,15 +117,12 @@
     {{-- ═══════════ MET TROTS VERKOCHT ═══════════ --}}
     <x-home.sold :cars="$sold" />
 
-    {{-- ═══════════ DIENSTEN ═══════════ --}}
+    {{-- ═══════════ DIENSTEN · lijst, geen kaartjes ═══════════ --}}
     <section class="container-x py-16 lg:py-24">
-        <div class="flex flex-wrap items-end justify-between gap-4 border-b border-hairline pb-6">
-            <div>
-                <p class="kicker">Diensten</p>
-                <h2 class="mt-3 font-display text-3xl font-bold uppercase tracking-tight text-cream sm:text-4xl">
-                    Alles rondom je auto
-                </h2>
-            </div>
+        <div class="flex flex-wrap items-end justify-between gap-4">
+            <h2 class="font-display text-3xl font-bold uppercase tracking-tight text-cream sm:text-4xl">
+                Alles rondom je auto
+            </h2>
             <a href="{{ route('diensten') }}" class="group inline-flex items-center gap-2 text-sm text-cream/70 transition hover:text-brass-300">
                 Alle diensten <x-icon name="arrow-right" class="h-4 w-4 transition group-hover:translate-x-0.5" />
             </a>
@@ -140,31 +130,33 @@
 
         @php
             $teaser = [
-                ['icon' => 'tag', 't' => 'Inkoop', 'd' => 'Eerlijke dagprijs voor je auto, direct geregeld.'],
-                ['icon' => 'badge-check', 't' => 'Verkoop', 'd' => 'Kwaliteitsoccasions met BOVAG-garantie, zonder afleverkosten.'],
-                ['icon' => 'users', 't' => 'Aankoop', 'd' => 'Zelf een auto op het oog? Wij begeleiden je bij de aankoop.'],
-                ['icon' => 'search', 't' => 'Zoekopdracht', 'd' => 'Niet gevonden? Wij zoeken gericht naar jouw droomauto.'],
+                ['t' => 'Inkoop', 'd' => 'Eerlijke dagprijs voor je auto, direct geregeld.'],
+                ['t' => 'Verkoop', 'd' => 'Kwaliteitsoccasions met BOVAG-garantie, zonder afleverkosten.'],
+                ['t' => 'Aankoop', 'd' => 'Zelf een auto op het oog? Wij begeleiden je bij de aankoop.'],
+                ['t' => 'Zoekopdracht', 'd' => 'Niet gevonden? Wij zoeken gericht naar jouw droomauto.'],
             ];
         @endphp
-        <div class="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <ul class="mt-8 divide-y divide-hairline border-y border-hairline lg:grid lg:grid-cols-4 lg:divide-x lg:divide-y-0">
             @foreach ($teaser as $s)
-                <a href="{{ route('diensten') }}" class="flex flex-col rounded-[4px] border border-hairline bg-graphite-700/50 p-6 transition hover:-translate-y-1 hover:border-brass-500/40">
-                    <span class="flex h-11 w-11 items-center justify-center rounded-full border border-brass-500/35 text-brass-400">
-                        <x-icon name="{{ $s['icon'] }}" class="h-5 w-5" />
-                    </span>
-                    <h3 class="mt-5 font-display text-lg font-semibold text-cream">{{ $s['t'] }}</h3>
-                    <p class="mt-2 text-sm leading-relaxed text-cream/65">{{ $s['d'] }}</p>
-                </a>
+                <li>
+                    <a href="{{ route('diensten') }}" class="group flex items-start justify-between gap-6 py-5 transition active:bg-cream/[0.03] lg:h-full lg:flex-col lg:px-6 lg:py-8 lg:first:pl-0">
+                        <span>
+                            <span class="block font-display text-lg font-semibold text-cream">{{ $s['t'] }}</span>
+                            <span class="mt-1 block text-sm leading-relaxed text-cream/65">{{ $s['d'] }}</span>
+                        </span>
+                        <x-icon name="arrow-right" class="mt-1 h-4 w-4 shrink-0 text-cream/40 transition group-hover:translate-x-0.5 group-hover:text-brass-300" />
+                    </a>
+                </li>
             @endforeach
-        </div>
+        </ul>
     </section>
 
     {{-- ═══════════ KLANTERVARINGEN ═══════════ --}}
-    <x-home.reviews class="border-t border-hairline" />
+    <x-home.reviews />
 
-    {{-- ═══════════ CTA ═══════════ --}}
-    <section class="container-x py-16 pb-24">
-        <div class="grid items-center gap-8 rounded-[4px] border border-hairline bg-graphite-700 p-8 lg:grid-cols-12 lg:p-14">
+    {{-- ═══════════ CTA · volle band ═══════════ --}}
+    <section class="border-y border-hairline bg-graphite-800">
+        <div class="container-x grid items-center gap-8 py-14 lg:grid-cols-12 lg:py-20">
             <div class="lg:col-span-8">
                 <h2 class="font-display text-3xl font-bold uppercase tracking-tight text-cream sm:text-4xl">
                     Iets specifieks zoeken?

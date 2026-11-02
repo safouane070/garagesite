@@ -99,9 +99,6 @@
                         <x-icon name="maximize" class="h-4 w-4" /> Vergroot
                     </button>
 
-                    {{-- Statusbadge --}}
-                    <div class="absolute left-4 top-4"><x-status-badge :status="$car->status" class="backdrop-blur-md" /></div>
-
                     {{-- Teller --}}
                     <div class="absolute right-4 top-4 rounded-[3px] bg-scrim/70 px-2.5 py-1 font-mono text-xs text-onscrim/80 backdrop-blur-md">
                         <span x-text="String(i + 1).padStart(2, '0')"></span> / <span x-text="String(images.length).padStart(2, '0')"></span>
@@ -182,92 +179,67 @@
         {{-- ═══ Infopaneel ═══ --}}
         <div class="lg:col-span-5">
             <div class="lg:sticky lg:top-24">
-                <p class="kicker">{{ $car->body_type ?: 'Occasion' }} · {{ $car->year }}</p>
-                <h1 class="mt-3 font-display text-3xl font-bold leading-tight tracking-tight text-cream sm:text-4xl">
+                <h1 class="font-display text-3xl font-bold leading-tight tracking-tight text-cream sm:text-4xl">
                     {{ $car->brand }} {{ $car->model }}
                 </h1>
                 @if ($car->variant)
                     <p class="mt-1 text-lg text-cream/65">{{ $car->variant }}</p>
                 @endif
 
-                {{-- Prijs: ademt, in het wit zodat 'ie meteen opvalt --}}
-                <div class="mt-6 border-y border-hairline py-5">
-                    <div class="flex items-end justify-between">
-                        <div>
-                            <span class="kicker">Vraagprijs</span>
-                            <span class="mt-1 block font-display text-4xl font-bold tracking-tight text-white tabular sm:text-5xl">
-                                {{ $car->formattedPrice() }}
-                            </span>
-                        </div>
-                        <x-status-badge :status="$car->status" />
-                    </div>
-
-                    @if ($car->status !== \App\Enums\CarStatus::Sold)
-                        <a href="{{ route('financial-lease') }}" class="mt-3 inline-flex items-center gap-2 text-sm text-cream/70 transition hover:text-brass-300">
-                            <x-icon name="repeat" class="h-4 w-4 text-brass-500/70" />
-                            Ook mogelijk via <span class="font-semibold text-white">financial lease</span>
-                        </a>
-                    @endif
-                </div>
-
-                {{-- Kernspecs (highlight) --}}
-                <dl class="mt-6 grid grid-cols-2 gap-px overflow-hidden rounded-[4px] border border-hairline bg-hairline">
-                    @php
-                        $highlights = [
-                            ['icon' => 'calendar', 'label' => 'Bouwjaar', 'value' => $car->year],
-                            ['icon' => 'gauge', 'label' => 'Kilometerstand', 'value' => $car->formattedMileage()],
-                            ['icon' => 'fuel', 'label' => 'Brandstof', 'value' => $car->fuel_type],
-                            ['icon' => 'gearbox', 'label' => 'Transmissie', 'value' => $car->transmission],
-                        ];
-                    @endphp
-                    @foreach ($highlights as $h)
-                        {{-- Alleen dt/dd direct in de div (geldige definitielijst); het icoon zit in de dt. --}}
-                        <div class="relative min-w-0 bg-graphite-800 p-4 pl-12">
-                            <dt class="font-mono text-xs uppercase tracking-wider text-cream/70">
-                                <x-icon name="{{ $h['icon'] }}" class="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-brass-500/70" />
-                                {{ $h['label'] }}
-                            </dt>
-                            <dd class="truncate text-sm font-medium text-white">{{ $h['value'] }}</dd>
+                {{-- Kernspecs als één regel (stond in een omkaderd 2×2-raster). --}}
+                <dl class="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1 font-mono text-sm text-cream/70 tabular">
+                    @foreach ([
+                        'Bouwjaar' => $car->year,
+                        'Kilometerstand' => $car->formattedMileage(),
+                        'Brandstof' => $car->fuel_type,
+                        'Transmissie' => $car->transmission,
+                    ] as $label => $value)
+                        <div class="flex items-center gap-2">
+                            @unless ($loop->first)<span class="text-cream/25" aria-hidden="true">·</span>@endunless
+                            <dt class="sr-only">{{ $label }}</dt>
+                            <dd>{{ $value }}</dd>
                         </div>
                     @endforeach
                 </dl>
 
-                {{-- CTA: snelacties die het contactformulier-onderwerp kiezen --}}
-                @if ($car->status !== \App\Enums\CarStatus::Sold)
-                    {{-- Echte links naar het formulier (werkt ook zonder JS); met JS kiest de
+                {{-- Prijs: groot en wit; alleen een status tonen als die afwijkt. --}}
+                <div class="mt-6 flex flex-wrap items-center gap-x-4 gap-y-2">
+                    <span class="font-display text-4xl font-bold tracking-tight text-white tabular sm:text-5xl">
+                        {{ $car->formattedPrice() }}
+                    </span>
+                    @if ($car->status !== \App\Enums\CarStatus::Available)
+                        <x-status-badge :status="$car->status" />
+                    @endif
+                </div>
+                @if ($forSale)
+                    <a href="{{ route('financial-lease') }}" class="mt-2 inline-flex text-sm text-cream/65 underline decoration-cream/25 underline-offset-4 transition hover:text-brass-300">
+                        Ook mogelijk via financial lease
+                    </a>
+                @endif
+
+                {{-- CTA: één hoofdactie; bellen/WhatsApp ernaast. Bezichtiging en inruil
+                     kies je in het formulier (onderwerp), dat hoeft geen vier knoppen. --}}
+                @if ($forSale)
+                    {{-- Echte link naar het formulier (werkt ook zonder JS); met JS kiest de
                          knop meteen het onderwerp en zet de cursor in het naamveld. --}}
-                    <div id="snelacties" class="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2" x-data="{
-                            pick(type) {
-                                this.$store.lead.type = type;
-                                this.$nextTick(() => document.getElementById('lead-name')?.focus({ preventScroll: true }));
-                            },
-                         }">
-                        <a href="#contact" @click="pick('proefrit')" class="btn btn-primary">
-                            <x-icon name="calendar" class="h-4 w-4" /> Proefrit aanvragen
-                        </a>
-                        <a href="#contact" @click="pick('bezichtiging')" class="btn btn-outline">
-                            <x-icon name="check" class="h-4 w-4" /> Bezichtiging plannen
-                        </a>
-                        <a href="#contact" @click="pick('inruil')" class="btn btn-outline">
-                            <x-icon name="repeat" class="h-4 w-4" /> Inruil bespreken
+                    <div id="snelacties" class="mt-7 grid grid-cols-2 gap-3" x-data>
+                        <a href="#contact" class="btn btn-primary col-span-2 py-3.5 text-base"
+                           @click="$store.lead.type = 'proefrit'; $nextTick(() => document.getElementById('lead-name')?.focus({ preventScroll: true }))">
+                            Proefrit aanvragen
                         </a>
                         <a href="tel:{{ config('brand.contact.phone_href') }}" class="btn btn-outline">
                             <x-icon name="phone" class="h-4 w-4" /> Bel ons
                         </a>
+                        <a href="https://wa.me/{{ preg_replace('/\D/', '', (string) config('brand.contact.whatsapp')) }}?text={{ rawurlencode($whatsappText) }}"
+                           target="_blank" rel="noopener" class="btn btn-outline">
+                            WhatsApp
+                        </a>
                     </div>
                 @else
-                    <div class="mt-6 flex items-center gap-3 rounded-[4px] border border-hairline bg-graphite-800 p-4 text-sm text-cream/70">
-                        <x-icon name="check" class="h-5 w-5 text-rose-400" />
-                        Deze auto is verkocht. Bekijk ons <a href="{{ route('cars.index') }}" class="text-brass-300 underline-offset-2 hover:underline">actuele aanbod</a>.
-                    </div>
+                    <p class="mt-6 text-sm text-cream/70">
+                        Deze auto is verkocht. Bekijk ons <a href="{{ route('cars.index') }}" class="text-brass-300 underline underline-offset-4">actuele aanbod</a>.
+                    </p>
                 @endif
-
-                {{-- Vertrouwensregel --}}
-                <div class="mt-5 flex flex-wrap gap-x-5 gap-y-2 font-mono text-xs uppercase tracking-wider text-cream/70">
-                    <span class="inline-flex items-center gap-1.5"><x-icon name="shield-check" class="h-3.5 w-3.5 text-brass-500/70" /> BOVAG-garantie</span>
-                    <span class="inline-flex items-center gap-1.5"><x-icon name="file-text" class="h-3.5 w-3.5 text-brass-500/70" /> Volledige historiek</span>
-                    <span class="inline-flex items-center gap-1.5"><x-icon name="repeat" class="h-3.5 w-3.5 text-brass-500/70" /> Inruil mogelijk</span>
-                </div>
             </div>
         </div>
     </div>
@@ -328,7 +300,7 @@
             @endif
 
             <aside class="{{ $hasOptions ? 'lg:col-span-4' : 'lg:col-span-6 lg:col-start-4' }}">
-                <div class="surface p-6">
+                <div>
                     <h3 class="font-display text-lg font-bold text-white">Inbegrepen bij aflevering</h3>
                     <ul class="mt-4 space-y-3 text-sm text-cream/80">
                         @foreach ([
@@ -361,15 +333,13 @@
     {{-- ═══ Vergelijkbaar ═══ --}}
     @if ($related->isNotEmpty())
         <section class="container-x border-t border-hairline py-14">
-            <div class="mb-8 flex items-end justify-between border-b border-hairline pb-6">
-                <div>
-                    <p class="kicker">Vergelijkbaar</p>
-                    <h2 class="mt-3 font-display text-2xl font-bold tracking-tight text-cream sm:text-3xl">Misschien ook interessant</h2>
-                </div>
-            </div>
-            <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            <h2 class="font-display text-2xl font-bold tracking-tight text-cream sm:text-3xl">Misschien ook interessant</h2>
+            {{-- Telefoon: swipe-rail, zoals op de homepage. --}}
+            <div class="-mx-5 mt-8 flex snap-x snap-mandatory scroll-px-5 gap-4 overflow-x-auto px-5 pb-4 scroll-thin sm:mx-0 sm:grid sm:grid-cols-2 sm:gap-x-6 sm:gap-y-10 sm:overflow-visible sm:px-0 sm:pb-0 lg:grid-cols-3">
                 @foreach ($related as $item)
-                    <x-car-card :car="$item" />
+                    <div class="w-[280px] shrink-0 snap-start sm:w-auto">
+                        <x-car-card :car="$item" />
+                    </div>
                 @endforeach
             </div>
         </section>

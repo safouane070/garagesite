@@ -85,7 +85,7 @@
 
             {{-- Grid met alle kaarten (Alpine toont/sorteert client-side) --}}
             <h2 class="sr-only">Occasions</h2>
-            <div x-ref="grid" class="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+            <div x-ref="grid" class="grid gap-x-6 gap-y-10 sm:grid-cols-2 xl:grid-cols-3">
                 @foreach ($cars as $car)
                     <x-car-card :car="$car" :priority="$loop->first" />
                 @endforeach

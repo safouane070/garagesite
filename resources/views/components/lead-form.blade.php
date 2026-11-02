@@ -17,7 +17,8 @@
 @endphp
 
 <section id="contact" {{ $attributes->merge(['class' => 'scroll-mt-28']) }}>
-    <div class="surface p-6 sm:p-8">
+    {{-- Geen kader om het formulier: de velden zelf zijn al omlijnd. --}}
+    <div>
         @if (session('lead_sent'))
             {{-- Bevestiging na verzenden --}}
             <div class="flex flex-col items-center gap-4 py-8 text-center" role="status">

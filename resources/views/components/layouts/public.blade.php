@@ -190,26 +190,19 @@
         {{ $slot }}
     </main>
 
-    <footer class="mt-28 border-t border-hairline">
-        <div class="container-x grid gap-12 py-16 md:grid-cols-12">
+    <footer class="mt-20 border-t border-hairline">
+        {{-- Compact: geen badges in kaders en geen mono-labels; op een telefoon was dit bijna twee schermen. --}}
+        <div class="container-x grid gap-10 py-14 md:grid-cols-12">
             <div class="md:col-span-4">
                 <x-brand-mark />
                 <p class="mt-5 max-w-sm text-sm leading-relaxed text-cream/65">
                     Volkswagen-, Audi- en premium occasionspecialist in Rijswijk, regio Den Haag.
-                    Elke auto met BOVAG-garantie, keuringsattest en zonder afleverkosten.
                 </p>
-                <div class="mt-6 flex flex-wrap gap-2">
-                    @foreach (['BOVAG', 'RDW erkend', 'VAG specialist'] as $badge)
-                        <span class="inline-flex items-center gap-1.5 rounded-[3px] border border-hairline px-2.5 py-1 font-mono text-[0.65rem] uppercase tracking-wider text-cream/60">
-                            <x-icon name="badge-check" class="h-3.5 w-3.5 text-brass-500/70" /> {{ $badge }}
-                        </span>
-                    @endforeach
-                </div>
             </div>
 
             <div class="md:col-span-3">
-                <p class="kicker">Navigatie</p>
-                <ul class="mt-5 space-y-3 text-sm text-cream/70">
+                <p class="text-sm font-semibold text-cream">Navigatie</p>
+                <ul class="mt-4 grid grid-cols-2 gap-x-6 gap-y-3 text-sm text-cream/70 md:grid-cols-1">
                     <li><a href="{{ route('cars.index') }}" class="transition hover:text-brass-300">Aanbod</a></li>
                     <li><a href="{{ route('diensten') }}" class="transition hover:text-brass-300">Diensten</a></li>
                     <li><a href="{{ route('financial-lease') }}" class="transition hover:text-brass-300">Financial lease</a></li>
@@ -220,8 +213,8 @@
             </div>
 
             <div class="md:col-span-5">
-                <p class="kicker">Showroom</p>
-                <ul class="mt-5 space-y-3 text-sm text-cream/70">
+                <p class="text-sm font-semibold text-cream">Showroom</p>
+                <ul class="mt-4 space-y-3 text-sm text-cream/70">
                     <li class="flex items-start gap-2.5"><x-icon name="map-pin" class="mt-0.5 h-4 w-4 shrink-0 text-brass-500/70" /> {{ config('brand.contact.address') }}</li>
                     <li class="flex items-center gap-2.5"><x-icon name="phone" class="h-4 w-4 shrink-0 text-brass-500/70" />
                         <a href="tel:{{ config('brand.contact.phone_href') }}" class="hover:text-brass-300">{{ config('brand.contact.phone') }}</a>
@@ -231,8 +224,8 @@
                     <li class="flex items-center gap-2.5"><x-icon name="mail" class="h-4 w-4 shrink-0 text-brass-500/70" /> <a href="mailto:{{ config('brand.contact.email') }}" class="hover:text-brass-300">{{ config('brand.contact.email') }}</a></li>
                 </ul>
 
-                <p class="kicker mt-6">Openingstijden</p>
-                <dl class="mt-4 max-w-xs space-y-2 text-sm">
+                <p class="mt-8 text-sm font-semibold text-cream">Openingstijden</p>
+                <dl class="mt-3 max-w-xs space-y-2 text-sm">
                     @foreach (config('brand.opening_hours.days') as $d)
                         <div class="flex justify-between gap-6">
                             <dt class="text-cream/60">{{ $d['label'] }}</dt>
@@ -243,7 +236,8 @@
             </div>
         </div>
         <div class="border-t border-hairline">
-            <div class="container-x flex flex-col items-center justify-between gap-3 py-5 text-center font-mono text-[0.7rem] uppercase tracking-wider text-cream/60 sm:flex-row sm:text-left">
+            {{-- pb-24 op mobiel: ruimte onder de zwevende WhatsApp-knop, die anders over "Beheer" viel. --}}
+            <div class="container-x flex flex-col items-center justify-between gap-3 pb-24 pt-5 text-center text-xs text-cream/55 sm:flex-row sm:py-5 sm:text-left">
                 <span>&copy; {{ date('Y') }} {{ config('brand.company.legal_name') ?: config('app.name') }} · Alle rechten voorbehouden{{ config('brand.company.kvk') ? ' · KvK ' . config('brand.company.kvk') : '' }}{{ config('brand.company.vat') ? ' · btw ' . config('brand.company.vat') : '' }}</span>
                 <span class="flex flex-wrap items-center justify-center gap-x-4 gap-y-1">
                     <a href="{{ route('voorwaarden') }}" class="transition hover:text-brass-300">Algemene voorwaarden</a>

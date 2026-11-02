@@ -1,8 +1,7 @@
 <x-layouts.public title="Over ons"
     description="Autobedrijf Rijswijk: ontstaan uit een passie voor auto's. BOVAG-erkend, Volkswagen-specialist en gericht op eerlijke, persoonlijke service.">
 
-    <x-page-hero kicker="Over ons"
-        title="Ontstaan uit passie voor auto's"
+    <x-page-hero title="Ontstaan uit passie voor auto's"
         intro="Wat begon als een gedeelde liefde voor mooie Duitse auto's, groeide uit tot een BOVAG-erkend autobedrijf in Rijswijk." />
 
     <section class="container-x py-12 lg:py-16">
