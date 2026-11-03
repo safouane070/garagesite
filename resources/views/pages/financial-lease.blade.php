@@ -1,8 +1,7 @@
 <x-layouts.public title="Financial Lease"
     description="Financial lease bij Autobedrijf Rijswijk: rijd nu in je droomauto en word direct eigenaar. Bekijk ons actuele financial-lease-aanbod.">
 
-    <x-page-hero kicker="Financial Lease"
-        title="Jouw droomauto binnen handbereik"
+    <x-page-hero title="Jouw droomauto binnen handbereik"
         intro="Met financial lease spreid je de aanschaf over een vaste looptijd én ben je vanaf dag één eigenaar. Ideaal voor ondernemers en zzp'ers." />
 
     <section class="container-x py-12 lg:py-16">

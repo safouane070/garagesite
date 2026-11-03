@@ -18,6 +18,13 @@ class CarEnrichmentSeeder extends Seeder
 {
     public function run(): void
     {
+        // Zet echte auto's op verkocht: alleen voor lokale demodata.
+        if (! app()->isLocal()) {
+            $this->command?->error('CarEnrichmentSeeder draait alleen lokaal (APP_ENV=local).');
+
+            return;
+        }
+
         $alreadySold = Car::where('status', CarStatus::Sold->value)->count();
         $need = 6 - $alreadySold;
 

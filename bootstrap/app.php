@@ -12,6 +12,7 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Vertrouwde proxy's: zie config('app.trusted_proxies'), gezet in AppServiceProvider.
         $middleware->web(prepend: [
             \App\Http\Middleware\CanonicalHost::class,
         ], append: [

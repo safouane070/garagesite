@@ -64,6 +64,52 @@ class CarImageUploadTest extends TestCase
         $this->assertSame([800, 600], [$w, $h]);
     }
 
+    /**
+     * Telefoon die staand fotografeert: pixels liggend (400×300) + EXIF "Orientation 6".
+     * GD schrijft geen EXIF, dus we zetten zelf een minimaal APP1-blok achter de SOI.
+     */
+    private function rotatedPhoneJpeg(): UploadedFile
+    {
+        $file = $this->jpeg(400, 300);
+        $jpeg = file_get_contents($file->getRealPath());
+
+        // TIFF little-endian, 1 IFD-regel: tag 0x0112 (Orientation), SHORT, waarde 6.
+        $tiff = "II\x2A\x00\x08\x00\x00\x00" . "\x01\x00" . "\x12\x01\x03\x00\x01\x00\x00\x00\x06\x00\x00\x00" . "\x00\x00\x00\x00";
+        $app1 = "Exif\x00\x00" . $tiff;
+        file_put_contents($file->getRealPath(), substr($jpeg, 0, 2) . "\xFF\xE1" . pack('n', strlen($app1) + 2) . $app1 . substr($jpeg, 2));
+
+        return new UploadedFile($file->getRealPath(), 'staand.jpg', 'image/jpeg', null, true);
+    }
+
+    public function test_phone_photo_is_turned_upright_from_its_exif_tag(): void
+    {
+        Storage::fake('public');
+        $car = Car::factory()->create(['status' => 'available']);
+
+        $this->actingAs(User::factory()->create())
+            ->patch(route('admin.cars.update', $car), $this->formData($car, [$this->rotatedPhoneJpeg()]))
+            ->assertSessionHasNoErrors();
+
+        [$w, $h] = getimagesizefromstring(Storage::disk('public')->get($car->images()->first()->path));
+        $this->assertSame([300, 400], [$w, $h]); // rechtop: staand
+    }
+
+    public function test_png_upload_is_stored_as_webp(): void
+    {
+        Storage::fake('public');
+        $car = Car::factory()->create(['status' => 'available']);
+        $path = tempnam(sys_get_temp_dir(), 'car') . '.png';
+        imagepng(imagecreatetruecolor(800, 600), $path);
+
+        $this->actingAs(User::factory()->create())
+            ->patch(route('admin.cars.update', $car), $this->formData($car, [new UploadedFile($path, 'scan.png', 'image/png', null, true)]))
+            ->assertSessionHasNoErrors();
+
+        $stored = $car->images()->first()->path;
+        $this->assertStringEndsWith('.webp', $stored);
+        $this->assertSame(IMAGETYPE_WEBP, getimagesizefromstring(Storage::disk('public')->get($stored))[2]);
+    }
+
     /** Te grote POST: Nederlandse uitleg i.p.v. de kale Engelse 413-pagina. */
     public function test_oversized_post_shows_dutch_page(): void
     {

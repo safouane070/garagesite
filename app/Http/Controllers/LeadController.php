@@ -15,6 +15,12 @@ class LeadController extends Controller
 {
     public function store(StoreLeadRequest $request): RedirectResponse
     {
+        // Portfolio-demo: de banner zegt dat aanvragen niet aankomen, dus ook geen
+        // persoonsgegevens opslaan of (naar de logs) mailen. Wel de normale bevestiging tonen.
+        if (config('brand.demo')) {
+            return back()->with('lead_sent', true)->withFragment('contact');
+        }
+
         $data = $request->safe()->only([
             'car_id', 'type', 'name', 'email', 'phone', 'message', 'preferred_date',
         ]);
@@ -38,7 +44,8 @@ class LeadController extends Controller
         // zelfs het inplannen niet, dan blokkeert dat de bevestiging niet.
         try {
             Mail::to(config('brand.contact.email'))->queue(new LeadReceived($lead));
-            Mail::to($lead->email, $lead->name)->queue(new LeadConfirmation($lead));
+            // Zonder naam: die is vrij in te vullen en zou in de "Aan"-regel van een vreemde staan.
+            Mail::to($lead->email)->queue(new LeadConfirmation($lead));
         } catch (\Throwable $e) {
             Log::warning('Lead-mail niet ingepland: ' . $e->getMessage(), ['lead_id' => $lead->id]);
         }

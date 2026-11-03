@@ -1,8 +1,7 @@
 <x-layouts.public title="Contact"
     description="Bezoek de showroom van Autobedrijf Rijswijk aan de Poldermeesterstraat 16 in Rijswijk. Bel, WhatsApp of stuur een bericht — we helpen je graag.">
 
-    <x-page-hero kicker="Contact"
-        title="Kom langs of neem contact op"
+    <x-page-hero title="Kom langs of neem contact op"
         intro="Vragen over een occasion, inruil of financiering? Bel of app ons even, of loop binnen in de showroom in Rijswijk." />
 
     <section class="container-x py-12 lg:py-16">

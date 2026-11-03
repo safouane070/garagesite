@@ -30,6 +30,10 @@ class TwoFactorController extends Controller
 
     public function enable(Request $request): RedirectResponse
     {
+        // Een nieuw geheim wist de bevestigde 2FA. Uitzetten vraagt het wachtwoord (disable),
+        // dus mag deze route dat niet zonder wachtwoord kunnen.
+        abort_if($request->user()->hasTwoFactor(), 403);
+
         $request->user()->forceFill([
             'two_factor_secret' => Totp::generateSecret(),
             'two_factor_confirmed_at' => null,

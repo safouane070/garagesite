@@ -129,4 +129,7 @@ return [
     // Vervangt déze site straks het domein, dan moet de WordPress-site op een
     // ander adres blijven draaien (bv. een subdomein) of de sync uit (leeg laten).
     'dealer_site_url' => env('DEALER_SITE_URL', 'https://autobedrijfrijswijk.nl'),
+
+    // Portfolio-demo (Render): toont een banner bovenaan dat dit niet de echte site is.
+    'demo' => (bool) env('BRAND_DEMO', false),
 ];

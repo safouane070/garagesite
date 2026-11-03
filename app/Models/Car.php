@@ -152,48 +152,6 @@ class Car extends Model
         return $query->where('is_featured', true);
     }
 
-    /**
-     * Past de publieke filters toe. Lege filters worden genegeerd,
-     * zodat we ze veilig rechtstreeks vanuit de request kunnen doorgeven.
-     */
-    public function scopeFilter(Builder $query, array $filters): Builder
-    {
-        // Vrij zoeken op merk / model / uitvoering
-        $query->when($filters['search'] ?? null, function (Builder $q, string $term) {
-            $q->where(function (Builder $sub) use ($term) {
-                $sub->where('brand', 'like', "%{$term}%")
-                    ->orWhere('model', 'like', "%{$term}%")
-                    ->orWhere('variant', 'like', "%{$term}%");
-            });
-        });
-
-        $query->when($filters['brand'] ?? null, fn (Builder $q, $v) => $q->where('brand', $v));
-        $query->when($filters['fuel_type'] ?? null, fn (Builder $q, $v) => $q->where('fuel_type', $v));
-
-        $query->when($filters['year_min'] ?? null, fn (Builder $q, $v) => $q->where('year', '>=', $v));
-        $query->when($filters['year_max'] ?? null, fn (Builder $q, $v) => $q->where('year', '<=', $v));
-
-        $query->when($filters['price_min'] ?? null, fn (Builder $q, $v) => $q->where('price', '>=', $v));
-        $query->when($filters['price_max'] ?? null, fn (Builder $q, $v) => $q->where('price', '<=', $v));
-
-        return $query;
-    }
-
-    /**
-     * Vertaalt een sorteersleutel naar een ORDER BY. Whitelist voorkomt
-     * dat iemand willekeurige kolommen via de URL kan sorteren.
-     */
-    public function scopeSort(Builder $query, ?string $sort): Builder
-    {
-        return match ($sort) {
-            'price_asc' => $query->orderBy('price'),
-            'price_desc' => $query->orderByDesc('price'),
-            'mileage_asc' => $query->orderBy('mileage'),
-            'year_desc' => $query->orderByDesc('year'),
-            default => $query->latest(), // nieuwste eerst
-        };
-    }
-
     // ----- Presentatie-helpers -------------------------------------------
 
     /** Prijs als "€ 24.950". */
@@ -231,18 +189,6 @@ class Car extends Model
             $this->brand, $this->model, $this->variant, $this->year,
             $this->body_type, $this->fuel_type, $this->color,
         ])));
-    }
-
-    /**
-     * Pad naar een uitgeknipte hero-afbeelding (transparante PNG op donker),
-     * als die voor deze auto bestaat — anders null. Zo blijft de hero altijd
-     * kloppen: alleen auto's mét cutout komen als blikvanger in aanmerking.
-     */
-    public function cutoutUrl(): ?string
-    {
-        $relative = "images/cutouts/{$this->slug}.png";
-
-        return is_file(public_path($relative)) ? asset($relative) : null;
     }
 
     /**

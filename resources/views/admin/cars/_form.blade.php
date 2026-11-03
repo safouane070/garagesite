@@ -3,8 +3,9 @@
     $action = $isEdit ? route('admin.cars.update', $car) : route('admin.cars.store');
     // Echte serverlimieten (verschillen per hosting), zodat de upload vóór het
     // versturen al kan waarschuwen i.p.v. een foutpagina na het versturen.
-    $maxFileBytes = min(12 * 1024 * 1024, ini_parse_quantity(ini_get('upload_max_filesize')));
-    $maxPostBytes = ini_parse_quantity(ini_get('post_max_size'));
+    // 0 betekent bij PHP "geen limiet", niet 0 MB (anders zou elke upload geweigerd worden).
+    $maxFileBytes = min(12 * 1024 * 1024, ini_parse_quantity(ini_get('upload_max_filesize')) ?: PHP_INT_MAX);
+    $maxPostBytes = ini_parse_quantity(ini_get('post_max_size')) ?: PHP_INT_MAX;
 @endphp
 
 {{-- Validatie-samenvatting --}}

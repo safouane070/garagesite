@@ -11,6 +11,12 @@ export default {
         './app/**/*.php',
     ],
 
+    // hover:-varianten alleen op apparaten met een echte muis: op iOS blijft hover na een tik
+    // "hangen" (kaart springt omhoog net als je navigeert).
+    future: {
+        hoverOnlyWhenSupported: true,
+    },
+
     theme: {
         extend: {
             colors: {

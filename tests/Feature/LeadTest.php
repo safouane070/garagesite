@@ -107,13 +107,39 @@ class LeadTest extends TestCase
         ]);
 
         $mail = new LeadConfirmation($lead);
-        $mail->assertSeeInText("Hallo Els O'Brien");
+        $mail->assertSeeInText('Hallo,');
         $mail->assertSeeInText('Proefrit aanvragen');
         $mail->assertSeeInText($car->title());
         $mail->assertSeeInText('donderdag 24 december 2026');
         $mail->assertSeeInText('om de afspraak te bevestigen');
         $mail->assertDontSeeInText('@if');
         $mail->assertHasReplyTo(config('brand.contact.email'));
+    }
+
+    /** Op de portfolio-demo komen aanvragen niet aan: dan ook niets opslaan of mailen. */
+    public function test_demo_does_not_store_or_mail_personal_data(): void
+    {
+        Mail::fake();
+        config(['brand.demo' => true]);
+
+        $this->post(route('leads.store'), ['type' => 'vraag', 'name' => 'Jan', 'email' => 'jan@example.com', 'phone' => '0612345678'])
+            ->assertRedirect()
+            ->assertSessionHas('lead_sent', true);
+
+        $this->assertSame(0, Lead::count());
+        Mail::assertNothingOutgoing();
+    }
+
+    /** De bevestiging gaat naar een vrij in te vullen adres: dus geen vrij ingevulde tekst erin (spam/phishing-relay). */
+    public function test_confirmation_does_not_relay_text_a_stranger_typed(): void
+    {
+        $lead = Lead::create([
+            'type' => 'vraag', 'name' => 'Account geblokkeerd, ga naar evil.example',
+            'email' => 'slachtoffer@example.com', 'message' => 'Klik op evil.example',
+        ]);
+
+        $mail = new LeadConfirmation($lead);
+        $mail->assertDontSeeInText('evil.example');
     }
 
     /** Hapert zelfs het inplannen, dan ziet de bezoeker tóch de bevestiging en staat de lead vast. */

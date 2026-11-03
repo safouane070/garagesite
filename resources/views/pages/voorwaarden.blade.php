@@ -1,7 +1,7 @@
 <x-layouts.public title="Algemene voorwaarden"
     description="De algemene voorwaarden van Autobedrijf Rijswijk.">
 
-    <x-page-hero kicker="Juridisch" title="Algemene voorwaarden" />
+    <x-page-hero title="Algemene voorwaarden" />
 
     <section class="container-x py-12 lg:py-16">
         <div class="mx-auto max-w-2xl space-y-6 leading-relaxed text-cream/75">

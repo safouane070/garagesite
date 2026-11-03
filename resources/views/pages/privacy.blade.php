@@ -1,7 +1,7 @@
 <x-layouts.public title="Privacybeleid"
     description="Hoe Autobedrijf Rijswijk omgaat met je persoonsgegevens.">
 
-    <x-page-hero kicker="Juridisch" title="Privacybeleid" />
+    <x-page-hero title="Privacybeleid" />
 
     <section class="container-x py-12 lg:py-16">
         <div class="mx-auto max-w-2xl space-y-6 leading-relaxed text-cream/75">

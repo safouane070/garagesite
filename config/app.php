@@ -54,6 +54,11 @@ return [
 
     'url' => env('APP_URL', 'http://localhost'),
 
+    // Proxy's waarvan we X-Forwarded-* vertrouwen ("*" = alle, of komma-gescheiden IP's).
+    // Leeg = uit. Via config i.p.v. env() in bootstrap/app.php: na config:cache leest
+    // Laravel de .env niet meer, en dan zou de instelling stil wegvallen.
+    'trusted_proxies' => env('TRUSTED_PROXIES'),
+
     /*
     |--------------------------------------------------------------------------
     | Application Timezone
