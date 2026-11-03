@@ -21,4 +21,10 @@ php artisan route:cache
 php artisan view:cache
 chown -R www-data:www-data storage bootstrap/cache database
 
+# Het gratis plan heeft geen cron: de scheduler draait daarom in deze container (de
+# uptimebot houdt hem wakker). Eerst meteen een volledige sync (de build haalt er maar
+# 20), daarna elk uur (SYNC_CRON) plus de rest van routes/console.php. Als www-data,
+# zodat Apache de nieuwe foto's en database-rijen kan lezen en schrijven.
+su -s /bin/sh www-data -c "php artisan cars:sync --max-photos=${SYNC_MAX_PHOTOS:-8}; exec php artisan schedule:work" &
+
 exec apache2-foreground

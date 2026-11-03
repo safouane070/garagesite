@@ -1,5 +1,5 @@
 # Portfolio-demo op Render (gratis plan). Eén container: Apache + PHP + SQLite.
-# Voorraad en foto's worden tijdens de build opgehaald, zodat een koude start snel is.
+# De build haalt een eerste deel van de voorraad op; de scheduler in de container houdt alles daarna elk uur bij.
 # De echte livegang staat in DEPLOY.md; dit bestand is alleen voor de demo.
 
 FROM node:20-alpine AS assets
@@ -38,16 +38,20 @@ ENV APP_ENV=staging \
     LOG_CHANNEL=stderr \
     SESSION_DRIVER=database \
     CACHE_STORE=database \
-    FILESYSTEM_DISK=local
+    FILESYSTEM_DISK=local \
+    SYNC_CRON="0 * * * *" \
+    SYNC_MAX_PHOTOS=8
 
-# Database + voorraad tijdens de build (20 auto's: ±50 s per auto met foto's, alles = ±2 uur). Mislukt de sync (dealersite even weg),
-# dan gaat de build door met een lege voorraad in plaats van te falen.
+# Database + een eerste deel van de voorraad tijdens de build, zodat de site meteen auto's toont.
+# De rest (en elk uur de updates) haalt de scheduler in de container op: zie docker/start.sh.
+# 8 foto's per auto: de volledige galerij van alle auto's (>1 GB) past niet op de gratis schijf.
+# Mislukt de sync (dealersite even weg), dan gaat de build door met een lege voorraad.
 RUN rm -f .env public/storage \
     && mkdir -p storage/app/public storage/framework/cache/data storage/framework/sessions storage/framework/views storage/logs \
     && touch database/database.sqlite \
     && APP_KEY=base64:$(head -c32 /dev/urandom | base64) sh -c '\
         php artisan migrate --force \
-        && (php artisan cars:sync --limit=20 || echo "cars:sync mislukt, voorraad leeg") \
+        && (php artisan cars:sync --limit=20 --max-photos=8 || echo "cars:sync mislukt, voorraad leeg") \
         && (php artisan reviews:fetch || echo "reviews:fetch mislukt") \
         && php artisan storage:link' \
     && chown -R www-data:www-data storage bootstrap/cache database

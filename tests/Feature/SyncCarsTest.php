@@ -188,6 +188,16 @@ class SyncCarsTest extends TestCase
         $this->assertSame([], Storage::disk('public')->allFiles());
     }
 
+    /** Demo: hoogstens zoveel foto's per auto (de dealer heeft er 20–40). */
+    public function test_max_photos_caps_the_gallery(): void
+    {
+        $this->vehicle('volkswagen-golf-1-5-tsi-r-line-pano-camera');
+
+        $this->artisan('cars:sync', ['--max-photos' => 1])->assertSuccessful();
+
+        $this->assertCount(1, Car::firstWhere('dealer_slug', 'volkswagen-golf-1-5-tsi-r-line-pano-camera')->images);
+    }
+
     public function test_limit_caps_the_number_of_new_cars(): void
     {
         $this->vehicle('audi-a3-sportback', ['title' => 'Audi A3 Sportback 35 TFSI', 'km' => 10000]);

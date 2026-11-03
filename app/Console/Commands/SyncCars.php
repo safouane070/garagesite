@@ -38,7 +38,8 @@ class SyncCars extends Command
         {--limit=0 : Maximaal zoveel nieuwe auto's aanmaken (0 = alle)}
         {--sell-unmatched : Zet niet-verkochte auto's die nergens aan te koppelen zijn op verkocht (eenmalig, na controle)}
         {--require-parse-ratio= : Faal als minder dan dit deel van de nieuwe auto's leesbaar is (0-1)}
-        {--refresh-photos : Alle gekoppelde auto's opnieuw lezen en onvolledige fotogalerijen aanvullen}";
+        {--refresh-photos : Alle gekoppelde auto's opnieuw lezen en onvolledige fotogalerijen aanvullen}
+        {--max-photos=0 : Hoogstens zoveel foto's per auto (0 = alle; de demo gebruikt dit om de schijf klein te houden)}";
 
     protected $description = 'Synchroniseert de voorraad met de dealersite (nieuw, verkocht, prijswijzigingen).';
 
@@ -372,7 +373,13 @@ class SyncCars extends Command
                 return 'pagina niet bereikbaar';
             }
 
-            return DealerSite::parse($html, $v['title'], DealerSite::mediaUrl($v['media']), $knownModels);
+            $data = DealerSite::parse($html, $v['title'], DealerSite::mediaUrl($v['media']), $knownModels);
+            // Eerste foto's = omslag en buitenkant; het interieur staat achteraan.
+            if (is_array($data) && ($max = (int) $this->option('max-photos')) > 0) {
+                $data['photos'] = array_slice($data['photos'], 0, $max);
+            }
+
+            return $data;
         } catch (\Throwable $e) {
             return 'fout bij ophalen: ' . $e->getMessage();
         }
