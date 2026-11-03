@@ -131,7 +131,7 @@ return [
     'dealer_site_url' => env('DEALER_SITE_URL', 'https://autobedrijfrijswijk.nl'),
 
     // Wanneer de sync draait (cron-notatie) en hoeveel foto's per auto (0 = alle).
-    // Productie: dagelijks 06:00 met de volledige galerij. De demo: elk uur, 8 foto's.
+    // Productie: dagelijks 06:00 met de volledige galerij. De demo: elk uur, 12 foto's.
     'sync' => [
         'cron' => env('SYNC_CRON', '0 6 * * *'),
         'max_photos' => (int) env('SYNC_MAX_PHOTOS', 0),
