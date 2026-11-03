@@ -102,6 +102,29 @@ class TwoFactorTest extends TestCase
         $this->assertGuest();
     }
 
+    /** Nieuwe herstelcodes: alleen met wachtwoord, en de oude werken daarna niet meer. */
+    public function test_new_recovery_codes_need_the_password_and_replace_the_old_ones(): void
+    {
+        $user = $this->userWithTwoFactor();
+        $old = $user->two_factor_recovery_codes;
+
+        $this->actingAs($user)->post(route('two-factor.recovery-codes'), ['current_password' => 'fout'])
+            ->assertSessionHasErrors('current_password', null, 'twoFactor');
+        $this->assertSame($old, $user->fresh()->two_factor_recovery_codes);
+
+        $this->actingAs($user)->post(route('two-factor.recovery-codes'), ['current_password' => 'password'])
+            ->assertSessionHas('two_factor_codes');
+        $new = $user->fresh()->two_factor_recovery_codes;
+        $this->assertCount(8, $new);
+        $this->assertEmpty(array_intersect($old, $new));
+
+        auth()->logout();
+        $this->loginWithPassword($user);
+        $this->post(route('two-factor.challenge'), ['code' => $old[0]])->assertSessionHasErrors('code');
+        $this->assertGuest();
+        $this->get(route('two-factor.challenge'))->assertOk()->assertSee('herstelcode'); // tweede stap toont het scherm
+    }
+
     /** Raden vanaf steeds een ander IP-adres helpt niet: de limiet geldt per account. */
     public function test_code_guessing_is_limited_per_account_not_per_ip(): void
     {

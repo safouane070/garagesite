@@ -42,6 +42,20 @@ class AuthenticationTest extends TestCase
         $this->assertGuest();
     }
 
+    /** Wachtwoord raden: na 5 fouten is ook het juiste wachtwoord even geblokkeerd. */
+    public function test_login_is_locked_after_five_wrong_passwords(): void
+    {
+        $user = User::factory()->create();
+
+        foreach (range(1, 5) as $i) {
+            $this->post('/login', ['email' => $user->email, 'password' => "fout-{$i}"]);
+        }
+
+        $this->post('/login', ['email' => $user->email, 'password' => 'password'])->assertSessionHasErrors('email');
+        $this->assertStringContainsString('Te veel inlogpogingen', session('errors')->first('email'));
+        $this->assertGuest();
+    }
+
     public function test_users_can_logout(): void
     {
         $user = User::factory()->create();

@@ -166,6 +166,38 @@ class SyncCarsTest extends TestCase
         $this->assertSame('sold', $soldByOwner->fresh()->status->value);
     }
 
+    /** Lege voorraadlijst (storing of lege WordPress): niets op verkocht zetten. */
+    public function test_empty_dealer_list_changes_nothing(): void
+    {
+        $car = $this->car(['slug' => 'audi-a3', 'dealer_slug' => 'audi-a3']);
+
+        $this->artisan('cars:sync')->assertFailed();
+
+        $this->assertSame('available', $car->fresh()->status->value);
+    }
+
+    /** Geen enkele foto te downloaden: geen halve auto zonder foto's, en geen losse bestanden. */
+    public function test_new_car_without_downloadable_photos_is_not_created(): void
+    {
+        $this->vehicle('volkswagen-golf-1-5-tsi-r-line-pano-camera');
+        $this->photosFail = true;
+
+        $this->artisan('cars:sync')->assertSuccessful();
+
+        $this->assertSame(0, Car::count());
+        $this->assertSame([], Storage::disk('public')->allFiles());
+    }
+
+    public function test_limit_caps_the_number_of_new_cars(): void
+    {
+        $this->vehicle('audi-a3-sportback', ['title' => 'Audi A3 Sportback 35 TFSI', 'km' => 10000]);
+        $this->vehicle('audi-a4-avant', ['title' => 'Audi A4 Avant 40 TFSI', 'km' => 20000]);
+
+        $this->artisan('cars:sync', ['--limit' => 1])->assertSuccessful();
+
+        $this->assertSame(1, Car::count());
+    }
+
     public function test_price_change_on_dealer_site_is_applied(): void
     {
         $this->vehicle('volkswagen-polo', ['title' => 'Volkswagen Polo 1.0 TSI', 'price' => 17950, 'modified' => '2026-09-22T09:00:00']);
