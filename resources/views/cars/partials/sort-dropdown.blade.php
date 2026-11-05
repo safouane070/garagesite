@@ -5,7 +5,7 @@
     <button type="button" @click="sortOpen=!sortOpen" :aria-expanded="sortOpen" aria-haspopup="listbox"
             class="flex w-full items-center justify-between gap-3 rounded-[3px] border border-hairline bg-paper px-3.5 py-2.5 text-sm text-cream transition hover:border-brass-500/50 focus-visible:ring-2">
         <span class="flex min-w-0 items-center gap-2">
-            <span class="hidden font-mono text-[0.7rem] uppercase tracking-wider text-cream/70 sm:inline">Sorteer</span>
+            <span class="hidden text-xs font-medium text-cream/70 sm:inline">Sorteer</span>
             <span class="truncate font-medium" x-text="sortLabel()"></span>
         </span>
         <x-icon name="chevron-down" class="h-4 w-4 shrink-0 text-cream/50 transition-transform duration-200" ::class="sortOpen && 'rotate-180'" />

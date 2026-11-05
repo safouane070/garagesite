@@ -38,7 +38,7 @@
                         @foreach ($brands as $b)
                             <li class="flex items-center justify-between border-b border-hairline pb-3 last:border-0 last:pb-0">
                                 <span class="font-display font-semibold text-cream">{{ $b }}</span>
-                                <a href="{{ route('cars.index', ['brand' => $b]) }}" class="inline-flex items-center gap-1.5 font-mono text-xs uppercase tracking-wider text-brass-300 transition hover:text-brass-200">
+                                <a href="{{ route('cars.index', ['brand' => $b]) }}" class="inline-flex items-center gap-1.5 text-sm text-brass-300 transition hover:text-brass-200">
                                     Bekijken <x-icon name="arrow-right" class="h-3.5 w-3.5" />
                                 </a>
                             </li>

@@ -128,7 +128,7 @@
                 @foreach ($nav as $item)
                     <a href="{{ route($item['route']) }}"
                        @if($item['active']) aria-current="page" @endif
-                       class="relative font-mono text-xs uppercase tracking-[0.15em] transition
+                       class="relative text-sm font-medium transition
                               {{ $item['active'] ? 'text-brass-400' : 'text-cream/70 hover:text-cream' }}">
                         {{ $item['label'] }}
                         @if($item['active'])
@@ -139,7 +139,7 @@
             </nav>
 
             <div class="flex items-center gap-3">
-                <a href="tel:{{ config('brand.contact.phone_href') }}" class="hidden items-center gap-2 font-mono text-xs text-cream/70 transition hover:text-brass-300 xl:inline-flex">
+                <a href="tel:{{ config('brand.contact.phone_href') }}" class="hidden items-center gap-2 text-sm tabular text-cream/70 transition hover:text-brass-300 xl:inline-flex">
                     <x-icon name="phone" class="h-3.5 w-3.5" /> {{ config('brand.contact.phone') }}
                 </a>
 
@@ -176,10 +176,10 @@
                     ];
                 @endphp
                 @foreach ($mobileNav as $item)
-                    <a href="{{ route($item['route']) }}" class="border-b border-hairline py-3 font-mono text-xs uppercase tracking-[0.15em] text-cream/70">{{ $item['label'] }}</a>
+                    <a href="{{ route($item['route']) }}" class="border-b border-hairline py-3 text-sm font-medium text-cream/70">{{ $item['label'] }}</a>
                 @endforeach
                 @auth
-                    <a href="{{ route('admin.dashboard') }}" class="border-b border-hairline py-3 font-mono text-xs uppercase tracking-[0.15em] text-cream/70">Beheer</a>
+                    <a href="{{ route('admin.dashboard') }}" class="border-b border-hairline py-3 text-sm font-medium text-cream/70">Beheer</a>
                 @endauth
                 <a href="{{ route('cars.index') }}" class="btn btn-primary mt-4">Bekijk het aanbod <x-icon name="arrow-right" class="h-4 w-4" /></a>
             </nav>

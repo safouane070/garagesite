@@ -49,6 +49,13 @@ class Car extends Model
                 $car->slug = static::makeUniqueSlug($base);
             }
         });
+
+        // Verkoopmoment bijhouden, ongeacht wie de status zet (sync of beheerder).
+        static::saving(function (Car $car) {
+            if ($car->isDirty('status')) {
+                $car->sold_at = $car->status === CarStatus::Sold ? ($car->sold_at ?? now()) : null;
+            }
+        });
     }
 
     /**
@@ -58,7 +65,7 @@ class Car extends Model
     protected $fillable = [
         'slug', 'brand', 'model', 'variant', 'year', 'price', 'mileage',
         'fuel_type', 'transmission', 'color', 'body_type', 'description',
-        'specs', 'options', 'status', 'is_featured',
+        'specs', 'options', 'status', 'is_featured', 'vat_deductible',
         'dealer_slug', 'dealer_modified_at',
     ];
 
@@ -75,6 +82,8 @@ class Car extends Model
             'dealer_modified_at' => 'datetime',
             'status' => CarStatus::class,
             'is_featured' => 'boolean',
+            'vat_deductible' => 'boolean',
+            'sold_at' => 'datetime',
             'year' => 'integer',
             'mileage' => 'integer',
             'price' => 'decimal:2',
@@ -161,29 +170,61 @@ class Car extends Model
     }
 
     /**
-     * Indicatief financial-leasebedrag per maand (annuïteit met aanbetaling en
-     * slottermijn uit config('brand.finance.lease')). Null onder de minimumprijs.
+     * Financial-leasebedrag per maand zoals de calculator van de leasepartner het
+     * standaard berekent (annuïteit, slottermijn; zie config('brand.finance.lease')).
+     * Null onder de minimumprijs.
      */
     public function monthlyFrom(): ?int
     {
         $c = config('brand.finance.lease');
-        $price = (float) $this->price;
-        if ($price < $c['min_price']) {
+        if ((float) $this->price < $c['min_price']) {
             return null;
         }
 
         $n = $c['months'];
         $r = $c['rate'] / 100 / 12;
-        $financed = $price * (1 - $c['down']);
-        $balloonPv = $price * $c['balloon'] / (1 + $r) ** $n;
+        $financed = $this->leaseAmount() * (1 - $c['down']);
+        $closingPv = $c['closing'] / (1 + $r) ** $n;
 
-        return (int) ceil(($financed - $balloonPv) * $r / (1 - (1 + $r) ** -$n));
+        return (int) round(($financed - $closingPv) * $r / (1 - (1 + $r) ** -$n));
     }
 
-    /** BTW-auto (BTW aftrekbaar voor ondernemers): de dealer zet "BTW" in de uitvoering. */
+    /**
+     * Het bedrag dat je kunt leasen: bij een BTW-auto is dat de prijs exclusief
+     * btw (die vordert de ondernemer terug), anders de volle prijs.
+     */
+    public function leaseAmount(): int
+    {
+        $price = (float) $this->price;
+
+        return (int) round($this->isVatDeductible() ? $price / 1.21 : $price);
+    }
+
+    /** Link naar de calculator van de leasepartner, al ingevuld voor deze auto. */
+    public function leaseCalculatorUrl(): string
+    {
+        $c = config('brand.finance.lease');
+
+        return 'https://www.financiallease.nl/dealer/calculator?' . http_build_query([
+            'calculator_id' => $c['calculator_id'],
+            'voertuig' => 'p',
+            'aanschafwaarde' => $this->leaseAmount(),
+            'leasePrice' => $this->leaseAmount(),
+            'runTime' => $c['months'],
+            'closingPrice' => $c['closing'],
+        ]);
+    }
+
+    /** BTW-auto (btw aftrekbaar voor ondernemers): gezet door de beheerder of de sync. */
     public function isVatDeductible(): bool
     {
-        return (bool) preg_match('/\bBTW\b/i', (string) $this->variant);
+        return (bool) $this->vat_deductible;
+    }
+
+    /** De dealer markeert BTW-auto's met "BTW" in de titel ("… Competition BTW!"). */
+    public static function mentionsVat(string $text): bool
+    {
+        return (bool) preg_match('/\bBTW\b/i', $text);
     }
 
     /** Uitvoering zonder de "BTW"-markering; die tonen we als eigen label. */

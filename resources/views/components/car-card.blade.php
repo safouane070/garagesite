@@ -65,7 +65,8 @@
     <div class="mt-2.5 flex flex-wrap items-baseline gap-x-3 gap-y-1">
         <span class="font-display text-xl font-bold tracking-tight text-white tabular">{{ $car->formattedPrice() }}</span>
         @if (! $isSold && ($monthly = $car->monthlyFrom()))
-            <span class="text-sm text-cream/60 tabular">of € {{ number_format($monthly, 0, ',', '.') }} p/m</span>
+            {{-- "Lease": financial lease is zakelijk; "of € x p/m" las als consumentenkrediet. --}}
+            <span class="text-sm text-cream/60 tabular">Lease v.a. € {{ number_format($monthly, 0, ',', '.') }} p/m</span>
         @endif
         @if ($car->isVatDeductible())
             <span class="rounded-[3px] border border-hairline px-1.5 py-0.5 text-[11px] font-medium uppercase tracking-wide text-cream/80">BTW</span>

@@ -156,10 +156,10 @@
         @apply mx-auto w-full max-w-container px-5 sm:px-8;
     }
 
-    /* Kleine, mono, uppercase kicker/label — terugkerend signatuurelement.
-       12px is de ondergrens: kleiner is op een telefoon niet meer te lezen. */
+    /* Klein tussenkopje. Was een mono, uppercase "kicker"; dat las als designtemplate
+       i.p.v. autobedrijf. Nu gewoon een rustig, vet label in de tekstletter. */
     .kicker {
-        @apply font-mono text-xs uppercase tracking-[0.16em] text-brass-300;
+        @apply text-sm font-semibold text-cream;
     }
 
     /* ---- Knoppen: crisp, kleine radius (geen pill-soep) ---- */

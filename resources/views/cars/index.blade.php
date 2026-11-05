@@ -50,11 +50,11 @@
         <aside class="hidden lg:block">
             <div class="sticky top-[6rem]">
                 <div class="mb-5 flex items-center justify-between">
-                    <span class="flex items-center gap-2 font-mono text-xs uppercase tracking-wider text-cream/70">
+                    <span class="flex items-center gap-2 text-sm text-cream/70">
                         <x-icon name="sliders" class="h-4 w-4 text-brass-500" /> Filters
                     </span>
                     <button @click="reset()" x-show="hasActiveFilters" x-cloak type="button"
-                            class="font-mono text-[0.7rem] uppercase tracking-wider text-brass-300 hover:text-brass-200">
+                            class="text-xs font-medium text-brass-300 hover:text-brass-200">
                         Wissen
                     </button>
                 </div>
@@ -74,7 +74,7 @@
                             <x-icon name="x" class="h-3 w-3 text-cream/70 transition group-hover:text-brass-300" />
                         </button>
                     </template>
-                    <button @click="reset()" type="button" class="font-mono text-[0.7rem] uppercase tracking-wider text-cream/70 hover:text-brass-300">
+                    <button @click="reset()" type="button" class="text-xs font-medium text-cream/70 hover:text-brass-300">
                         Alles wissen
                     </button>
                 </div>
@@ -128,7 +128,7 @@
              x-transition:leave-start="translate-y-0" x-transition:leave-end="translate-y-full"
              class="absolute inset-x-0 bottom-0 flex max-h-[88vh] flex-col rounded-t-2xl border-t border-hairline bg-graphite-800">
             <div class="flex items-center justify-between border-b border-hairline px-5 py-4">
-                <span class="flex items-center gap-2 font-mono text-xs uppercase tracking-wider text-cream/80">
+                <span class="flex items-center gap-2 text-sm text-cream/80">
                     <x-icon name="sliders" class="h-4 w-4 text-brass-500" /> Filters
                 </span>
                 <button @click="drawerOpen=false" type="button" class="btn btn-ghost -mr-2"><x-icon name="x" class="h-5 w-5" /></button>

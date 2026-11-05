@@ -240,6 +240,11 @@ class SyncCars extends Command
             $car->mileage = $data['mileage'];
             $changed = true;
         }
+        // Alleen aanzetten: wat de beheerder als BTW-auto markeerde, zet de sync nooit uit.
+        if (($data['vat_deductible'] ?? false) && ! $car->vat_deductible) {
+            $car->vat_deductible = true;
+            $changed = true;
+        }
         if (empty($car->options) && $data['options'] !== []) {
             $car->options = $data['options'];
             $changed = true;
@@ -317,6 +322,7 @@ class SyncCars extends Command
                     'color' => $data['color'], 'body_type' => $data['body_type'],
                     'specs' => $data['specs'] ?: null, 'options' => $data['options'] ?: null,
                     'status' => CarStatus::Available, 'is_featured' => false,
+                    'vat_deductible' => $data['vat_deductible'] ?? false,
                     'dealer_slug' => $v['slug'], 'dealer_modified_at' => Carbon::parse($v['modified']),
                 ]);
                 $car->description = CarDescription::for($car);

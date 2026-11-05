@@ -45,7 +45,7 @@
             @foreach ($fuelTypes as $f)
                 <button type="button" @click="toggleFuel('{{ $f }}')"
                         :class="fuels.includes('{{ $f }}') ? 'border-brass-500 bg-brass-500/15 text-brass-300' : 'border-hairline text-cream/70 hover:border-cream/30 hover:text-cream/80'"
-                        class="rounded-[3px] border px-3 py-1.5 font-mono text-[0.7rem] uppercase tracking-wider transition">
+                        class="rounded-[3px] border px-3 py-1.5 text-xs font-medium transition">
                     {{ $f }} ({{ $fuelCounts[$f] ?? 0 }})
                 </button>
             @endforeach

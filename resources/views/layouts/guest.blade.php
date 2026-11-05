@@ -25,7 +25,7 @@
                 {{ $slot }}
             </div>
 
-            <p class="mt-6 text-center font-mono text-[0.7rem] uppercase tracking-wider text-cream/70">
+            <p class="mt-6 text-center text-xs font-medium text-cream/70">
                 <a href="{{ route('home') }}" class="transition hover:text-brass-300">← Terug naar de site</a>
             </p>
         </div>

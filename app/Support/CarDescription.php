@@ -23,11 +23,27 @@ class CarDescription
      * Opties waar kopers op letten, in volgorde van belang. De optielijst van de
      * dealer is alfabetisch; zonder deze voorkeur noemden we "aanhanger-assistent".
      */
+    /**
+     * Per begrip de schrijfwijzen die de feed gebruikt. Eén begrip levert hoogstens
+     * één optie op: "elektrisch glazen panorama-dak" en "panoramadak" zijn hetzelfde dak.
+     */
     private const PRIORITY = [
-        'panorama', 'pano', 'head-up', 'matrix', 'virtual cockpit', 'adaptive cruise', 'adaptieve cruise',
-        'leder', 'stoelverwarming', 'stoelventilatie', 'massage', 'bang & olufsen', 'b&o', 'bose', 'harman',
-        '360', 'camera', 'navigatie', 'trekhaak', 'luchtvering', 'elektrische achterklep', 'keyless',
-        'sfeerverlichting', 'carplay', 'parkeersensor',
+        'dak' => ['panorama', 'pano', 'schuifdak', 'open dak'],
+        'hud' => ['head-up', 'head up', 'hud'],
+        'licht' => ['matrix', 'laser', 'led-koplamp', 'led koplamp'],
+        'cockpit' => ['virtual cockpit', 'digitaal dashboard', 'digital cockpit'],
+        'acc' => ['adaptive cruise', 'adaptieve cruise', 'acc'],
+        'bekleding' => ['leder', 'leer', 'alcantara'],
+        'stoelen' => ['stoelverwarming', 'stoelventilatie', 'massage', 'memory'],
+        'audio' => ['bang & olufsen', 'b&o', 'bose', 'harman', 'sonos', 'burmester', 'meridian'],
+        'camera' => ['360', 'camera'],
+        'navigatie' => ['navigatie'],
+        'trekhaak' => ['trekhaak'],
+        'vering' => ['luchtvering'],
+        'achterklep' => ['elektrische achterklep', 'achterklep elektrisch'],
+        'keyless' => ['keyless'],
+        'sfeer' => ['sfeerverlichting'],
+        'carplay' => ['carplay', 'android auto'],
     ];
 
     public static function for(Car $car): string
@@ -78,21 +94,41 @@ class CarDescription
     /** De belangrijkste opties eerst, aangevuld in de originele volgorde. */
     private static function highlights(array $options): array
     {
+        $conceptOf = function (string $option): ?string {
+            $o = mb_strtolower($option);
+            foreach (self::PRIORITY as $concept => $needles) {
+                foreach ($needles as $needle) {
+                    if (str_contains($o, $needle)) {
+                        return $concept;
+                    }
+                }
+            }
+
+            return null;
+        };
+
+        // Eerst per begrip (in volgorde van belang) de eerste optie die erbij hoort.
         $picked = [];
-        foreach (self::PRIORITY as $needle) {
+        foreach (array_keys(self::PRIORITY) as $concept) {
             foreach ($options as $o) {
-                if (count($picked) < self::HIGHLIGHTS && ! in_array($o, $picked, true) && str_contains(mb_strtolower($o), $needle)) {
+                if ($conceptOf($o) === $concept) {
                     $picked[] = $o;
                     break;
                 }
             }
         }
+        $picked = array_slice($picked, 0, self::HIGHLIGHTS);
+
+        // Aanvullen met overige opties, maar nooit een tweede van een al gekozen begrip.
+        $usedConcepts = array_map($conceptOf, $picked);
         foreach ($options as $o) {
             if (count($picked) >= self::HIGHLIGHTS) {
                 break;
             }
-            if (! in_array($o, $picked, true)) {
+            $concept = $conceptOf($o);
+            if (! in_array($o, $picked, true) && ($concept === null || ! in_array($concept, $usedConcepts, true))) {
                 $picked[] = $o;
+                $usedConcepts[] = $concept;
             }
         }
 

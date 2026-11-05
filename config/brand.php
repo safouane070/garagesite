@@ -89,14 +89,18 @@ return [
     // echte maandbedragen). stock_id = de dealer-feed van de zaak.
     'finance' => [
         'financiallease_stock_id' => env('BRAND_FL_STOCK_ID', '1262'),
-        // Aannames voor het indicatieve "vanaf"-maandbedrag op kaart en detailpagina.
-        // Gangbare financial-leasevoorwaarden; pas aan op de rekenrente van de leasepartner.
+        // "Vanaf"-maandbedrag op kaart en detailpagina. Dit zijn de standaardwaarden
+        // van de calculator van de leasepartner zelf (financiallease.nl/dealer/calculator,
+        // calculator_id 1262): 72 mnd, geen aanbetaling, € 3.000 slottermijn. De rente is
+        // teruggerekend uit drie bedragen van die calculator (nov 2026: € 20.000 → € 345,
+        // € 65.950 → € 1.209, € 120.000 → € 2.223 p/m); herijk als die bedragen veranderen.
         'lease' => [
+            'calculator_id' => env('BRAND_FL_CALCULATOR_ID', '1262'),
             'months' => 72,
-            'rate' => 8.99,          // nominale jaarrente in %
-            'down' => 0.10,          // aanbetaling, deel van de prijs
-            'balloon' => 0.15,       // slottermijn, deel van de prijs
-            'min_price' => 5000,     // daaronder geen lease-indicatie
+            'rate' => 10.5,          // nominale jaarrente in %
+            'down' => 0,             // aanbetaling, deel van de prijs
+            'closing' => 3000,       // slottermijn in euro
+            'min_price' => 7500,     // daaronder geen lease-indicatie
         ],
     ],
 

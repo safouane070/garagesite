@@ -255,6 +255,15 @@
                 </span>
             </label>
 
+            <label class="mt-4 flex cursor-pointer items-start gap-3">
+                <input type="checkbox" name="vat_deductible" value="1" @checked(old('vat_deductible', $car->isVatDeductible()))
+                       class="mt-0.5 h-4 w-4 rounded-[3px] border-graphite-500 bg-graphite-800 text-brass-500 focus:ring-brass-500 focus:ring-offset-ink">
+                <span>
+                    <span class="block text-sm font-medium text-cream">BTW-auto</span>
+                    <span class="block text-xs text-cream/60">Btw is aftrekbaar voor ondernemers. Toont een BTW-label en rekent de lease over de prijs excl. btw.</span>
+                </span>
+            </label>
+
             <div class="mt-6 flex flex-col gap-3 border-t border-hairline pt-6">
                 <button type="submit" class="btn btn-primary w-full">
                     <x-icon name="check" class="h-4 w-4" /> {{ $isEdit ? 'Wijzigingen opslaan' : 'Auto toevoegen' }}

@@ -110,7 +110,7 @@ class SyncCarsTest extends TestCase
         $this->assertSame(['Benzine', 'Automaat', 'Hatchback', 'Zwart'], [$car->fuel_type, $car->transmission, $car->body_type, $car->color]);
         $this->assertSame(['Navigatie', 'LED-koplampen', 'Panoramadak'], $car->options);
         $this->assertCount(2, $car->images); // foto van de "andere auto" (999) telt niet mee
-        $this->assertStringContainsString('panoramadak, navigatie en LED-koplampen', $car->description);
+        $this->assertStringContainsString('panoramadak, LED-koplampen en navigatie', $car->description);
     }
 
     /**

@@ -36,6 +36,7 @@ class CarRequest extends FormRequest
             'description' => ['nullable', 'string', 'max:5000'],
             'status' => ['required', Rule::enum(CarStatus::class)],
             'is_featured' => ['boolean'],
+            'vat_deductible' => ['boolean'],
 
             // Losse spec-velden komen binnen als specs[...] en zijn optioneel.
             'specs' => ['nullable', 'array'],
@@ -57,6 +58,7 @@ class CarRequest extends FormRequest
     {
         $this->merge([
             'is_featured' => $this->boolean('is_featured'),
+            'vat_deductible' => $this->boolean('vat_deductible'),
         ]);
     }
 

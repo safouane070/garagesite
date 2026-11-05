@@ -173,6 +173,8 @@ class DealerSite
             'specs' => array_filter(['deuren' => (int) ($rows['Aantal deuren'] ?? 0) ?: null]),
             'options' => self::options($html),
             'photos' => $photos,
+            // Staat alleen in de titel ("… BTW!"); het variantdeel kapt af bij "/".
+            'vat_deductible' => \App\Models\Car::mentionsVat($title),
         ];
     }
 

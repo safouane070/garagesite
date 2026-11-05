@@ -64,7 +64,7 @@
 
     {{-- Kruimelpad --}}
     <div class="container-x pt-6">
-        <nav class="flex items-center gap-2 font-mono text-xs uppercase tracking-wider text-cream/70" aria-label="Kruimelpad">
+        <nav class="flex items-center gap-2 text-sm text-cream/70" aria-label="Kruimelpad">
             <a href="{{ route('home') }}" class="transition hover:text-brass-300">Home</a>
             <x-icon name="chevron-right" class="h-3 w-3" />
             <a href="{{ route('cars.index') }}" class="transition hover:text-brass-300">Aanbod</a>
@@ -97,7 +97,7 @@
 
                     {{-- Schermvullend bekijken (ook met toetsenbord) --}}
                     <button type="button" @click="open()" aria-label="Foto's schermvullend bekijken"
-                            class="absolute bottom-4 right-4 inline-flex items-center gap-2 rounded-[3px] bg-scrim/70 px-3 py-2 font-mono text-[0.7rem] uppercase tracking-wider text-onscrim backdrop-blur-md transition hover:bg-scrim/90">
+                            class="absolute bottom-4 right-4 inline-flex items-center gap-2 rounded-[3px] bg-scrim/70 px-3 py-2 text-xs font-medium text-onscrim backdrop-blur-md transition hover:bg-scrim/90">
                         <x-icon name="maximize" class="h-4 w-4" /> Vergroot
                     </button>
 
@@ -121,7 +121,7 @@
                     </template>
                 @else
                     <div class="flex h-full w-full flex-col items-center justify-center gap-2 text-cream/25">
-                        <x-icon name="car" class="h-10 w-10" /><span class="font-mono text-xs uppercase tracking-widest">Geen foto</span>
+                        <x-icon name="car" class="h-10 w-10" /><span class="text-xs">Geen foto</span>
                     </div>
                 @endif
             </div>
@@ -189,7 +189,7 @@
                 @endif
 
                 {{-- Kernspecs als één regel (stond in een omkaderd 2×2-raster). --}}
-                <dl class="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1 font-mono text-sm text-cream/70 tabular">
+                <dl class="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-cream/80 tabular">
                     @foreach ([
                         'Bouwjaar' => $car->year,
                         'Kilometerstand' => $car->formattedMileage(),
@@ -224,9 +224,10 @@
                         <a href="{{ route('financial-lease') }}" class="text-cream underline decoration-cream/25 underline-offset-4 transition-colors hover:text-brass-300">Financial lease</a>
                         vanaf <span class="font-semibold text-cream tabular">€ {{ number_format($monthly, 0, ',', '.') }}</span> p/m
                     </p>
-                    <p class="mt-1 text-xs leading-relaxed text-cream/50">
-                        Indicatie: {{ $lease['months'] }} mnd, {{ (int) ($lease['down'] * 100) }}% aanbetaling,
-                        {{ (int) ($lease['balloon'] * 100) }}% slottermijn, {{ str_replace('.', ',', (string) $lease['rate']) }}% rente. Alleen zakelijk.
+                    <p class="mt-1 max-w-sm text-xs leading-relaxed text-cream/55">
+                        Voor ondernemers. {{ $lease['months'] }} maanden, geen aanbetaling, € {{ number_format($lease['closing'], 0, ',', '.') }} slottermijn{{ $car->isVatDeductible() ? ', over de prijs excl. btw' : '' }}.
+                        <a href="{{ $car->leaseCalculatorUrl() }}" target="_blank" rel="noopener"
+                           class="text-cream/80 underline decoration-cream/25 underline-offset-4 transition-colors hover:text-brass-300">Bereken je eigen bedrag</a>
                     </p>
                 @elseif ($forSale)
                     <a href="{{ route('financial-lease') }}" class="mt-2 inline-flex text-sm text-cream/65 underline decoration-cream/25 underline-offset-4 transition hover:text-brass-300">

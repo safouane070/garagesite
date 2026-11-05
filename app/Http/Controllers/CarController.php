@@ -74,20 +74,33 @@ class CarController extends Controller
             DB::table('cars')->where('id', $car->id)->increment('views');
         }
 
-        // Vergelijkbare auto's: zelfde merk of carrosserie, in dezelfde prijsklasse
-        // (±30%), dichtstbijzijnde prijs eerst. Bij een Q8 van € 98k geen Q2 van € 35k.
+        return view('cars.show', ['car' => $car, 'related' => $this->related($car)]);
+    }
+
+    /**
+     * Drie vergelijkbare auto's, dichtstbijzijnde prijs eerst. Eerst zelfde merk of
+     * carrosserie binnen ±30% (bij een Q8 van € 98k geen Q2 van € 35k); is dat er
+     * niet genoeg (de duurste of goedkoopste auto), dan aanvullen met wat qua prijs
+     * het dichtst bij ligt, zodat het blok nooit leeg of half blijft.
+     */
+    private function related(Car $car): \Illuminate\Support\Collection
+    {
         $price = (float) $car->price;
-        $related = Car::available()
-            ->with('primaryImage')
-            ->where('id', '!=', $car->id)
-            ->where(function ($q) use ($car) {
-                $q->where('brand', $car->brand)->orWhere('body_type', $car->body_type);
-            })
+        $base = fn () => Car::available()->with('primaryImage')->where('id', '!=', $car->id)
+            ->orderByRaw('ABS(price - ?)', [$price]);
+
+        $related = $base()
+            ->where(fn ($q) => $q->where('brand', $car->brand)->orWhere('body_type', $car->body_type))
             ->whereBetween('price', [$price * 0.7, $price * 1.3])
-            ->orderByRaw('ABS(price - ?)', [$price])
             ->take(3)
             ->get();
 
-        return view('cars.show', compact('car', 'related'));
+        if ($related->count() < 3) {
+            $related = $related->concat(
+                $base()->whereNotIn('id', $related->pluck('id'))->take(3 - $related->count())->get()
+            );
+        }
+
+        return $related;
     }
 }

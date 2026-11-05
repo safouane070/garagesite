@@ -68,6 +68,13 @@ class DealerSiteParseTest extends TestCase
         $this->assertSame($ours, DealerSite::parse($this->page(['Brandstof' => $dealer]), 'Volkswagen Golf 1.5 TSI', self::COVER)['fuel_type']);
     }
 
+    /** "BTW" staat bij de dealer achteraan de titel, soms na een "/" die de variant afkapt. */
+    public function test_btw_in_the_title_marks_a_vat_car(): void
+    {
+        $this->assertTrue(DealerSite::parse($this->page(), 'Audi Q8 55 TFSI e Competition/Pano BTW!', self::COVER)['vat_deductible']);
+        $this->assertFalse(DealerSite::parse($this->page(), 'Volkswagen Golf 1.5 TSI', self::COVER)['vat_deductible']);
+    }
+
     public function test_brand_spellings_are_normalised(): void
     {
         $this->assertSame(['MINI', 'Cooper', 'S'], DealerSite::splitTitle('Mini Cooper S'));
