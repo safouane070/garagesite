@@ -58,10 +58,10 @@ export default (config) => ({
         if (p.has('brand')) this.brand = p.get('brand');
         if (p.has('body_type')) this.body = p.get('body_type');
         if (p.has('fuel_type')) this.fuels = p.get('fuel_type').split(',').filter(Boolean);
-        if (p.has('price_min')) this.price[0] = clamp(+p.get('price_min'), this.bounds.priceMin, this.bounds.priceMax, this.price[0]);
-        if (p.has('price_max')) this.price[1] = clamp(+p.get('price_max'), this.bounds.priceMin, this.bounds.priceMax, this.price[1]);
-        if (p.has('year_min')) this.year[0] = clamp(+p.get('year_min'), this.bounds.yearMin, this.bounds.yearMax, this.year[0]);
-        if (p.has('year_max')) this.year[1] = clamp(+p.get('year_max'), this.bounds.yearMin, this.bounds.yearMax, this.year[1]);
+        if (p.get('price_min')) this.price[0] = clamp(+p.get('price_min'), this.bounds.priceMin, this.bounds.priceMax, this.price[0]);
+        if (p.get('price_max')) this.price[1] = clamp(+p.get('price_max'), this.bounds.priceMin, this.bounds.priceMax, this.price[1]);
+        if (p.get('year_min')) this.year[0] = clamp(+p.get('year_min'), this.bounds.yearMin, this.bounds.yearMax, this.year[0]);
+        if (p.get('year_max')) this.year[1] = clamp(+p.get('year_max'), this.bounds.yearMin, this.bounds.yearMax, this.year[1]);
         if (p.has('sort')) this.sort = p.get('sort');
         // Omgedraaid bereik (min > max) rechtzetten.
         this.price.sort((a, b) => a - b);
@@ -130,7 +130,7 @@ export default (config) => ({
 
     reveal(c, i) {
         c.el.style.display = '';
-        c.el.style.animationDelay = Math.min(i * 25, 300) + 'ms';
+        c.el.style.animationDelay = Math.min(i * 20, 120) + 'ms';
         c.el.classList.add('cf-in');
     },
 

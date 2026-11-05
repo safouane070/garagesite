@@ -14,7 +14,7 @@
     <ul x-show="sortOpen" x-cloak role="listbox"
         x-transition:enter="transition ease-out duration-150"
         x-transition:enter-start="opacity-0 -translate-y-1" x-transition:enter-end="opacity-100 translate-y-0"
-        x-transition:leave="transition ease-in duration-100"
+        x-transition:leave="transition ease-out duration-100"
         x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
         class="absolute inset-x-0 z-40 mt-2 overflow-hidden rounded-[5px] border border-hairline bg-paper py-1 shadow-card">
         <template x-for="opt in sortOptions" :key="opt.v">

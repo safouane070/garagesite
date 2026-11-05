@@ -31,10 +31,22 @@ class Reviews
             // Storage onbereikbaar: val terug op de config-lijst.
         }
 
-        // Verborgen reviews (brand.reviews.hidden), ongeacht hoofdletters.
+        // Verborgen reviews (brand.reviews.hidden), ongeacht hoofdletters. Ook reviews
+        // waarvan de tekst een andere zaak noemt (brand.reviews.hidden_text): die lezen
+        // op onze site als een verwisselde review.
         $hidden = array_map('mb_strtolower', config('brand.reviews.hidden', []));
+        $hiddenText = array_map('mb_strtolower', config('brand.reviews.hidden_text', []));
 
-        return array_values(array_filter($reviews, fn ($r) => ! in_array(mb_strtolower($r['name'] ?? ''), $hidden, true)));
+        return array_values(array_filter($reviews, function ($r) use ($hidden, $hiddenText) {
+            $text = mb_strtolower($r['text'] ?? '');
+            foreach ($hiddenText as $needle) {
+                if (str_contains($text, $needle)) {
+                    return false;
+                }
+            }
+
+            return ! in_array(mb_strtolower($r['name'] ?? ''), $hidden, true);
+        }));
     }
 
     public const SUMMARY = 'reviews-summary.json';

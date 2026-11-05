@@ -160,6 +160,38 @@ class Car extends Model
         return '€ ' . number_format((float) $this->price, 0, ',', '.');
     }
 
+    /**
+     * Indicatief financial-leasebedrag per maand (annuïteit met aanbetaling en
+     * slottermijn uit config('brand.finance.lease')). Null onder de minimumprijs.
+     */
+    public function monthlyFrom(): ?int
+    {
+        $c = config('brand.finance.lease');
+        $price = (float) $this->price;
+        if ($price < $c['min_price']) {
+            return null;
+        }
+
+        $n = $c['months'];
+        $r = $c['rate'] / 100 / 12;
+        $financed = $price * (1 - $c['down']);
+        $balloonPv = $price * $c['balloon'] / (1 + $r) ** $n;
+
+        return (int) ceil(($financed - $balloonPv) * $r / (1 - (1 + $r) ** -$n));
+    }
+
+    /** BTW-auto (BTW aftrekbaar voor ondernemers): de dealer zet "BTW" in de uitvoering. */
+    public function isVatDeductible(): bool
+    {
+        return (bool) preg_match('/\bBTW\b/i', (string) $this->variant);
+    }
+
+    /** Uitvoering zonder de "BTW"-markering; die tonen we als eigen label. */
+    public function cleanVariant(): string
+    {
+        return trim(preg_replace('/\s*\bBTW\b\s*/i', ' ', (string) $this->variant));
+    }
+
     /** Kilometerstand als "84.500 km". */
     public function formattedMileage(): string
     {

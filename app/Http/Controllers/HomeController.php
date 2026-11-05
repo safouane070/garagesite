@@ -31,13 +31,21 @@ class HomeController extends Controller
             ->take(8)
             ->get();
 
-        // Recent verkocht — social proof ("met trots verkocht").
+        // Recent verkocht — social proof, maar klein: met dezelfde premium-drempel
+        // als "Net binnen", en niet meer dan één rij.
         $sold = Car::where('status', CarStatus::Sold->value)
+            ->where('price', '>=', 15000)
             ->with('primaryImage')
             ->latest()
-            ->take(6)
+            ->take(4)
             ->get();
 
-        return view('home', compact('featured', 'newest', 'sold'));
+        // Voor de zoekbalk in de hero: merk + prijs van de actuele voorraad,
+        // zodat de knop live "Toon N auto's" kan zeggen.
+        $stockIndex = Car::where('status', '!=', CarStatus::Sold->value)
+            ->get(['brand', 'price'])
+            ->map(fn (Car $c) => [$c->brand, (int) $c->price]);
+
+        return view('home', compact('featured', 'newest', 'sold', 'stockIndex'));
     }
 }

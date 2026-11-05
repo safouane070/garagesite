@@ -34,7 +34,7 @@
                  @if ($cover->width) width="{{ $cover->width }}" height="{{ $cover->height }}" @endif
                  alt="{{ $car->title() }} · {{ $car->year }}, {{ $car->color }}"
                  @if ($priority) fetchpriority="high" @else loading="lazy" @endif decoding="async"
-                 class="photo-fx h-full w-full object-cover group-hover:scale-[1.04] {{ $isSold ? 'opacity-60 saturate-[0.4]' : '' }}">
+                 class="photo-fx h-full w-full object-cover group-hover:scale-[1.02] {{ $isSold ? 'opacity-60 saturate-[0.4]' : '' }}">
         @else
             <div class="flex h-full w-full flex-col items-center justify-center gap-2 text-cream/25">
                 <x-icon name="car" class="h-8 w-8" />
@@ -50,20 +50,25 @@
         @endif
     </div>
 
-    {{-- Merk/model + bouwjaar --}}
-    <div class="mt-3 flex items-baseline justify-between gap-3">
-        <h3 class="min-w-0 truncate font-display text-[1.05rem] font-semibold leading-tight text-cream">
-            {{ $car->brand }} {{ $car->model }}
-        </h3>
-        <span class="shrink-0 font-mono text-xs text-cream/60 tabular">{{ $car->year }}</span>
-    </div>
-    <p class="mt-0.5 truncate text-sm text-cream/60">{{ $car->variant ?: $car->body_type }}</p>
+    {{-- Merk/model + uitvoering --}}
+    <h3 class="mt-3 truncate font-display text-[1.05rem] font-semibold leading-tight text-cream">
+        {{ $car->brand }} {{ $car->model }}
+    </h3>
+    <p class="mt-0.5 truncate text-sm text-cream/60">{{ $car->cleanVariant() ?: $car->body_type }}</p>
 
-    {{-- Prijs + kernspecs op één regel --}}
-    <div class="mt-2.5 flex items-baseline justify-between gap-3">
+    {{-- Kernspecs waarop gekozen wordt: leesbaar, niet als klein grijs bijschrift. --}}
+    <p class="mt-2 truncate text-sm text-cream/80 tabular">
+        {{ $car->year }} · {{ number_format($car->mileage, 0, ',', '.') }} km · {{ $car->transmission }} · {{ $car->fuel_type }}
+    </p>
+
+    {{-- Prijs + indicatief maandbedrag (zoals elke dealer in de regio het toont) --}}
+    <div class="mt-2.5 flex flex-wrap items-baseline gap-x-3 gap-y-1">
         <span class="font-display text-xl font-bold tracking-tight text-white tabular">{{ $car->formattedPrice() }}</span>
-        <span class="truncate font-mono text-xs text-cream/60 tabular">
-            {{ number_format($car->mileage, 0, ',', '.') }} km · {{ $car->fuel_type }}
-        </span>
+        @if (! $isSold && ($monthly = $car->monthlyFrom()))
+            <span class="text-sm text-cream/60 tabular">of € {{ number_format($monthly, 0, ',', '.') }} p/m</span>
+        @endif
+        @if ($car->isVatDeductible())
+            <span class="rounded-[3px] border border-hairline px-1.5 py-0.5 text-[11px] font-medium uppercase tracking-wide text-cream/80">BTW</span>
+        @endif
     </div>
 </a>

@@ -8,20 +8,21 @@
 
     {{-- Paginakop --}}
     <section class="border-b border-hairline">
-        <div class="container-x py-12 lg:py-16">
-            <h1 class="max-w-3xl font-display text-4xl font-bold uppercase leading-[1.02] tracking-tight text-cream sm:text-5xl">
+        {{-- Telefoon: compacte kop, zodat de eerste auto al op het eerste scherm begint. --}}
+        <div class="container-x py-7 sm:py-12 lg:py-16">
+            <h1 class="max-w-3xl font-display text-3xl font-bold uppercase leading-[1.02] tracking-tight text-cream sm:text-5xl">
                 Ons volledige aanbod
             </h1>
-            <p class="mt-5 max-w-xl leading-relaxed text-cream/70">
-                Elke wagen met BOVAG-garantie en een geldige keuring. Geen afleverkosten,
+            <p class="mt-5 hidden max-w-xl leading-relaxed text-cream/70 sm:block">
+                Elke auto met BOVAG-garantie en nieuwe APK. Geen afleverkosten,
                 inruil en financiering mogelijk. Filter op wat voor jou telt.
             </p>
 
             {{-- Live telling als fijne meta-regel, geen los "hero-getal" --}}
-            <div class="mt-8 flex items-center gap-3 font-mono text-xs uppercase tracking-[0.15em] text-cream/70">
+            <div class="mt-3 flex items-center gap-3 text-sm text-cream/70 sm:mt-8">
                 <span class="inline-flex items-baseline gap-1.5">
                     <span class="text-lg font-bold text-cream tabular" x-text="count"></span>
-                    <span x-text="count === 1 ? 'wagen' : 'wagens'"></span>
+                    <span x-text="count === 1 ? 'auto' : 'auto\'s'"></span>
                 </span>
                 <span class="h-1 w-1 rounded-full bg-brass-500"></span>
                 <span x-show="!hasActiveFilters">op voorraad</span>
@@ -116,14 +117,14 @@
     <div x-show="drawerOpen" x-cloak class="fixed inset-0 z-50 lg:hidden" @keydown.escape.window="drawerOpen=false">
         <div x-show="drawerOpen" x-transition:enter="transition-opacity ease-out duration-200"
              x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
-             x-transition:leave="transition-opacity ease-in duration-150"
+             x-transition:leave="transition-opacity ease-out duration-150"
              x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
              class="absolute inset-0 bg-scrim/55 backdrop-blur-sm" @click="drawerOpen=false"></div>
 
         <div x-show="drawerOpen"
              x-transition:enter="transition-transform ease-premium duration-300"
              x-transition:enter-start="translate-y-full" x-transition:enter-end="translate-y-0"
-             x-transition:leave="transition-transform ease-in duration-200"
+             x-transition:leave="transition-transform ease-out duration-200"
              x-transition:leave-start="translate-y-0" x-transition:leave-end="translate-y-full"
              class="absolute inset-x-0 bottom-0 flex max-h-[88vh] flex-col rounded-t-2xl border-t border-hairline bg-graphite-800">
             <div class="flex items-center justify-between border-b border-hairline px-5 py-4">

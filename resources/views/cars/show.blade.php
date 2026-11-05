@@ -7,11 +7,13 @@
         'Brandstof' => $car->fuel_type,
         'Transmissie' => $car->transmission,
         'Carrosserie' => $car->body_type,
-        'Kleur' => $car->color,
+        'Kleur' => str_ireplace(' of ', ' / ', (string) $car->color),
     ];
     $extraSpecs = [];
     foreach (($car->specs ?? []) as $key => $value) {
         if ($value === null || $value === '') continue;
+        // Nederlandse notatie: 25,6 i.p.v. 25.6.
+        if (is_numeric($value) && str_contains((string) $value, '.')) $value = str_replace('.', ',', (string) $value);
         $extraSpecs[\App\Models\Car::SPEC_FIELDS[$key] ?? ucfirst(str_replace('_', ' ', $key))] = $value;
     }
 
@@ -39,7 +41,7 @@
         'vehicleTransmission' => $car->transmission,
         'mileageFromOdometer' => ['@type' => 'QuantitativeValue', 'value' => $car->mileage, 'unitCode' => 'KMT'],
         'image' => $images->map->url()->values(),
-        'description' => $car->description ?: $metaDescription,
+        'description' => \App\Support\CarDescription::display($car),
         'offers' => [
             '@type' => 'Offer',
             'price' => number_format((float) $car->price, 2, '.', ''),
@@ -182,8 +184,8 @@
                 <h1 class="font-display text-3xl font-bold leading-tight tracking-tight text-cream sm:text-4xl">
                     {{ $car->brand }} {{ $car->model }}
                 </h1>
-                @if ($car->variant)
-                    <p class="mt-1 text-lg text-cream/65">{{ $car->variant }}</p>
+                @if ($car->cleanVariant())
+                    <p class="mt-1 text-lg text-cream/65">{{ $car->cleanVariant() }}</p>
                 @endif
 
                 {{-- Kernspecs als één regel (stond in een omkaderd 2×2-raster). --}}
@@ -210,8 +212,23 @@
                     @if ($car->status !== \App\Enums\CarStatus::Available)
                         <x-status-badge :status="$car->status" />
                     @endif
+                    @if ($car->isVatDeductible())
+                        <span class="rounded-[3px] border border-hairline px-2 py-1 text-xs font-medium text-cream/80">BTW aftrekbaar</span>
+                    @endif
                 </div>
-                @if ($forSale)
+                @if ($forSale && ($monthly = $car->monthlyFrom()))
+                    @php
+                        $lease = config('brand.finance.lease');
+                    @endphp
+                    <p class="mt-2 text-sm text-cream/70">
+                        <a href="{{ route('financial-lease') }}" class="text-cream underline decoration-cream/25 underline-offset-4 transition-colors hover:text-brass-300">Financial lease</a>
+                        vanaf <span class="font-semibold text-cream tabular">€ {{ number_format($monthly, 0, ',', '.') }}</span> p/m
+                    </p>
+                    <p class="mt-1 text-xs leading-relaxed text-cream/50">
+                        Indicatie: {{ $lease['months'] }} mnd, {{ (int) ($lease['down'] * 100) }}% aanbetaling,
+                        {{ (int) ($lease['balloon'] * 100) }}% slottermijn, {{ str_replace('.', ',', (string) $lease['rate']) }}% rente. Alleen zakelijk.
+                    </p>
+                @elseif ($forSale)
                     <a href="{{ route('financial-lease') }}" class="mt-2 inline-flex text-sm text-cream/65 underline decoration-cream/25 underline-offset-4 transition hover:text-brass-300">
                         Ook mogelijk via financial lease
                     </a>
@@ -249,7 +266,7 @@
         <div class="lg:col-span-7">
             <h2 class="font-display text-2xl font-bold text-cream">Over deze {{ $car->brand }}</h2>
             {{-- whitespace-pre-line: alinea's die de beheerder intypt blijven alinea's. --}}
-            <p class="mt-4 whitespace-pre-line leading-relaxed text-cream/70">{{ $car->description ?: 'Geen beschrijving beschikbaar.' }}</p>
+            <p class="mt-4 whitespace-pre-line leading-relaxed text-cream/70">{{ \App\Support\CarDescription::display($car) }}</p>
         </div>
 
         <div class="lg:col-span-5">

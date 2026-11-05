@@ -80,12 +80,24 @@ return [
         // Niet tonen op de site (naam zoals op Google). Echte reviews, maar ze komen
         // over als nep: "Gemeente Den Haag" die een G63 kocht.
         'hidden' => ['Gemeente Den Haag'],
+        // Reviews die een andere dealer bij naam noemen ("Van Rijswijk" is een
+        // concurrent in Den Haag): echt, maar verwarrend op onze site.
+        'hidden_text' => ['van rijswijk'],
     ],
 
     // Financial lease loopt via onze leasepartner FinancialLease.nl (widget met
     // echte maandbedragen). stock_id = de dealer-feed van de zaak.
     'finance' => [
         'financiallease_stock_id' => env('BRAND_FL_STOCK_ID', '1262'),
+        // Aannames voor het indicatieve "vanaf"-maandbedrag op kaart en detailpagina.
+        // Gangbare financial-leasevoorwaarden; pas aan op de rekenrente van de leasepartner.
+        'lease' => [
+            'months' => 72,
+            'rate' => 8.99,          // nominale jaarrente in %
+            'down' => 0.10,          // aanbetaling, deel van de prijs
+            'balloon' => 0.15,       // slottermijn, deel van de prijs
+            'min_price' => 5000,     // daaronder geen lease-indicatie
+        ],
     ],
 
     // Echte Google-reviews van het bedrijfsprofiel van de zaak (naam, score en
@@ -94,7 +106,6 @@ return [
     // hier in de eigen huisstijl. Bijwerken = deze lijst vervangen door de
     // nieuwste reviews van het Google-profiel.
     'testimonials' => [
-        ['name' => 'Teus Dekker', 'rating' => 5, 'text' => 'Een paar weken geleden een andere auto gekocht bij Van Rijswijk. Keurig netjes geholpen. Er word alle tijd voor je genomen om alle opties die er zijn goed door te nemen. Uiterst vriendelijk personeel. En ook niet onbelangrijk, de prijzen zijn superscherp. Bij een volgende aanschaf zal ik als eerste naar Van Rijswijk gaan.'],
         ['name' => 'Enis Aliov', 'rating' => 5, 'text' => 'Vorige maand een Tesla Model 3 gekocht bij Autobedrijf Rijswijk. Alles is eerlijk en netjes nagekomen, precies zoals afgesproken. Inmiddels een heerlijke vakantie achter de rug met de Tesla, zonder ook maar één probleem. Top service en zeker een aanrader!'],
         ['name' => 'Martijn Jellema', 'rating' => 5, 'text' => 'Gewoon goed bedrijf, heb hier een super mooie T-Roc gekocht van 2022, super blij mee. Zou dit bedrijf zeker aanraden aan wie een leuke occasion zoekt, want ze hebben van alles staan.'],
         ['name' => 'Seko 1907', 'rating' => 5, 'text' => 'Hele mooie GLC 400e gekocht. Vanaf \'t begin tot einde goed geholpen. Ceasar en Dennis hebben passie voor auto\'s, denken keurig netjes mee en zijn zeer vriendelijk! Ga zo door heren.'],

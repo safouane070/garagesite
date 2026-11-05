@@ -68,7 +68,7 @@ class InsightTest extends TestCase
         $textA = CarDescription::for($a);
 
         $this->assertNotSame($textA, CarDescription::for($b));
-        $this->assertStringContainsString('navigatie, LED-koplampen en BOSE audio', $textA); // afkortingen intact
+        $this->assertStringContainsString('BOSE audio, navigatie en LED-koplampen', $textA); // afkortingen intact
         $this->assertStringContainsString('204 pk', $textA);
         $this->assertStringContainsString('50.000 km', $textA);
     }

@@ -1,6 +1,7 @@
 @php
     ['rating' => $rating, 'count' => $reviewCount] = \App\Support\Reviews::summary();
-    $stock = \App\Models\Car::where('status', '!=', \App\Enums\CarStatus::Sold->value)->count();
+    $stock = $stockIndex->count();
+    $heroBrands = $stockIndex->countBy(0)->sortKeys();
 @endphp
 
 <x-layouts.public>
@@ -40,15 +41,39 @@
                     @endforeach
                 </ul>
 
-                <div class="mt-7 flex flex-wrap items-center gap-3 sm:mt-9 sm:gap-4">
-                    <a href="{{ route('cars.index') }}" class="btn btn-primary">
-                        Bekijk het aanbod <x-icon name="arrow-right" class="h-4 w-4" />
-                    </a>
-                    <a href="tel:{{ config('brand.contact.phone_href') }}"
-                       class="inline-flex items-center gap-2 rounded-[3px] border border-cream/25 px-5 py-2.5 text-sm font-medium text-cream backdrop-blur-sm transition hover:border-brass-400/70 hover:text-brass-300">
-                        <x-icon name="phone" class="h-4 w-4" /> {{ config('brand.contact.phone') }}
-                    </a>
-                </div>
+                {{-- Direct zoeken, zoals elke dealer in de regio het bovenaan zet. De knop telt live
+                     mee; zonder JS werkt het formulier gewoon als link naar het gefilterde aanbod. --}}
+                <form action="{{ route('cars.index') }}" method="get"
+                      x-data="{ brand: '', max: '', cars: @js($stockIndex),
+                                get n() { return this.cars.filter(([b, p]) => (!this.brand || b === this.brand) && (!this.max || p <= +this.max)).length } }"
+                      @submit="[...$el.elements].forEach(f => { if (f.name && !f.value) f.disabled = true })"
+                      class="mt-7 grid max-w-xl grid-cols-2 gap-2 rounded-[4px] border border-cream/15 bg-ink/70 p-2 backdrop-blur-md sm:mt-9 sm:grid-cols-[1fr_1fr_auto]"
+                      style="text-shadow: none">
+                    <label class="sr-only" for="hero-brand">Merk</label>
+                    <select id="hero-brand" name="brand" x-model="brand"
+                            class="rounded-[3px] border-0 bg-graphite-800 py-2.5 pl-3 pr-8 text-sm text-cream focus:ring-2 focus:ring-brass-400">
+                        <option value="">Alle merken</option>
+                        @foreach ($heroBrands as $b => $count)
+                            <option value="{{ $b }}">{{ $b }} ({{ $count }})</option>
+                        @endforeach
+                    </select>
+                    <label class="sr-only" for="hero-max">Maximale prijs</label>
+                    <select id="hero-max" name="price_max" x-model="max"
+                            class="rounded-[3px] border-0 bg-graphite-800 py-2.5 pl-3 pr-8 text-sm text-cream focus:ring-2 focus:ring-brass-400">
+                        <option value="">Elke prijs</option>
+                        @foreach ([15000, 20000, 25000, 30000, 40000, 50000, 75000] as $max)
+                            <option value="{{ $max }}">Tot € {{ number_format($max, 0, ',', '.') }}</option>
+                        @endforeach
+                    </select>
+                    <button type="submit" class="btn btn-primary col-span-2 sm:col-span-1">
+                        Toon <span class="tabular" x-text="n">{{ $stock }}</span> auto's <x-icon name="arrow-right" class="h-4 w-4" />
+                    </button>
+                </form>
+
+                <a href="tel:{{ config('brand.contact.phone_href') }}"
+                   class="mt-4 inline-flex items-center gap-2 text-sm font-medium text-cream/80 transition-colors hover:text-brass-300">
+                    <x-icon name="phone" class="h-4 w-4" /> Liever bellen? {{ config('brand.contact.phone') }}
+                </a>
             </div>
         </div>
     </section>

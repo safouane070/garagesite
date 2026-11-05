@@ -74,14 +74,17 @@ class CarController extends Controller
             DB::table('cars')->where('id', $car->id)->increment('views');
         }
 
-        // Vergelijkbare auto's: zelfde merk of carrosserie, exclusief deze.
+        // Vergelijkbare auto's: zelfde merk of carrosserie, in dezelfde prijsklasse
+        // (±30%), dichtstbijzijnde prijs eerst. Bij een Q8 van € 98k geen Q2 van € 35k.
+        $price = (float) $car->price;
         $related = Car::available()
             ->with('primaryImage')
             ->where('id', '!=', $car->id)
             ->where(function ($q) use ($car) {
                 $q->where('brand', $car->brand)->orWhere('body_type', $car->body_type);
             })
-            ->latest()
+            ->whereBetween('price', [$price * 0.7, $price * 1.3])
+            ->orderByRaw('ABS(price - ?)', [$price])
             ->take(3)
             ->get();
 

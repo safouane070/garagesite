@@ -27,6 +27,17 @@ class ReviewsTest extends TestCase
         $this->assertSame($cached, Reviews::all());
     }
 
+    public function test_hides_reviews_that_name_another_dealer(): void
+    {
+        Storage::fake('local');
+        Storage::put(Reviews::CACHE, json_encode([
+            ['name' => 'A', 'rating' => 5, 'text' => 'Top geholpen.'],
+            ['name' => 'B', 'rating' => 5, 'text' => 'Gekocht bij Van Rijswijk, prima.'],
+        ]));
+
+        $this->assertSame(['A'], array_column(Reviews::all(), 'name'));
+    }
+
     /** Het aantal reviews komt uit de widget en verschijnt op de site, i.p.v. een vast getal. */
     public function test_fetch_stores_live_score_and_count_used_by_the_site(): void
     {
