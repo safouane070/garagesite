@@ -7,6 +7,7 @@ use App\Models\Car;
 use App\Support\Marktplaats;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Sleep;
 use Tests\TestCase;
 
 class EnrichCarsTest extends TestCase
@@ -156,6 +157,64 @@ class EnrichCarsTest extends TestCase
         $this->artisan('cars:enrich', ['--delay' => 0])->assertSuccessful();
 
         $this->assertNull($other->fresh()->marktplaats_id);
+    }
+
+    /** Een auto die past op de standaard-Tiguan-advertentie. */
+    private function matchingTiguan(): Car
+    {
+        return Car::factory()->create(['status' => CarStatus::Available, 'brand' => 'Volkswagen', 'model' => 'Tiguan', 'year' => 2025, 'mileage' => 35920, 'price' => 47950, 'specs' => null]);
+    }
+
+    /** Profiel met één advertentie, waarvan de antwoorden in volgorde $responses zijn. */
+    private function fakeListingResponses(array $responses): void
+    {
+        $sequence = Http::sequence();
+        foreach ($responses as $r) {
+            $sequence->push($r[0], $r[1], $r[2] ?? []);
+        }
+        Http::fake([
+            'www.marktplaats.nl/u/*' => Http::response('<a href="/v/auto-s/volkswagen/m2468195560-volkswagen-tiguan-1-5-ehybrid">Tiguan</a>'),
+            'www.marktplaats.nl/v/*' => $sequence,
+        ]);
+    }
+
+    /** Marktplaats remt af (429): in dezelfde run opnieuw proberen, niet pas morgen. */
+    public function test_throttled_listing_is_retried_in_the_same_run(): void
+    {
+        Sleep::fake();
+        $car = $this->matchingTiguan();
+        $this->fakeListingResponses([['', 429, ['Retry-After' => '20']], [$this->listingHtml($this->tiguan()), 200]]);
+
+        $this->artisan('cars:enrich', ['--delay' => 0])->assertSuccessful();
+
+        $this->assertSame('2468195560', $car->fresh()->marktplaats_id);
+        // De gevraagde wachttijd respecteren; direct terug hameren houdt de blokkade in stand.
+        Sleep::assertSlept(fn ($d) => $d->totalSeconds >= 20, 1);
+    }
+
+    /** Blokkadepagina (200, maar zonder gegevens): een tweede, tragere ronde in dezelfde run. */
+    public function test_unreadable_listing_gets_a_second_slower_pass(): void
+    {
+        Sleep::fake();
+        $car = $this->matchingTiguan();
+        $this->fakeListingResponses([['<html>Even geduld…</html>', 200], [$this->listingHtml($this->tiguan()), 200]]);
+
+        $this->artisan('cars:enrich', ['--delay' => 0])->assertSuccessful();
+
+        $this->assertSame('2468195560', $car->fresh()->marktplaats_id);
+    }
+
+    /** Blijft het grootste deel onleesbaar (geblokkeerd of nieuwe opbouw): falen, zodat de foutmail komt. */
+    public function test_run_fails_when_most_listings_stay_unreadable(): void
+    {
+        Sleep::fake();
+        $this->matchingTiguan();
+        Http::fake([
+            'www.marktplaats.nl/u/*' => Http::response('<a href="/v/auto-s/volkswagen/m2468195560-volkswagen-tiguan-1-5-ehybrid">Tiguan</a>'),
+            'www.marktplaats.nl/v/*' => Http::response('<html>Even geduld…</html>'),
+        ]);
+
+        $this->artisan('cars:enrich', ['--delay' => 0])->assertFailed();
     }
 
     public function test_linked_car_is_never_read_again_so_admin_edits_stay(): void

@@ -7,6 +7,7 @@ use App\Models\Car;
 use App\Support\Marktplaats;
 use Illuminate\Console\Command;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Sleep;
 use Illuminate\Support\Str;
 
 /**
@@ -35,6 +36,9 @@ class EnrichCars extends Command
      */
     private const PRICE_TOLERANCE = 0.10;
 
+    /** Pauze vóór de tweede ronde: een afremming van Marktplaats duurt meestal kort. */
+    private const RETRY_PAUSE_SECONDS = 60;
+
     public function handle(): int
     {
         $seller = (string) config('brand.marktplaats_seller');
@@ -52,23 +56,62 @@ class EnrichCars extends Command
             return self::FAILURE;
         }
 
-        $stats = ['gelezen' => 0, 'verrijkt' => 0, 'overgeslagen' => 0, 'geen match' => 0];
-        foreach ($paths as $path) {
-            $id = Marktplaats::idFromPath($path);
-            $linked = $cars->firstWhere('marktplaats_id', $id);
+        $stats = ['gelezen' => 0, 'verrijkt' => 0, 'overgeslagen' => 0, 'geen match' => 0, 'onleesbaar' => 0];
+        $delay = max(0, (int) $this->option('delay'));
+        $todo = array_values(array_filter($paths, function (string $path) use ($cars, &$stats) {
+            $linked = $cars->firstWhere('marktplaats_id', Marktplaats::idFromPath($path));
             if ($linked && ! $this->option('force')) {
                 $stats['overgeslagen']++;
-                continue;
+
+                return false;
             }
 
-            usleep(max(0, (int) $this->option('delay')) * 1000);
+            return true;
+        }));
+
+        $unread = $this->pass($todo, $cars, $stats, $delay);
+        // Afgeremd of even een blokkadepagina: na een pauze nog één keer, drie keer zo traag,
+        // zodat die auto's niet een dag zonder specs blijven.
+        if ($unread !== []) {
+            $this->line(count($unread) . ' advertenties onleesbaar; na een pauze nog een keer, langzamer.');
+            Sleep::for(self::RETRY_PAUSE_SECONDS)->seconds();
+            $unread = $this->pass($unread, $cars, $stats, max($delay, 1000) * 3);
+        }
+        $stats['onleesbaar'] = count($unread);
+
+        $this->info(collect($stats)->map(fn ($n, $k) => "{$k}: {$n}")->join(' · ') . ' (' . count($paths) . ' advertenties)');
+
+        // Meer dan de helft onleesbaar: Marktplaats blokkeert ons of veranderde zijn pagina's.
+        // Falen, zodat de geplande run de foutmail stuurt i.p.v. stil "gelukt".
+        if ($todo !== [] && count($unread) / count($todo) > 0.5) {
+            $this->error(count($unread) . ' van de ' . count($todo) . ' advertenties bleven onleesbaar: Marktplaats blokkeert of veranderde zijn pagina-opbouw.');
+
+            return self::FAILURE;
+        }
+
+        return self::SUCCESS;
+    }
+
+    /**
+     * Leest de advertenties en verrijkt wat past.
+     *
+     * @param  list<string>  $paths
+     * @return list<string> de advertenties die onleesbaar bleven
+     */
+    private function pass(array $paths, Collection $cars, array &$stats, int $delayMs): array
+    {
+        $unread = [];
+        foreach ($paths as $path) {
+            Sleep::usleep($delayMs * 1000);
             $listing = Marktplaats::listing($path);
             $stats['gelezen']++;
             if ($listing === null) {
+                $unread[] = $path;
                 continue;
             }
 
-            $car = $linked ?? $this->match($cars->whereNull('marktplaats_id'), $listing);
+            $id = Marktplaats::idFromPath($path);
+            $car = $cars->firstWhere('marktplaats_id', $id) ?? $this->match($cars->whereNull('marktplaats_id'), $listing);
             if (! $car) {
                 $stats['geen match']++;
                 continue;
@@ -78,9 +121,7 @@ class EnrichCars extends Command
             $stats['verrijkt']++;
         }
 
-        $this->info(collect($stats)->map(fn ($n, $k) => "{$k}: {$n}")->join(' · ') . ' (' . count($paths) . ' advertenties)');
-
-        return self::SUCCESS;
+        return $unread;
     }
 
     /** De enige auto die past op merk, bouwjaar en kilometerstand; anders null. */

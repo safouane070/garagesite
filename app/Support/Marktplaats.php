@@ -172,11 +172,19 @@ class Marktplaats
         return $resp->ok() ? $resp->body() : null;
     }
 
+    /**
+     * Afgeremd (429) of storing (5xx): wachten zoals Marktplaats vraagt (Retry-After),
+     * anders 3, 6 s. Direct terug hameren houdt een blokkade alleen maar in stand.
+     */
     private static function request(string $url): \Illuminate\Http\Client\Response
     {
         return Http::withHeaders(['User-Agent' => self::UA, 'Accept' => 'text/html'])
             ->timeout(25)
-            ->retry(2, 1000, throw: false)
+            ->retry(3, function (int $attempt, \Throwable $e) {
+                $wait = $e instanceof \Illuminate\Http\Client\RequestException ? (int) $e->response->header('Retry-After') : 0;
+
+                return min(max($wait, 0), 60) * 1000 ?: $attempt * 3000;
+            }, throw: false)
             ->get($url);
     }
 }

@@ -30,7 +30,12 @@ Schedule::command('cars:sync', [
 
 // Specs aanvullen uit de Marktplaats-advertenties van de dealer (na de ochtend-sync).
 Schedule::command('cars:enrich')->dailyAt('06:30')->withoutOverlapping()
-    ->when(fn () => filled(config('brand.marktplaats_seller')));
+    ->when(fn () => filled(config('brand.marktplaats_seller')))
+    ->onFailure(fn () => \App\Support\ErrorAlert::send(
+        'Specs uit Marktplaats niet bijgewerkt',
+        "cars:enrich kon het grootste deel van de Marktplaats-advertenties niet lezen (afgeremd of andere pagina-opbouw).\n"
+        . 'Bestaande specs blijven staan; nieuwe auto\'s krijgen voorlopig geen extra specs. Probeer: php artisan cars:enrich',
+    ));
 
 // Wachtrij (aanvraag-mails) verwerken. Op shared hosting draait er geen vaste
 // worker: de minuut-cron start 'm kort, hij stopt zodra de wachtrij leeg is.
