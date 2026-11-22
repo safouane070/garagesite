@@ -13,24 +13,27 @@ use Illuminate\Support\Str;
  * Vult de specs van onze auto's aan uit de Marktplaats-advertentie van dezelfde auto.
  * De eigen dealersite geeft alleen bouwjaar, km, brandstof, carrosserie, kleur en deuren.
  *
- * - Koppelen: zelfde merk + bouwjaar, kilometerstand hooguit MILEAGE_TOLERANCE verschil;
- *   twee even goede kandidaten → overslaan (liever niets dan de specs van een andere auto).
- * - Wat de beheerder invulde blijft staan; alleen wat met de tijd verandert (APK, aantal
- *   eigenaren) wordt ververst.
- * - Een gekoppelde advertentie wordt hoogstens eens per REFRESH_DAYS opnieuw gelezen.
+ * - Koppelen: zelfde merk, model, bouwjaar en prijs (±PRICE_TOLERANCE), kilometerstand
+ *   hooguit MILEAGE_TOLERANCE verschil; twee even goede kandidaten → overslaan (liever
+ *   niets dan de specs van een andere auto).
+ * - Eén keer per auto: een gekoppelde advertentie wordt niet opnieuw gelezen (behalve met
+ *   --force). Zo gaat de beheerder altijd voor, ook als hij een veld leegmaakt.
  */
 class EnrichCars extends Command
 {
-    protected $signature = 'cars:enrich {--force : ook recent verrijkte advertenties opnieuw lezen} {--delay=1000 : pauze tussen verzoeken in ms}';
+    protected $signature = 'cars:enrich {--force : ook al gekoppelde auto\'s opnieuw aanvullen (vult ook velden die de beheerder leegmaakte)} {--delay=1000 : pauze tussen verzoeken in ms}';
 
     protected $description = 'Specs aanvullen uit de Marktplaats-advertenties van de dealer';
 
     private const MILEAGE_TOLERANCE = 500;
 
-    private const REFRESH_DAYS = 7;
-
-    /** Waarden die met de tijd veranderen en dus altijd de nieuwste stand krijgen. */
-    private const VOLATILE = ['apk_tot', 'eigenaren'];
+    /**
+     * De dealer vraagt op Marktplaats dezelfde prijs als op zijn site. Een andere auto
+     * van hetzelfde merk/model/jaar met bijna dezelfde km (bv. een verkochte die nog even
+     * op Marktplaats staat) valt hierop af. 10%: ruimte voor een prijswijziging die nog
+     * niet op beide kanalen staat.
+     */
+    private const PRICE_TOLERANCE = 0.10;
 
     public function handle(): int
     {
@@ -53,7 +56,7 @@ class EnrichCars extends Command
         foreach ($paths as $path) {
             $id = Marktplaats::idFromPath($path);
             $linked = $cars->firstWhere('marktplaats_id', $id);
-            if ($linked && ! $this->option('force') && $linked->enriched_at?->gt(now()->subDays(self::REFRESH_DAYS))) {
+            if ($linked && ! $this->option('force')) {
                 $stats['overgeslagen']++;
                 continue;
             }
@@ -88,7 +91,8 @@ class EnrichCars extends Command
             ->filter(fn (Car $c) => $c->year === $listing['year']
                 && abs($c->mileage - $listing['mileage']) <= self::MILEAGE_TOLERANCE
                 && Str::startsWith($brand, Str::lower(Str::ascii($c->brand)))
-                && self::sameModel($c, $listing['brand']))
+                && self::sameModel($c, $listing['brand'])
+                && abs((float) $c->price - $listing['price']) <= (float) $c->price * self::PRICE_TOLERANCE)
             ->sortBy(fn (Car $c) => abs($c->mileage - $listing['mileage']))
             ->values();
 
@@ -116,9 +120,10 @@ class EnrichCars extends Command
 
     private function apply(Car $car, ?string $id, array $fresh): void
     {
-        $current = (array) $car->specs;
-        // Bestaande waarden (o.a. van de beheerder) gaan voor; alleen tijdgevoelige velden verversen.
-        $specs = array_merge($fresh, $current, array_intersect_key($fresh, array_flip(self::VOLATILE)));
+        // Verse stand: de run duurt minuten, een bewerking van de beheerder intussen blijft staan.
+        $car->refresh();
+        // Bestaande waarden (o.a. van de beheerder) gaan altijd voor.
+        $specs = array_merge($fresh, (array) $car->specs);
 
         $car->forceFill([
             'specs' => $specs ?: null,

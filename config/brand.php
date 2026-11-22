@@ -98,7 +98,6 @@ return [
             'calculator_id' => env('BRAND_FL_CALCULATOR_ID', '1262'),
             'months' => 72,
             'rate' => 10.5,          // nominale jaarrente in %
-            'down' => 0,             // aanbetaling, deel van de prijs
             'closing' => 3000,       // slottermijn in euro
             'min_price' => 7500,     // daaronder geen lease-indicatie
         ],

@@ -281,7 +281,7 @@ class Car extends Model
 
         $n = $c['months'];
         $r = $c['rate'] / 100 / 12;
-        $financed = $this->leaseAmount() * (1 - $c['down']);
+        $financed = $this->leaseAmount(); // geen aanbetaling, net als de calculator van de leasepartner
         $closingPv = $c['closing'] / (1 + $r) ** $n;
 
         return (int) round(($financed - $closingPv) * $r / (1 - (1 + $r) ** -$n));

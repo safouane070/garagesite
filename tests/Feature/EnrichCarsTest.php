@@ -100,7 +100,7 @@ class EnrichCarsTest extends TestCase
     public function test_matching_car_is_enriched_and_admin_values_win(): void
     {
         $car = Car::factory()->create([
-            'status' => CarStatus::Available, 'brand' => 'Volkswagen', 'model' => 'Tiguan', 'year' => 2025, 'mileage' => 36100,
+            'status' => CarStatus::Available, 'brand' => 'Volkswagen', 'model' => 'Tiguan', 'year' => 2025, 'mileage' => 36100, 'price' => 47950,
             'specs' => ['vermogen_pk' => 270, 'apk_tot' => '1 januari 2026'], // beheerder + oude APK
         ]);
         $this->fakeMarktplaats($this->tiguan());
@@ -111,18 +111,18 @@ class EnrichCarsTest extends TestCase
         $this->assertSame('2468195560', $car->marktplaats_id);
         $this->assertNotNull($car->enriched_at);
         $this->assertSame(270, $car->specs['vermogen_pk'], 'beheerderswaarde blijft staan');
-        $this->assertSame('26 april 2027', $car->specs['apk_tot'], 'APK wordt ververst');
+        $this->assertSame('1 januari 2026', $car->specs['apk_tot'], 'ook de APK van de beheerder blijft staan');
         $this->assertSame(1766, $car->specs['gewicht_kg'], 'ontbrekend veld aangevuld');
     }
 
     public function test_ambiguous_or_distant_matches_are_skipped(): void
     {
         // Twee even goede kandidaten: liever niets dan de specs van de verkeerde auto.
-        $a = Car::factory()->create(['status' => CarStatus::Available, 'brand' => 'Volkswagen', 'model' => 'Tiguan', 'year' => 2025, 'mileage' => 35820, 'specs' => null]);
-        $b = Car::factory()->create(['status' => CarStatus::Available, 'brand' => 'Volkswagen', 'model' => 'Tiguan', 'year' => 2025, 'mileage' => 36020, 'specs' => null]);
+        $a = Car::factory()->create(['status' => CarStatus::Available, 'brand' => 'Volkswagen', 'model' => 'Tiguan', 'year' => 2025, 'price' => 47950, 'mileage' => 35820, 'specs' => null]);
+        $b = Car::factory()->create(['status' => CarStatus::Available, 'brand' => 'Volkswagen', 'model' => 'Tiguan', 'year' => 2025, 'price' => 47950, 'mileage' => 36020, 'specs' => null]);
         // Te ver weg op kilometerstand en een ander merk: nooit gekoppeld.
-        $c = Car::factory()->create(['status' => CarStatus::Available, 'brand' => 'Volkswagen', 'model' => 'Tiguan', 'year' => 2025, 'mileage' => 40000, 'specs' => null]);
-        $d = Car::factory()->create(['status' => CarStatus::Available, 'brand' => 'Audi', 'year' => 2025, 'mileage' => 35920, 'specs' => null]);
+        $c = Car::factory()->create(['status' => CarStatus::Available, 'brand' => 'Volkswagen', 'model' => 'Tiguan', 'year' => 2025, 'price' => 47950, 'mileage' => 40000, 'specs' => null]);
+        $d = Car::factory()->create(['status' => CarStatus::Available, 'brand' => 'Audi', 'year' => 2025, 'price' => 47950, 'mileage' => 35920, 'specs' => null]);
         $this->fakeMarktplaats($this->tiguan());
 
         $this->artisan('cars:enrich', ['--delay' => 0])->assertSuccessful();
@@ -135,7 +135,7 @@ class EnrichCarsTest extends TestCase
     /** Twee bijna-nieuwe VW's van hetzelfde jaar: de Golf krijgt nooit de specs van de Tiguan. */
     public function test_other_model_of_the_same_brand_is_never_matched(): void
     {
-        $golf = Car::factory()->create(['status' => CarStatus::Available, 'brand' => 'Volkswagen', 'model' => 'Golf', 'year' => 2025, 'mileage' => 35920, 'specs' => null]);
+        $golf = Car::factory()->create(['status' => CarStatus::Available, 'brand' => 'Volkswagen', 'model' => 'Golf', 'year' => 2025, 'price' => 47950, 'mileage' => 35920, 'specs' => null]);
         $this->fakeMarktplaats($this->tiguan(['brand' => 'Volkswagen TIGUAN, 1.5 eHybrid R-Line']));
 
         $this->artisan('cars:enrich', ['--delay' => 0])->assertSuccessful();
@@ -143,11 +143,26 @@ class EnrichCarsTest extends TestCase
         $this->assertNull($golf->fresh()->marktplaats_id);
     }
 
-    public function test_recently_enriched_listing_is_not_read_again(): void
+    /**
+     * Een verkochte Tiguan staat nog even op Marktplaats (€ 47.950). Hier staat een andere
+     * Tiguan van hetzelfde jaar met bijna dezelfde km, maar voor € 32.950: die mag de specs
+     * (en de koppeling) van de verkochte auto niet krijgen.
+     */
+    public function test_car_with_a_different_price_is_not_matched(): void
+    {
+        $other = Car::factory()->create(['status' => CarStatus::Available, 'brand' => 'Volkswagen', 'model' => 'Tiguan', 'year' => 2025, 'mileage' => 36300, 'price' => 32950, 'specs' => null]);
+        $this->fakeMarktplaats($this->tiguan());
+
+        $this->artisan('cars:enrich', ['--delay' => 0])->assertSuccessful();
+
+        $this->assertNull($other->fresh()->marktplaats_id);
+    }
+
+    public function test_linked_car_is_never_read_again_so_admin_edits_stay(): void
     {
         Car::factory()->create([
             'status' => CarStatus::Available, 'brand' => 'Volkswagen', 'year' => 2025, 'mileage' => 35920,
-            'marktplaats_id' => '2468195560', 'enriched_at' => now()->subDays(2),
+            'marktplaats_id' => '2468195560', 'enriched_at' => now()->subYear(),
         ]);
         $this->fakeMarktplaats($this->tiguan());
 

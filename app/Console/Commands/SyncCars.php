@@ -257,12 +257,6 @@ class SyncCars extends Command implements Isolatable
             $car->vat_deductible = true;
             $changed = true;
         }
-        // Ontbrekende specs aanvullen (bv. versnellingen); wat er al staat, blijft staan.
-        $specs = array_merge($data['specs'] ?? [], (array) $car->specs);
-        if ($specs !== (array) $car->specs) {
-            $car->specs = $specs;
-            $changed = true;
-        }
         if (empty($car->options) && $data['options'] !== []) {
             $car->options = $data['options'];
             $changed = true;
