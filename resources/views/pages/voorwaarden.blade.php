@@ -18,7 +18,7 @@
                 </a>
             </div>
             <p class="text-sm text-cream/55">
-                Vragen hierover? Neem gerust <a href="{{ route('contact') }}" class="text-brass-300 hover:underline">contact</a> op.
+                Vragen hierover? Neem gerust <a href="{{ route('contact') }}" class="text-brass-300 underline decoration-brass-300/40 underline-offset-4 transition-colors hover:decoration-brass-300">contact</a> op.
             </p>
         </div>
     </section>

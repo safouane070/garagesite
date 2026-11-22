@@ -45,8 +45,9 @@
                 </div>
             @endif
 
-            <form method="POST" action="{{ route('leads.store') }}"
-                  x-data x-init="$store.lead.type = @js($initialType)"
+            <form method="POST" action="{{ route('leads.store') }}" data-fab-avoid
+                  x-data="{ busy: false }" x-init="$store.lead.type = @js($initialType)"
+                  @submit="busy = true"
                   class="grid gap-5 sm:grid-cols-2">
                 @csrf
                 @if ($car)
@@ -104,8 +105,13 @@
                 </div>
 
                 <div class="sm:col-span-2 flex flex-wrap items-center gap-4">
-                    <button type="submit" class="btn btn-primary">
-                        Verstuur aanvraag <x-icon name="arrow-right" class="h-4 w-4" />
+                    {{-- Na klikken: niet nog eens versturen, en laten zien dát er iets gebeurt. --}}
+                    <button type="submit" class="btn btn-primary" :disabled="busy" :aria-busy="busy">
+                        <span x-show="!busy" class="inline-flex items-center gap-2">Verstuur aanvraag <x-icon name="arrow-right" class="h-4 w-4" /></span>
+                        <span x-show="busy" x-cloak class="inline-flex items-center gap-2">
+                            <span class="h-4 w-4 animate-spin rounded-full border-2 border-cream/30 border-t-cream motion-reduce:animate-none" aria-hidden="true"></span>
+                            Versturen…
+                        </span>
                     </button>
                     <p class="text-xs text-cream/60">
                         We gebruiken je gegevens alleen om te reageren op je aanvraag.

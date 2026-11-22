@@ -60,8 +60,11 @@ class CarImage extends Model
     /**
      * srcset voor responsieve foto's: de browser kiest zelf de kleinste maat die
      * scherp genoeg is (telefoon → 640/1024, groot scherm → volledige foto).
+     *
+     * $maxWidth begrenst de set voor kleine weergaven (autokaart ≤ 400px): anders
+     * pakt een iPhone (3× dichtheid × 358px = 1074px) het origineel van ~300 KB.
      */
-    public function srcset(): ?string
+    public function srcset(?int $maxWidth = null): ?string
     {
         if (! $this->width) {
             return null;
@@ -69,12 +72,15 @@ class CarImage extends Model
 
         $set = [];
         foreach (ImageOptimizer::VARIANTS as $column => [$width]) {
-            if ($this->{$column} && $column !== 'xs_path') {
+            if ($this->{$column} && $column !== 'xs_path' && ($maxWidth === null || $width <= $maxWidth)) {
                 $set[] = Storage::disk('public')->url($this->{$column}) . " {$width}w";
             }
         }
+        if ($maxWidth === null || $this->width <= $maxWidth) {
+            $set[] = $this->url() . " {$this->width}w";
+        }
 
-        return $set === [] ? null : implode(', ', [...$set, $this->url() . " {$this->width}w"]);
+        return $set === [] ? null : implode(', ', $set);
     }
 
     /** Foto en alle verkleinde varianten van schijf verwijderen. */

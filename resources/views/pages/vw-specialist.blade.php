@@ -1,8 +1,9 @@
 <x-layouts.public title="Volkswagen Specialist"
     description="Autobedrijf Rijswijk is Volkswagen- en VAG-specialist: diepgaande kennis van Volkswagen, Audi, SEAT, CUPRA en Škoda. Occasions met garantie.">
 
-    <x-page-hero title="Specialist in Volkswagen & het VAG-concern"
-        intro="Volkswagen, Audi, SEAT, CUPRA en Škoda: we kennen deze modellen door en door. Die kennis vertaalt zich in scherp geselecteerde occasions en eerlijk advies." />
+    <x-page-hero title="De Volkswagen-specialist van Rijswijk"
+        intro="Volkswagen, Audi, SEAT, CUPRA en Škoda: we kennen deze modellen door en door. Die kennis vertaalt zich in scherp geselecteerde occasions en eerlijk advies."
+        image="images/site/vw-specialist.webp" alt="Medewerker in een jas met het embleem Volkswagen Specialist" position="60% 40%" />
 
     <section class="container-x py-12 lg:py-16">
         <div class="grid gap-12 lg:grid-cols-12 lg:gap-16">

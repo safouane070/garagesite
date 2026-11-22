@@ -145,6 +145,10 @@ return [
     // ander adres blijven draaien (bv. een subdomein) of de sync uit (leeg laten).
     'dealer_site_url' => env('DEALER_SITE_URL', 'https://autobedrijfrijswijk.nl'),
 
+    // Bron voor `cars:enrich`: het Marktplaats-profiel van de dealer. Daar staan per auto
+    // vermogen, verbruik, APK, energielabel, eigenaren, gewicht enz. Leeg = verrijking uit.
+    'marktplaats_seller' => env('MARKTPLAATS_SELLER', '/u/bs-autobedrijf-rijswijk/40360814'),
+
     // Wanneer de sync draait (cron-notatie) en hoeveel foto's per auto (0 = alle).
     // Productie: dagelijks 06:00 met de volledige galerij. De demo: elk uur, 12 foto's.
     'sync' => [

@@ -21,9 +21,9 @@ class PruneSoldPhotos extends Command
     {
         [$cars, $photos] = [0, 0];
 
-        // updated_at: het moment van "verkocht" zetten (verkochte auto's worden daarna niet meer bewerkt).
+        // sold_at, niet updated_at: een latere bewerking (typfout) mag de termijn niet opnieuw laten starten.
         Car::where('status', CarStatus::Sold->value)
-            ->where('updated_at', '<', now()->subDays((int) $this->option('days')))
+            ->where('sold_at', '<', now()->subDays((int) $this->option('days')))
             ->has('images', '>', 1)
             ->with('images')
             ->each(function (Car $car) use (&$cars, &$photos) {

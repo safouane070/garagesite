@@ -13,14 +13,24 @@ Schedule::command('reviews:fetch')->weekly()->sundays()->at('04:00');
 
 // Voorraad gelijk houden met de dealersite: nieuwe auto's erbij, verkochte eraf,
 // prijswijzigingen bijgewerkt. Stopt zelf bij een verdachte bron (zie SyncCars).
-Schedule::command('cars:sync', ['--max-photos' => config('brand.sync.max_photos')])
-    ->cron(config('brand.sync.cron'))->withoutOverlapping()
+// --isolated: zelfde slot als de opstart-sync in docker/start.sh. --require-parse-ratio:
+// verandert de dealer zijn template, dan is niets meer leesbaar en moet de foutmail komen.
+Schedule::command('cars:sync', [
+    // '--isolated' zonder waarde: met een waarde (true → "1") wordt een overgeslagen run een fout.
+    '--max-photos' => config('brand.sync.max_photos'), '--isolated', '--require-parse-ratio' => 0.5,
+])
+    ->cron(config('brand.sync.cron'))
     ->when(fn () => filled(config('brand.dealer_site_url')))
     ->onFailure(fn () => \App\Support\ErrorAlert::send(
         'Voorraad-sync mislukt',
-        "cars:sync is gestopt zonder wijzigingen (dealersite onbereikbaar of verdacht veel auto's verdwenen).\n"
+        "cars:sync is gestopt: dealersite onbereikbaar, verdacht veel auto's verdwenen, of minder dan de helft\n"
+        . "van de voertuigpagina's leesbaar (de dealer veranderde waarschijnlijk zijn site).\n"
         . 'Controleer de dealersite en draai zo nodig: php artisan cars:sync --dry-run',
     ));
+
+// Specs aanvullen uit de Marktplaats-advertenties van de dealer (na de ochtend-sync).
+Schedule::command('cars:enrich')->dailyAt('06:30')->withoutOverlapping()
+    ->when(fn () => filled(config('brand.marktplaats_seller')));
 
 // Wachtrij (aanvraag-mails) verwerken. Op shared hosting draait er geen vaste
 // worker: de minuut-cron start 'm kort, hij stopt zodra de wachtrij leeg is.

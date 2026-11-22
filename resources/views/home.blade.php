@@ -4,7 +4,8 @@
     $heroBrands = $stockIndex->countBy(0)->sortKeys();
 @endphp
 
-<x-layouts.public>
+{{-- Titel voor Google: waar mensen op zoeken (merken + occasions + plaats), niet alleen de bedrijfsnaam. --}}
+<x-layouts.public title="VW & Audi occasions in Rijswijk">
     {{-- ═══════════ HERO · echte showroomfoto met tekst eroverheen ═══════════ --}}
     <section class="relative -mt-[4.5rem] flex min-h-hero flex-col overflow-hidden bg-ink pt-[4.5rem] sm:flex-row sm:items-end">
         {{-- Echte foto van het wagenpark van de zaak --}}
@@ -34,7 +35,7 @@
 
                 {{-- USP's, zoals op de originele hero (kort, geen lange alinea) --}}
                 <ul class="mt-6 flex flex-wrap gap-x-6 gap-y-2 sm:mt-8">
-                    @foreach (['BOVAG-garantie', 'Geen afleverkosten', 'VAG-specialist'] as $usp)
+                    @foreach (['BOVAG-garantie', 'Geen afleverkosten', 'Volkswagen- & Audi-specialist'] as $usp)
                         <li class="inline-flex items-center gap-2 text-sm font-medium text-cream">
                             <x-icon name="check" class="h-4 w-4 text-brass-400" /> {{ $usp }}
                         </li>
@@ -43,7 +44,7 @@
 
                 {{-- Direct zoeken, zoals elke dealer in de regio het bovenaan zet. De knop telt live
                      mee; zonder JS werkt het formulier gewoon als link naar het gefilterde aanbod. --}}
-                <form action="{{ route('cars.index') }}" method="get"
+                <form action="{{ route('cars.index') }}" method="get" data-fab-avoid
                       x-data="{ brand: '', max: '', cars: @js($stockIndex),
                                 get n() { return this.cars.filter(([b, p]) => (!this.brand || b === this.brand) && (!this.max || p <= +this.max)).length } }"
                       @submit="[...$el.elements].forEach(f => { if (f.name && !f.value) f.disabled = true })"
@@ -95,7 +96,8 @@
                                    class="group grid grid-cols-[7.5rem_1fr] items-center gap-4 rounded-[3px] p-2 transition-colors duration-150 ease-out hover:bg-cream/[0.05] active:bg-cream/[0.08]">
                                     <span class="aspect-[4/3] overflow-hidden rounded-[3px] bg-graphite-800">
                                         @if ($car->primaryImage)
-                                            <img src="{{ $car->primaryImage->thumbUrl() }}" alt="" width="240" height="180"
+                                            {{-- lazy: op een telefoon is dit paneel verborgen en hoeven de foto's niet te laden. --}}
+                                            <img src="{{ $car->primaryImage->thumbUrl() }}" alt="" width="240" height="180" loading="lazy"
                                                  decoding="async" class="photo-fx h-full w-full object-cover">
                                         @endif
                                     </span>
@@ -136,8 +138,10 @@
         @if ($soldRecent->count() >= 3)
             <span class="text-cream/25" aria-hidden="true">/</span>
             <span>
+                {{-- "de deur uit" i.p.v. "verkocht": de sync ziet alleen dat een auto van de
+                     dealersite verdween, niet waarom. Klopt voor verkoop én blijft eerlijk. --}}
                 <span class="font-semibold text-cream tabular">{{ $soldRecent->count() }}</span>
-                verkocht in de afgelopen {{ intdiv(\App\Http\Controllers\HomeController::SOLD_WINDOW_DAYS, 30) }} maanden<span class="hidden md:inline">, waaronder
+                auto's de deur uit in de afgelopen {{ intdiv(\App\Http\Controllers\HomeController::SOLD_WINDOW_DAYS, 30) }} maanden<span class="hidden md:inline">, waaronder
                 {{ $soldRecent->map(fn ($c) => "{$c->brand} {$c->model}")->unique()->take(3)->join(', ', ' en ') }}</span>
             </span>
         @endif

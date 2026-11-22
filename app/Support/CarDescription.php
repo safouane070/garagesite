@@ -91,21 +91,45 @@ class CarDescription
         return self::isReplaceable($car->description) ? self::for($car) : $car->description;
     }
 
+    /**
+     * Alle opties, de begrippen waar kopers op letten eerst (in volgorde van belang),
+     * daarna de rest in de originele volgorde. Voor de uitrustingslijst: de feed is
+     * alfabetisch, waardoor "Airbag(s)" boven "Panoramadak" stond.
+     *
+     * @param  list<string>  $options
+     * @return list<string>
+     */
+    public static function ordered(array $options): array
+    {
+        $rank = array_flip(array_keys(self::PRIORITY));
+        $keyed = [];
+        foreach (array_values($options) as $i => $o) {
+            $concept = self::conceptOf($o);
+            $keyed[] = [$concept === null ? PHP_INT_MAX : $rank[$concept], $i, $o];
+        }
+        sort($keyed);
+
+        return array_column($keyed, 2);
+    }
+
+    private static function conceptOf(string $option): ?string
+    {
+        $o = mb_strtolower($option);
+        foreach (self::PRIORITY as $concept => $needles) {
+            foreach ($needles as $needle) {
+                if (str_contains($o, $needle)) {
+                    return $concept;
+                }
+            }
+        }
+
+        return null;
+    }
+
     /** De belangrijkste opties eerst, aangevuld in de originele volgorde. */
     private static function highlights(array $options): array
     {
-        $conceptOf = function (string $option): ?string {
-            $o = mb_strtolower($option);
-            foreach (self::PRIORITY as $concept => $needles) {
-                foreach ($needles as $needle) {
-                    if (str_contains($o, $needle)) {
-                        return $concept;
-                    }
-                }
-            }
-
-            return null;
-        };
+        $conceptOf = fn (string $option): ?string => self::conceptOf($option);
 
         // Eerst per begrip (in volgorde van belang) de eerste optie die erbij hoort.
         $picked = [];

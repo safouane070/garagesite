@@ -190,7 +190,7 @@
         {{ $slot }}
     </main>
 
-    <footer class="mt-20 border-t border-hairline">
+    <footer class="mt-20 border-t border-hairline" data-fab-avoid>
         {{-- Compact: geen badges in kaders en geen mono-labels; op een telefoon was dit bijna twee schermen. --}}
         <div class="container-x grid gap-10 py-14 md:grid-cols-12">
             <div class="md:col-span-4">

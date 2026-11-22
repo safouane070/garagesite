@@ -58,7 +58,7 @@
                         Wissen
                     </button>
                 </div>
-                @include('cars.partials.filters')
+                @include('cars.partials.filters', ['idp' => 'zijbalk'])
             </div>
         </aside>
 
@@ -134,7 +134,7 @@
                 <button @click="drawerOpen=false" type="button" class="btn btn-ghost -mr-2"><x-icon name="x" class="h-5 w-5" /></button>
             </div>
             <div class="overflow-y-auto px-5 py-6">
-                @include('cars.partials.filters')
+                @include('cars.partials.filters', ['idp' => 'lade'])
             </div>
             <div class="flex items-center gap-3 border-t border-hairline px-5 py-4">
                 <button @click="reset()" type="button" class="btn btn-outline flex-1" x-show="hasActiveFilters">Wissen</button>

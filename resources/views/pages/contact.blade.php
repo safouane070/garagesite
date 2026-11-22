@@ -2,7 +2,8 @@
     description="Bezoek de showroom van Autobedrijf Rijswijk aan de Poldermeesterstraat 16 in Rijswijk. Bel, WhatsApp of stuur een bericht — we helpen je graag.">
 
     <x-page-hero title="Kom langs of neem contact op"
-        intro="Vragen over een occasion, inruil of financiering? Bel of app ons even, of loop binnen in de showroom in Rijswijk." />
+        intro="Vragen over een occasion, inruil of financiering? Bel of app ons even, of loop binnen in de showroom in Rijswijk."
+        image="images/site/rs3.webp" alt="Audi RS3 voor de deur van de showroom aan de Poldermeesterstraat" position="50% 70%" />
 
     <section class="container-x py-12 lg:py-16">
         <div class="grid gap-10 lg:grid-cols-2 lg:gap-14">

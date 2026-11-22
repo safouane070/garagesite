@@ -170,7 +170,10 @@ class DealerSite
             'transmission' => $transmission,
             'color' => Str::ucfirst($rows['Kleur'] ?? 'Onbekend'),
             'body_type' => self::mapBody($rows['Caressorie'] ?? $rows['Carrosserie'] ?? ''),
-            'specs' => array_filter(['deuren' => (int) ($rows['Aantal deuren'] ?? 0) ?: null]),
+            'specs' => array_filter([
+                'deuren' => (int) ($rows['Aantal deuren'] ?? 0) ?: null,
+                'versnellingen' => (int) ($rows['Aantal versnellingen'] ?? 0) ?: null,
+            ]),
             'options' => self::options($html),
             'photos' => $photos,
             // Staat alleen in de titel ("… BTW!"); het variantdeel kapt af bij "/".
@@ -209,8 +212,8 @@ class DealerSite
 
         $out = [];
         foreach ($lis[1] as $li) {
-            // Spaties normaliseren en verdubbelde inch-tekens (18""") terug naar één.
-            $label = trim(preg_replace(['/\s+/', '/"{2,}/'], [' ', '"'], html_entity_decode(strip_tags($li), ENT_QUOTES)));
+            // Spaties normaliseren; aanhalingstekens/inch-tekens opschonen ("velgen 22"").
+            $label = \App\Models\Car::cleanOption(preg_replace('/\s+/', ' ', html_entity_decode(strip_tags($li), ENT_QUOTES)));
             if ($label !== '' && mb_strlen($label) <= 80) {
                 $out[$label] = true;
             }

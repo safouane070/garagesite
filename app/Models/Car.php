@@ -35,7 +35,104 @@ class Car extends Model
         'actieradius_km' => 'Actieradius (km)',
         'accu_kwh' => 'Accucapaciteit (kWh)',
         'aandrijving' => 'Aandrijving',
+        'versnellingen' => 'Aantal versnellingen',
+        'motorinhoud_l' => 'Motorinhoud (l)',
+        'energielabel' => 'Energielabel',
+        'euronorm' => 'Emissieklasse',
+        'hybride_type' => 'Type hybride',
+        'bekleding' => 'Bekleding',
+        'gewicht_kg' => 'Leeggewicht (kg)',
+        'trekgewicht_geremd_kg' => 'Trekgewicht geremd (kg)',
+        'trekgewicht_ongeremd_kg' => 'Trekgewicht ongeremd (kg)',
+        'lengte_m' => 'Lengte (m)',
+        'breedte_m' => 'Breedte (m)',
+        'hoogte_m' => 'Hoogte (m)',
+        'tankinhoud_l' => 'Tankinhoud (l)',
+        'apk_tot' => 'APK geldig tot',
+        'onderhoud' => 'Onderhoud',
+        'eigenaren' => 'Aantal eigenaren',
+        'eerste_toelating_nl' => 'Eerste toelating NL',
+        'nieuwprijs' => 'Nieuwprijs (€)',
+        'kenteken' => 'Kenteken',
     ];
+
+    /**
+     * Groepen voor de specificaties op de detailpagina, met eenheid per veld.
+     * Volgorde = volgorde op de pagina; lege velden vallen weg.
+     */
+    private const SPEC_SECTIONS = [
+        'Motor & aandrijving' => [
+            'vermogen_pk' => ' pk', 'motorinhoud_l' => ' liter', 'cilinderinhoud_cc' => ' cc', 'cilinders' => '',
+            'koppel_nm' => ' Nm', 'versnellingen' => '', 'aandrijving' => '', 'hybride_type' => '', 'accu_kwh' => ' kWh',
+        ],
+        'Prestaties & verbruik' => [
+            'topsnelheid_kmh' => ' km/u', 'acceleratie_0_100' => ' s', 'verbruik_km_l' => ' km/l', 'actieradius_km' => ' km',
+            'co2_g_km' => ' g/km', 'energielabel' => '', 'euronorm' => '',
+        ],
+        'Afmetingen & gewicht' => [
+            'lengte_m' => ' m', 'breedte_m' => ' m', 'hoogte_m' => ' m', 'gewicht_kg' => ' kg',
+            'trekgewicht_geremd_kg' => ' kg', 'trekgewicht_ongeremd_kg' => ' kg', 'tankinhoud_l' => ' liter',
+            'deuren' => '', 'zitplaatsen' => '', 'bekleding' => '',
+        ],
+        'Historie' => [
+            'apk_tot' => '', 'onderhoud' => '', 'eigenaren' => '', 'eerste_toelating_nl' => '', 'nieuwprijs' => '', 'kenteken' => '',
+        ],
+    ];
+
+    /**
+     * Specificaties per groep, opgemaakt: ['Algemeen' => ['Bouwjaar' => '2025', …], …].
+     *
+     * @return array<string, array<string, string>>
+     */
+    public function specSections(): array
+    {
+        $specs = (array) $this->specs;
+        $out = ['Algemeen' => array_filter([
+            'Bouwjaar' => (string) $this->year,
+            'Kilometerstand' => $this->formattedMileage(),
+            'Brandstof' => $this->fuel_type,
+            'Transmissie' => $this->transmission,
+            'Carrosserie' => $this->body_type,
+            'Kleur' => str_ireplace(' of ', ' / ', (string) $this->color),
+        ])];
+
+        foreach (self::SPEC_SECTIONS as $title => $fields) {
+            foreach ($fields as $key => $unit) {
+                $value = $specs[$key] ?? null;
+                if ($value === null || $value === '') {
+                    continue;
+                }
+                $label = preg_replace('/\s*\([^)]*\)$/', '', self::SPEC_FIELDS[$key]);
+                $out[$title][$label] = match ($key) {
+                    'nieuwprijs' => '€ ' . number_format((float) $value, 0, ',', '.'),
+                    // Motorinhoud schrijft de branche altijd met één decimaal: "2,0 liter".
+                    'motorinhoud_l' => number_format((float) $value, 1, ',', '.') . $unit,
+                    default => self::formatSpec($value) . $unit,
+                };
+            }
+        }
+
+        // Wat de beheerder buiten de bekende velden invulde, komt er los onder.
+        foreach (array_diff_key($specs, self::SPEC_FIELDS) as $key => $value) {
+            if ($value !== null && $value !== '') {
+                $out['Overig'][Str::ucfirst(str_replace('_', ' ', $key))] = self::formatSpec($value);
+            }
+        }
+
+        return array_filter($out);
+    }
+
+    /** NL-notatie: 1766 → "1.766", 9.2 → "9,2"; tekst blijft tekst. */
+    private static function formatSpec(mixed $value): string
+    {
+        if (! is_numeric($value)) {
+            return (string) $value;
+        }
+        $n = (float) $value;
+        $decimals = floor($n) == $n ? 0 : (strlen(rtrim(substr(strrchr((string) $value, '.') ?: '', 1), '0')) ?: 1);
+
+        return number_format($n, min($decimals, 2), ',', '.');
+    }
 
     /**
      * Genereert automatisch een unieke slug bij het aanmaken,
@@ -84,6 +181,7 @@ class Car extends Model
             'is_featured' => 'boolean',
             'vat_deductible' => 'boolean',
             'sold_at' => 'datetime',
+            'enriched_at' => 'datetime',
             'year' => 'integer',
             'mileage' => 'integer',
             'price' => 'decimal:2',
@@ -231,6 +329,26 @@ class Car extends Model
     public function cleanVariant(): string
     {
         return trim(preg_replace('/\s*\bBTW\b\s*/i', ' ', (string) $this->variant));
+    }
+
+    /**
+     * Optienaam zoals de feed hem soms aanlevert ("\"Lichtmetalen velgen 22\"")
+     * terug naar leesbaar: geen aanhalingsteken vooraan, één inch-teken achter een maat.
+     */
+    public static function cleanOption(string $option): string
+    {
+        $o = trim(preg_replace('/"{2,}/', '"', $option));
+        $o = ltrim($o, "\"' ");
+
+        return preg_match('/\d"?$/', $o) && str_ends_with($o, '"') ? $o : rtrim($o, "\"' ");
+    }
+
+    /** Uitrusting voor de detailpagina: opgeschoond, belangrijkste eerst. */
+    public function displayOptions(): array
+    {
+        return \App\Support\CarDescription::ordered(
+            array_values(array_unique(array_map([self::class, 'cleanOption'], (array) $this->options)))
+        );
     }
 
     /** Kilometerstand als "84.500 km". */

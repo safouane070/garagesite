@@ -38,6 +38,20 @@ class CarDescriptionTest extends TestCase
         $this->assertStringContainsString('kleur zilver/grijs', $text);
     }
 
+    /** Zoals de feed het aanlevert: "\"Lichtmetalen velgen 22\"" bovenaan, airbags ervoor. */
+    public function test_equipment_list_is_cleaned_and_most_important_first(): void
+    {
+        $this->assertSame('Lichtmetalen velgen 22"', Car::cleanOption('"Lichtmetalen velgen 22"'));
+        $this->assertSame('Lichtmetalen velgen 18"', Car::cleanOption('Lichtmetalen velgen 18"""'));
+        $this->assertSame('Navigatie', Car::cleanOption('"Navigatie"'));
+
+        $car = new Car(['options' => ['Airbag(s) hoofd voor', '"Lichtmetalen velgen 22"', 'Head-up display', 'Panoramadak', 'Achteruitrijcamera', 'Airbag(s) hoofd voor']]);
+        $this->assertSame(
+            ['Panoramadak', 'Head-up display', 'Achteruitrijcamera', 'Airbag(s) hoofd voor', 'Lichtmetalen velgen 22"'],
+            $car->displayOptions(),
+        );
+    }
+
     public function test_falls_back_to_other_options_when_few_highlights(): void
     {
         $text = CarDescription::for($this->car(['Isofix', 'Navigatie', 'Regensensor']));

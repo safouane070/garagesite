@@ -10,6 +10,8 @@ export default (config) => ({
     brand: config.brand || '',
     body: config.body || '',
     fuels: config.fuel ? [config.fuel] : [],
+    transmission: '',
+    kmMax: 0, // 0 = geen grens
     price: [config.priceMin, config.priceMax],
     year: [config.yearMin, config.yearMax],
     sort: 'newest',
@@ -38,6 +40,7 @@ export default (config) => ({
             brand: el.dataset.brand,
             body: el.dataset.body,
             fuel: el.dataset.fuel,
+            transmission: el.dataset.transmission,
             price: +el.dataset.price,
             year: +el.dataset.year,
             mileage: +el.dataset.mileage,
@@ -57,6 +60,8 @@ export default (config) => ({
         if (p.has('q')) this.search = p.get('q');
         if (p.has('brand')) this.brand = p.get('brand');
         if (p.has('body_type')) this.body = p.get('body_type');
+        if (p.has('transmissie')) this.transmission = p.get('transmissie');
+        if (+p.get('km_max') > 0) this.kmMax = +p.get('km_max');
         if (p.has('fuel_type')) this.fuels = p.get('fuel_type').split(',').filter(Boolean);
         if (p.get('price_min')) this.price[0] = clamp(+p.get('price_min'), this.bounds.priceMin, this.bounds.priceMax, this.price[0]);
         if (p.get('price_max')) this.price[1] = clamp(+p.get('price_max'), this.bounds.priceMin, this.bounds.priceMax, this.price[1]);
@@ -75,6 +80,8 @@ export default (config) => ({
         if (this.brand) p.set('brand', this.brand);
         if (this.body) p.set('body_type', this.body);
         if (this.fuels.length) p.set('fuel_type', this.fuels.join(','));
+        if (this.transmission) p.set('transmissie', this.transmission);
+        if (this.kmMax) p.set('km_max', this.kmMax);
         if (this.price[0] != this.bounds.priceMin) p.set('price_min', this.price[0]);
         if (this.price[1] != this.bounds.priceMax) p.set('price_max', this.price[1]);
         if (this.year[0] != this.bounds.yearMin) p.set('year_min', this.year[0]);
@@ -94,6 +101,8 @@ export default (config) => ({
         if (this.brand && c.brand !== this.brand) return false;
         if (this.body && c.body !== this.body) return false;
         if (this.fuels.length && !this.fuels.includes(c.fuel)) return false;
+        if (this.transmission && c.transmission !== this.transmission) return false;
+        if (this.kmMax && c.mileage > this.kmMax) return false;
         if (c.price < this.price[0] || c.price > this.price[1]) return false;
         if (c.year < this.year[0] || c.year > this.year[1]) return false;
         return true;
@@ -146,6 +155,8 @@ export default (config) => ({
         this.brand = '';
         this.body = '';
         this.fuels = [];
+        this.transmission = '';
+        this.kmMax = 0;
         this.price = [this.bounds.priceMin, this.bounds.priceMax];
         this.year = [this.bounds.yearMin, this.bounds.yearMax];
         this.sort = 'newest';
@@ -156,6 +167,8 @@ export default (config) => ({
         if (k === 'search') this.search = '';
         else if (k === 'brand') this.brand = '';
         else if (k === 'body') this.body = '';
+        else if (k === 'transmission') this.transmission = '';
+        else if (k === 'km') this.kmMax = 0;
         else if (k === 'price') this.price = [this.bounds.priceMin, this.bounds.priceMax];
         else if (k === 'year') this.year = [this.bounds.yearMin, this.bounds.yearMax];
         else if (k.startsWith('fuel:')) this.fuels = this.fuels.filter((f) => f !== k.slice(5));
@@ -170,6 +183,8 @@ export default (config) => ({
         if (this.brand) n++;
         if (this.body) n++;
         n += this.fuels.length;
+        if (this.transmission) n++;
+        if (this.kmMax) n++;
         if (this.price[0] != this.bounds.priceMin || this.price[1] != this.bounds.priceMax) n++;
         if (this.year[0] != this.bounds.yearMin || this.year[1] != this.bounds.yearMax) n++;
         return n;
@@ -183,6 +198,8 @@ export default (config) => ({
         if (this.brand) c.push({ k: 'brand', label: this.brand });
         if (this.body) c.push({ k: 'body', label: this.body });
         this.fuels.forEach((f) => c.push({ k: 'fuel:' + f, label: f }));
+        if (this.transmission) c.push({ k: 'transmission', label: this.transmission });
+        if (this.kmMax) c.push({ k: 'km', label: 'Tot ' + this.fmt(this.kmMax) + ' km' });
         if (this.price[0] != this.bounds.priceMin || this.price[1] != this.bounds.priceMax)
             c.push({ k: 'price', label: '€ ' + this.fmt(this.price[0]) + ' – € ' + this.fmt(this.price[1]) });
         if (this.year[0] != this.bounds.yearMin || this.year[1] != this.bounds.yearMax)

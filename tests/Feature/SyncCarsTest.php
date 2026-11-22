@@ -156,14 +156,39 @@ class SyncCarsTest extends TestCase
         $this->vehicle('audi-q3-terug', ['title' => 'Audi Q3 35 TFSI', 'modified' => '2026-09-20T10:00:00']);
         $this->vehicle('audi-q5-verkocht', ['title' => 'Audi Q5 40 TDI', 'modified' => '2026-09-20T10:00:00']);
         $relisted = $this->car(['slug' => 'audi-q3-terug', 'dealer_slug' => 'audi-q3-terug', 'status' => 'sold',
-            'dealer_modified_at' => '2026-09-01 00:00:00', 'updated_at' => '2026-09-10 06:00:00']);
+            'dealer_modified_at' => '2026-09-01 00:00:00', 'sold_at' => '2026-09-10 06:00:00']);
         $soldByOwner = $this->car(['slug' => 'audi-q5-verkocht', 'dealer_slug' => 'audi-q5-verkocht', 'status' => 'sold',
-            'dealer_modified_at' => '2026-09-20 10:00:00', 'updated_at' => '2026-09-25 12:00:00']);
+            'dealer_modified_at' => '2026-09-20 10:00:00', 'sold_at' => '2026-09-25 12:00:00']);
 
         $this->artisan('cars:sync')->assertSuccessful();
 
         $this->assertSame('available', $relisted->fresh()->status->value);
         $this->assertSame('sold', $soldByOwner->fresh()->status->value);
+    }
+
+    /**
+     * Dealer verandert zijn template: de prijs staat niet meer waar we zoeken. Ook als er
+     * geen nieuwe auto's zijn (alleen bij te werken bestaande), moet de sync falen,
+     * zodat de foutmail komt in plaats van wekenlang oude prijzen.
+     */
+    public function test_unreadable_updates_fail_the_required_parse_ratio(): void
+    {
+        $this->vehicle('audi-a3', ['title' => 'Audi A3 35 TFSI', 'price' => 0, 'modified' => '2026-10-01T10:00:00']);
+        $car = $this->car(['slug' => 'audi-a3', 'dealer_slug' => 'audi-a3', 'price' => 30000, 'dealer_modified_at' => '2026-09-01 00:00:00']);
+
+        $this->artisan('cars:sync', ['--require-parse-ratio' => 0.5])->assertFailed();
+
+        $this->assertSame(30000, (int) $car->fresh()->price);
+    }
+
+    public function test_scheduled_sync_uses_the_shared_lock_and_parse_check(): void
+    {
+        $sync = collect(app(\Illuminate\Console\Scheduling\Schedule::class)->events())
+            ->first(fn ($e) => str_contains((string) $e->command, 'cars:sync'));
+
+        // Zonder "=1": dan zou een run die het slot niet krijgt als fout tellen (foutmail).
+        $this->assertMatchesRegularExpression('/--isolated(\s|$)/', $sync->command);
+        $this->assertStringContainsString('--require-parse-ratio=0.5', $sync->command);
     }
 
     /** Lege voorraadlijst (storing of lege WordPress): niets op verkocht zetten. */

@@ -38,6 +38,8 @@ class CarController extends Controller
         $brandCounts = $cars->countBy('brand');
         $fuelCounts = $cars->countBy('fuel_type');
         $bodyCounts = $cars->countBy('body_type');
+        $transmissionCounts = $cars->countBy('transmission');
+        $transmissions = collect(Car::TRANSMISSIONS)->reverse()->filter(fn ($t) => $transmissionCounts->has($t))->values();
 
         $priceMin = (int) floor(($cars->min('price') ?? 0) / 500) * 500;
         $priceMax = (int) ceil(($cars->max('price') ?? 100000) / 500) * 500;
@@ -52,6 +54,8 @@ class CarController extends Controller
             'brandCounts' => $brandCounts,
             'fuelCounts' => $fuelCounts,
             'bodyCounts' => $bodyCounts,
+            'transmissions' => $transmissions,
+            'transmissionCounts' => $transmissionCounts,
             'priceMin' => $priceMin,
             'priceMax' => $priceMax,
             'yearMin' => $yearMin,

@@ -2,7 +2,8 @@
     description="Inkoop, verkoop, aankoopbemiddeling en gepersonaliseerde zoekopdrachten. Autobedrijf Rijswijk ontzorgt je bij elke stap rond je auto.">
 
     <x-page-hero title="Alles rondom je auto onder één dak"
-        intro="Van het vinden van je droomauto tot het verkopen van je huidige. Wij begeleiden het hele traject — betrouwbaar, transparant en zonder gedoe." />
+        intro="Van het vinden van je droomauto tot het verkopen van je huidige. Wij begeleiden het hele traject — betrouwbaar, transparant en zonder gedoe."
+        image="images/site/golf-r.webp" alt="Volkswagen Golf R voor de showroom van Autobedrijf Rijswijk" position="60% 60%" />
 
     <section class="container-x py-12 lg:py-16">
         @php

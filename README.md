@@ -78,7 +78,7 @@ php artisan migrate --seed
 php artisan storage:link
 ```
 
-> **Lokaal** vult de seeder de demo met de voorraad van Autobedrijf Rijswijk (in productie maakt hij alleen het beheeraccount aan; de voorraad komt dan uit `php artisan cars:sync`, zie [DEPLOY.md](DEPLOY.md)). De demo-seeder leest de openbare Marktplaats-listings van de dealer uit (`database/seeders/rijswijk_listings.json`), mapt de kenmerken naar onze velden en slaat de foto's lokaal op. Lukt het ophalen niet (bv. geen internet), dan valt die auto automatisch terug op nette, in-huisstijl SVG-placeholders — de seeder faalt nooit. `CarEnrichmentSeeder` vult daarna opties, extra specs en verkocht-status aan.
+> De seeder maakt alleen het beheeraccount aan. De voorraad komt overal, ook lokaal, uit de dealersite: `php artisan cars:sync --limit=20 --max-photos=6` voor een snelle lokale set, daarna `php artisan cars:enrich` voor de extra specs uit Marktplaats (zie [DEPLOY.md](DEPLOY.md)).
 
 ---
 
@@ -154,14 +154,12 @@ app/
   Support/ErrorAlert.php         # Foutmelding per mail in productie (gedempt)
   Console/Commands/SyncCars.php  # cars:sync — dagelijkse voorraad-synchronisatie
   Support/Reviews.php            # Google-reviews inlezen (config-gedreven)
-  Support/PlaceholderImage.php   # SVG-vangnet voor foto's
   Support/ImageOptimizer.php     # Uploads rechtdraaien (EXIF), verkleinen, WebP
 config/brand.php                 # Één bron voor contact, reviews, lease-feed, huisstijl
 lang/nl/, lang/nl.json           # Nederlandse validatie-, login- en profielteksten
 database/
   migrations/                    # cars, car_images, leads (+ options, preferred_date)
-  seeders/CarSeeder.php          # ~85 echte occasions van de dealer + foto's
-  seeders/CarEnrichmentSeeder.php# Opties, extra specs, verkocht-status
+  seeders/DatabaseSeeder.php     # Alleen het beheeraccount; voorraad via cars:sync
 resources/views/
   components/                    # car-card, status-badge, icon (Lucide), lead-form, layouts, brand-mark
   home.blade.php, cars/          # Publieke etalage

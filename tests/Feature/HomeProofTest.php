@@ -34,7 +34,7 @@ class HomeProofTest extends TestCase
 
         $this->get('/')
             ->assertOk()
-            ->assertSee('verkocht in de afgelopen 3 maanden')
+            ->assertSee('de deur uit in de afgelopen 3 maanden')
             ->assertSeeInOrder(['<span class="font-semibold text-cream tabular">3</span>'], false)
             ->assertDontSee('verkocht-X5')
             ->assertDontSee('Deze klanten waren je voor');
@@ -44,7 +44,7 @@ class HomeProofTest extends TestCase
     {
         Car::factory()->create(['status' => CarStatus::Sold]);
 
-        $this->get('/')->assertOk()->assertDontSee('verkocht in de afgelopen');
+        $this->get('/')->assertOk()->assertDontSee('de deur uit in de afgelopen');
     }
 
     public function test_hero_lists_newest_cars_with_price(): void

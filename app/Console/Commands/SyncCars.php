@@ -8,6 +8,7 @@ use App\Support\CarDescription;
 use App\Support\DealerSite;
 use App\Support\ImageOptimizer;
 use Illuminate\Console\Command;
+use Illuminate\Contracts\Console\Isolatable;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Carbon;
@@ -30,7 +31,9 @@ use Illuminate\Support\Facades\Storage;
  * Eerst wordt berekend wat er verdwijnt; lijkt dat verdacht veel (bron veranderd
  * of storing), dan stopt het vóór de eerste wijziging.
  */
-class SyncCars extends Command
+// Isolatable: met --isolated deelt elke aanroep (opstart-sync én planning) één slot,
+// anders maken twee gelijktijdige runs dezelfde nieuwe auto twee keer aan.
+class SyncCars extends Command implements Isolatable
 {
     protected $signature = "cars:sync
         {--dry-run : Toon wat er zou veranderen, maar wijzig niets}
@@ -83,7 +86,7 @@ class SyncCars extends Command
         // dealer de (ongewijzigde) advertentie nog niet weg, dan blijft hij verkocht.
         $revived = $managed->filter(fn (Car $c) => $c->status === CarStatus::Sold
             && $vehicles->has($c->dealer_slug)
-            && Carbon::parse($vehicles[$c->dealer_slug]['modified'])->gt($c->updated_at));
+            && Carbon::parse($vehicles[$c->dealer_slug]['modified'])->gt($c->sold_at ?? $c->updated_at));
         $active = $managed->filter(fn (Car $c) => $c->status !== CarStatus::Sold || $revived->contains($c));
         $pool = $unlinked->whereNotIn('id', array_keys($slugLinks))->values();
 
@@ -127,7 +130,7 @@ class SyncCars extends Command
             $revived->each(fn (Car $c) => $this->line("  zou weer te koop staan: {$c->title()}"));
         }
 
-        $updated = $this->dry ? 0 : $this->updateChanged($active->diff($gone), $vehicles, $knownModels);
+        [$updated, $updateFailed, $updateRead] = $this->dry ? [0, 0, 0] : $this->updateChanged($active->diff($gone), $vehicles, $knownModels);
 
         // 3. Nieuw of op identiteit te koppelen.
         [$created, $twinned, $failed] = [0, 0, 0];
@@ -174,11 +177,14 @@ class SyncCars extends Command
             }
         }
 
-        $readable = $new->count() === 0 ? 1.0 : ($new->count() - $failed) / $new->count();
+        // Over alles wat gelezen werd (nieuw én bijgewerkt): breekt de dealer zijn template,
+        // dan faalt ook het bijwerken van prijzen, en dat moet de foutmail opleveren.
+        $read = $new->count() + $updateRead;
+        $readable = $read === 0 ? 1.0 : ($read - $failed - $updateFailed) / $read;
         $this->info(sprintf(
             "%s: %d nieuw, %d op identiteit gekoppeld, %d verkocht, %d bijgewerkt, %d niet leesbaar/overgeslagen, %d niet gekoppeld. Leesbaar: %d%%.",
             $this->dry ? 'Dry-run (niets gewijzigd)' : 'Klaar',
-            $created, $twinned, $gone->count(), $updated, $failed, $pool->count(), round($readable * 100)
+            $created, $twinned, $gone->count(), $updated, $failed + $updateFailed, $pool->count(), round($readable * 100)
         ));
 
         $required = $this->option('require-parse-ratio');
@@ -205,10 +211,14 @@ class SyncCars extends Command
             ->first();
     }
 
-    /** Prijs/kilometerstand bijwerken van gekoppelde auto's die op de dealersite gewijzigd zijn. */
-    private function updateChanged(Collection $cars, Collection $vehicles, array $knownModels): int
+    /**
+     * Prijs/kilometerstand bijwerken van gekoppelde auto's die op de dealersite gewijzigd zijn.
+     *
+     * @return array{0:int,1:int,2:int} [bijgewerkt, niet leesbaar, gelezen]
+     */
+    private function updateChanged(Collection $cars, Collection $vehicles, array $knownModels): array
     {
-        $updated = 0;
+        [$updated, $failed, $read] = [0, 0, 0];
         foreach ($cars as $car) {
             $v = $vehicles[$car->dealer_slug];
             $modified = Carbon::parse($v['modified']);
@@ -216,15 +226,17 @@ class SyncCars extends Command
                 continue;
             }
 
+            $read++;
             $data = $this->read($v, $knownModels);
             if (is_string($data)) {
                 $this->warn("  niet bijgewerkt ({$data}): {$car->title()}");
+                $failed++;
                 continue;
             }
             $updated += $this->applyUpdate($car, $data, $modified) ? 1 : 0;
         }
 
-        return $updated;
+        return [$updated, $failed, $read];
     }
 
     /** @return bool of er inhoudelijk iets veranderde */
@@ -243,6 +255,12 @@ class SyncCars extends Command
         // Alleen aanzetten: wat de beheerder als BTW-auto markeerde, zet de sync nooit uit.
         if (($data['vat_deductible'] ?? false) && ! $car->vat_deductible) {
             $car->vat_deductible = true;
+            $changed = true;
+        }
+        // Ontbrekende specs aanvullen (bv. versnellingen); wat er al staat, blijft staan.
+        $specs = array_merge($data['specs'] ?? [], (array) $car->specs);
+        if ($specs !== (array) $car->specs) {
+            $car->specs = $specs;
             $changed = true;
         }
         if (empty($car->options) && $data['options'] !== []) {

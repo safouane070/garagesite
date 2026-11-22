@@ -2,7 +2,8 @@
     description="Autobedrijf Rijswijk: ontstaan uit een passie voor auto's. BOVAG-erkend, Volkswagen-specialist en gericht op eerlijke, persoonlijke service.">
 
     <x-page-hero title="Ontstaan uit passie voor auto's"
-        intro="Wat begon als een gedeelde liefde voor mooie Duitse auto's, groeide uit tot een BOVAG-erkend autobedrijf in Rijswijk." />
+        intro="Wat begon als een gedeelde liefde voor mooie Duitse auto's, groeide uit tot een BOVAG-erkend autobedrijf in Rijswijk."
+        image="images/site/kantoor.webp" alt="Ontvangstruimte in de showroom, met het RDW-erkend-bord" />
 
     <section class="container-x py-12 lg:py-16">
         <div class="grid gap-12 lg:grid-cols-12 lg:gap-16">
@@ -35,8 +36,8 @@
             <div class="lg:col-span-5">
                 @php
                     $values = [
-                        ['icon' => 'shield-check', 't' => 'BOVAG-erkend', 'd' => 'Garantie, keuring en een aangesloten, gecontroleerd bedrijf.'],
-                        ['icon' => 'badge-check', 't' => 'Volkswagen-specialist', 'd' => 'Diepgaande kennis van de VAG-modellen die we verkopen.'],
+                        ['icon' => 'shield-check', 't' => 'BOVAG-erkend', 'd' => 'Garantie, nieuwe APK en een aangesloten, gecontroleerd bedrijf.'],
+                        ['icon' => 'badge-check', 't' => 'Volkswagen-specialist', 'd' => 'Diepgaande kennis van Volkswagen, Audi, SEAT, CUPRA en Škoda.'],
                         ['icon' => 'tag', 't' => 'Geen afleverkosten', 'd' => 'De prijs die je ziet, is de prijs die je betaalt.'],
                         ['icon' => 'repeat', 't' => 'Inruil & financiering', 'd' => 'Een eerlijke inruilprijs en passende financiering.'],
                     ];
@@ -56,5 +57,6 @@
         </div>
     </section>
 
-    <x-home.stats />
+    {{-- Echte klantstemmen i.p.v. een rij losse cijfers: zij noemen de mensen achter de zaak. --}}
+    <x-home.reviews />
 </x-layouts.public>

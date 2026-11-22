@@ -2,7 +2,8 @@
     description="Financial lease bij Autobedrijf Rijswijk: rijd nu in je droomauto en word direct eigenaar. Bekijk ons actuele financial-lease-aanbod.">
 
     <x-page-hero title="Jouw droomauto binnen handbereik"
-        intro="Met financial lease spreid je de aanschaf over een vaste looptijd én ben je vanaf dag één eigenaar. Ideaal voor ondernemers en zzp'ers." />
+        intro="Met financial lease spreid je de aanschaf over een vaste looptijd én ben je vanaf dag één eigenaar. Ideaal voor ondernemers en zzp'ers."
+        image="images/site/interieur.webp" alt="Interieur van een Audi RS3 uit het aanbod" />
 
     <section class="container-x py-12 lg:py-16">
         <div class="grid gap-12 lg:grid-cols-2 lg:gap-16">
@@ -29,10 +30,26 @@
                     @endforeach
                 </ul>
 
+                {{-- Rekenvoorbeeld met dezelfde rekenregels als de calculator van de leasepartner
+                     (Car::monthlyFrom). Een getal zegt meer dan "vaste maandlasten". --}}
+                @php
+                    $lease = config('brand.finance.lease');
+                @endphp
                 <div class="mt-8 rounded-[4px] border border-hairline bg-graphite-700/50 p-6">
-                    <p class="text-sm leading-relaxed text-cream/70">
-                        Elke occasion is ook via financial lease te rijden. Het exacte maandbedrag hangt af van looptijd,
-                        aanbetaling en slottermijn. Bekijk hiernaast een indicatie of vraag een persoonlijk voorstel aan.
+                    <h3 class="font-display text-lg font-semibold text-white">Rekenvoorbeeld</h3>
+                    <p class="mt-1 text-sm text-cream/65">
+                        {{ $lease['months'] }} maanden, geen aanbetaling, € {{ number_format($lease['closing'], 0, ',', '.') }} slottermijn.
+                    </p>
+                    <dl class="mt-4 divide-y divide-hairline border-y border-hairline">
+                        @foreach ([20000, 35000, 60000] as $amount)
+                            <div class="flex items-baseline justify-between py-2.5 text-sm">
+                                <dt class="text-cream/70">Leasebedrag € {{ number_format($amount, 0, ',', '.') }}</dt>
+                                <dd class="font-semibold text-white tabular">€ {{ number_format((new \App\Models\Car(['price' => $amount]))->monthlyFrom(), 0, ',', '.') }} p/m</dd>
+                            </div>
+                        @endforeach
+                    </dl>
+                    <p class="mt-3 text-xs leading-relaxed text-cream/55">
+                        Indicatie op basis van de calculator van FinancialLease.nl. Je persoonlijke voorstel kan afwijken.
                     </p>
                     <a href="{{ route('contact', ['onderwerp' => 'financiering']) }}#contact" class="btn btn-primary mt-5">
                         Vraag een voorstel aan <x-icon name="arrow-right" class="h-4 w-4" />
@@ -52,6 +69,34 @@
                     <p class="font-display text-lg font-semibold text-cream">Live maandbedragen per auto</p>
                 </x-consent-embed>
             </div>
+        </div>
+    </section>
+
+    {{-- Veelgestelde vragen. Antwoorden volgen de uitleg van de leasepartner zelf; geen eigen beloftes. --}}
+    <section class="container-x border-t border-hairline py-12 lg:py-16">
+        <h2 class="font-display text-2xl font-bold text-white">Veelgestelde vragen</h2>
+        @php
+            $faq = [
+                ['q' => 'Kan ik als particulier financial lease afsluiten?',
+                 'a' => 'Nee, financial lease is bedoeld voor ondernemers, starters en zzp\'ers. Ben je particulier? Bel of app ons, dan kijken we samen wat er wel kan.'],
+                ['q' => 'Wat is een slottermijn?',
+                 'a' => 'Het vaste restbedrag dat je aan het einde van het contract in één keer betaalt. Je lost het niet maandelijks af, maar betaalt er wel rente over. Hoe hoger de slottermijn, hoe lager je maandbedrag; vaak kies je hem rond de verwachte inruilwaarde.'],
+                ['q' => 'Kan ik eerder aflossen of de auto tussentijds inruilen?',
+                 'a' => 'Ja. Volgens onze leasepartner kun je altijd eerder aflossen of inruilen.'],
+                ['q' => 'Hoe zit het met de btw?',
+                 'a' => 'Je least hoogstens de prijs exclusief btw. De btw betaal je zelf of verreken je met je inruilauto; als ondernemer vorder je die terug bij de Belastingdienst.'],
+            ];
+        @endphp
+        <div class="mt-6 max-w-3xl divide-y divide-hairline border-y border-hairline">
+            @foreach ($faq as $item)
+                <details class="group">
+                    <summary class="flex cursor-pointer list-none items-center justify-between gap-6 py-4 font-medium text-cream transition-colors hover:text-white [&::-webkit-details-marker]:hidden">
+                        {{ $item['q'] }}
+                        <x-icon name="chevron-down" class="h-4 w-4 shrink-0 text-cream/60 transition-transform duration-200 ease-out group-open:rotate-180" />
+                    </summary>
+                    <p class="pb-5 pr-10 text-sm leading-relaxed text-cream/70">{{ $item['a'] }}</p>
+                </details>
+            @endforeach
         </div>
     </section>
 </x-layouts.public>

@@ -28,7 +28,7 @@
             </a>
             <p class="text-sm text-cream/55">
                 Vragen over je gegevens? Mail
-                <a href="mailto:{{ config('brand.contact.email') }}" class="text-brass-300 hover:underline">{{ config('brand.contact.email') }}</a>.
+                <a href="mailto:{{ config('brand.contact.email') }}" class="text-brass-300 underline decoration-brass-300/40 underline-offset-4 transition-colors hover:decoration-brass-300">{{ config('brand.contact.email') }}</a>.
             </p>
         </div>
     </section>

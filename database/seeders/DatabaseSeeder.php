@@ -29,11 +29,7 @@ class DatabaseSeeder extends Seeder
             $this->command?->warn("Wachtwoord beheeraccount (bewaar dit!): {$password}");
         }
 
-        // Voorraad: lokaal een demo-seed. In productie komt de voorraad uit
-        // `php artisan cars:sync` (de echte, actuele voorraad van de dealersite).
-        if (app()->isLocal()) {
-            $this->call(CarSeeder::class);
-            $this->call(CarEnrichmentSeeder::class);
-        }
+        // Voorraad komt overal (ook lokaal) uit `php artisan cars:sync`: de echte, actuele
+        // voorraad van de dealersite. Lokaal snel: `cars:sync --limit=20 --max-photos=6`.
     }
 }

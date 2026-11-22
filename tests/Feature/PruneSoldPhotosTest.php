@@ -19,7 +19,7 @@ class PruneSoldPhotosTest extends TestCase
             Storage::disk('public')->put("cars/{$car->id}/xs/{$i}.webp", 'x');
             $car->images()->create(['path' => "cars/{$car->id}/{$i}.webp", 'xs_path' => "cars/{$car->id}/xs/{$i}.webp", 'is_primary' => $flagCover && $i === 0, 'sort_order' => $i]);
         }
-        Car::whereKey($car->id)->update(['updated_at' => now()->subDays($daysAgo)]);
+        Car::whereKey($car->id)->update(['sold_at' => $status === 'sold' ? now()->subDays($daysAgo) : null]);
 
         return $car;
     }
@@ -40,6 +40,18 @@ class PruneSoldPhotosTest extends TestCase
         Storage::disk('public')->assertMissing(["cars/{$old->id}/1.webp", "cars/{$old->id}/xs/1.webp", "cars/{$old->id}/2.webp"]);
         $this->assertCount(3, $recent->images);
         $this->assertCount(3, $forSale->images);
+    }
+
+    /** Een typfout verbeteren bij een lang verkochte auto laat de termijn niet opnieuw beginnen. */
+    public function test_editing_a_sold_car_later_does_not_reset_the_clock(): void
+    {
+        Storage::fake('public');
+        $car = $this->carWithPhotos('sold', 90);
+        $car->update(['description' => 'Typfout verbeterd']); // updated_at = nu
+
+        $this->artisan('cars:prune-photos')->assertSuccessful();
+
+        $this->assertCount(1, $car->images()->get());
     }
 
     public function test_it_is_scheduled(): void

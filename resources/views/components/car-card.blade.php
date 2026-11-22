@@ -30,7 +30,7 @@
         @if ($cover)
             {{-- Miniatuur; de browser pakt zelf de grote foto op een scherp scherm. --}}
             <img src="{{ $cover->thumbUrl() }}"
-                 @if ($cover->srcset()) srcset="{{ $cover->srcset() }}" sizes="(min-width: 1280px) 400px, (min-width: 640px) 50vw, calc(100vw - 2rem)" @endif
+                 @if ($srcset = $cover->srcset(1024)) srcset="{{ $srcset }}" sizes="(min-width: 1280px) 400px, (min-width: 640px) 50vw, calc(100vw - 2rem)" @endif
                  @if ($cover->width) width="{{ $cover->width }}" height="{{ $cover->height }}" @endif
                  alt="{{ $car->title() }} · {{ $car->year }}, {{ $car->color }}"
                  @if ($priority) fetchpriority="high" @else loading="lazy" @endif decoding="async"

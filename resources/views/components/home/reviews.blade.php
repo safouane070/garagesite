@@ -46,7 +46,8 @@
     </div>
 
     @if (count($testimonials))
-        <div class="mt-10 flex snap-x snap-mandatory scroll-px-5 gap-4 overflow-x-auto px-5 pb-4 scroll-thin sm:scroll-px-8 sm:px-8 lg:mx-auto lg:grid lg:max-w-container lg:grid-cols-3 lg:gap-6 lg:overflow-visible lg:pb-0">
+        {{-- tabindex: op een telefoon is dit een scrollstrook zonder links; zo kan ook het toetsenbord erdoor. --}}
+        <div tabindex="0" role="region" aria-label="Klantreviews" class="mt-10 flex snap-x snap-mandatory scroll-px-5 gap-4 overflow-x-auto px-5 pb-4 scroll-thin sm:scroll-px-8 sm:px-8 lg:mx-auto lg:grid lg:max-w-container lg:grid-cols-3 lg:gap-6 lg:overflow-visible lg:pb-0">
             @php
                 // Eerst 5 sterren met een tekst die iets zegt (niet "Top!", niet een halve pagina);
                 // de rest daarna. Zo staan er geen kale of scheve citaten vooraan.
