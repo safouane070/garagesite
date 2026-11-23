@@ -37,7 +37,8 @@ class PublicUxTest extends TestCase
         Car::factory()->create(['status' => 'reserved']);
         Car::factory()->create(['status' => 'sold']);
 
-        $this->get(route('home'))->assertSee(">3</span> auto's op voorraad", false);
+        // Eén keer, op de zoekknop ("Toon 3 auto's"), niet nog eens in de bewijsregel.
+        $this->get(route('home'))->assertSee(">3</span> auto's", false)->assertDontSee("auto's op voorraad", false);
         $this->get(route('cars.index'))->assertSee('total: 3', false);
     }
 

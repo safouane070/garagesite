@@ -27,8 +27,8 @@
             <div class="pointer-events-none absolute inset-0 hidden bg-gradient-to-r from-ink/55 via-transparent to-transparent sm:block"></div>
         </div>
 
-        <div class="container-x relative pb-12 pt-2 sm:py-16 lg:grid lg:grid-cols-12 lg:items-end lg:gap-10">
-            <div class="max-w-2xl lg:col-span-7" style="text-shadow: 0 2px 24px rgba(0,0,0,0.45)">
+        <div class="container-x relative pb-12 pt-2 sm:py-16">
+            <div class="max-w-2xl" style="text-shadow: 0 2px 24px rgba(0,0,0,0.45)">
                 <h1 class="font-display text-[2.6rem] font-bold uppercase leading-[0.95] tracking-tight text-white sm:text-6xl lg:text-[4.6rem]">
                     Dé Duitse occasions<br>van Rijswijk
                 </h1>
@@ -76,53 +76,12 @@
                     <x-icon name="phone" class="h-4 w-4" /> Liever bellen? {{ config('brand.contact.phone') }}
                 </a>
             </div>
-
-            {{-- Live voorraad al in het eerste scherm: wat er deze week binnenkwam, met prijs.
-                 Dit is het verschil met een slogan-hero: je ziet meteen echte auto's. Alleen
-                 vanaf lg; op een telefoon past het niet naast de zoekbalk. --}}
-            @if ($heroNew->isNotEmpty())
-                <aside aria-labelledby="hero-new"
-                       class="hidden rounded-[4px] border border-cream/10 bg-ink/90 p-2 shadow-[0_24px_60px_-24px_rgba(0,0,0,0.8)] lg:col-span-5 lg:block">
-                    <div class="flex items-baseline justify-between px-3 pb-1 pt-2">
-                        <h2 id="hero-new" class="text-sm font-semibold text-cream">Net binnen</h2>
-                        <a href="{{ route('cars.index') }}" class="group inline-flex items-center gap-1.5 text-sm text-cream/65 transition-colors hover:text-brass-300">
-                            Alle {{ $stock }} auto's <x-icon name="arrow-right" class="h-3.5 w-3.5 transition-transform duration-200 ease-out group-hover:translate-x-0.5" />
-                        </a>
-                    </div>
-                    <ul>
-                        @foreach ($heroNew as $car)
-                            <li>
-                                <a href="{{ route('cars.show', $car) }}"
-                                   class="group grid grid-cols-[7.5rem_1fr] items-center gap-4 rounded-[3px] p-2 transition-colors duration-150 ease-out hover:bg-cream/[0.05] active:bg-cream/[0.08]">
-                                    <span class="aspect-[4/3] overflow-hidden rounded-[3px] bg-graphite-800">
-                                        @if ($car->primaryImage)
-                                            {{-- lazy: op een telefoon is dit paneel verborgen en hoeven de foto's niet te laden. --}}
-                                            <img src="{{ $car->primaryImage->thumbUrl() }}" alt="" width="240" height="180" loading="lazy"
-                                                 decoding="async" class="photo-fx h-full w-full object-cover">
-                                        @endif
-                                    </span>
-                                    <span class="min-w-0">
-                                        <span class="block truncate font-display font-semibold text-cream">{{ $car->shortTitle() }}</span>
-                                        <span class="block truncate text-sm text-cream/65 tabular">{{ $car->year }} · {{ $car->formattedMileage() }} · {{ $car->transmission }}</span>
-                                        <span class="mt-1 flex items-baseline gap-2">
-                                            <span class="font-display font-bold text-white tabular">{{ $car->formattedPrice() }}</span>
-                                            @if ($monthly = $car->monthlyFrom())
-                                                <span class="text-xs text-cream/55 tabular">Lease v.a. € {{ number_format($monthly, 0, ',', '.') }} p/m</span>
-                                            @endif
-                                        </span>
-                                    </span>
-                                </a>
-                            </li>
-                        @endforeach
-                    </ul>
-                </aside>
-            @endif
         </div>
     </section>
 
     {{-- ═══════════ BEWIJS · één regel i.p.v. cijfertegels + vertrouwensband ═══════════
          De beloftes (BOVAG, afleverkosten) staan al in de hero; hier alleen wat de hero
-         niet zegt: de echte Google-score, de echte voorraad en wat er echt verkocht is.
+         niet zegt: de echte Google-score en wat er echt verkocht is.
          Dat laatste verving een hele sectie verkochte auto's (die je niet kunt kopen). --}}
     <div class="container-x flex flex-wrap items-center gap-x-4 gap-y-1 border-b border-hairline py-5 text-sm text-cream/70">
         <a href="{{ config('brand.reviews.url') }}" target="_blank" rel="noopener" class="inline-flex items-center gap-1.5 transition hover:text-cream">
@@ -130,19 +89,14 @@
             <span class="font-semibold text-cream tabular">{{ str_replace('.', ',', (string) $rating) }}</span>
             · {{ $reviewCount }} Google-reviews
         </a>
-        <span class="text-cream/25" aria-hidden="true">/</span>
-        <a href="{{ route('cars.index') }}" class="transition hover:text-cream">
-            <span class="font-semibold text-cream tabular">{{ $stock }}</span> auto's op voorraad
-        </a>
-        {{-- Pas vanaf 3 tonen: "1 verkocht" is geen bewijs. --}}
+        {{-- Pas vanaf 3 tonen: "1 verkocht" is geen bewijs. Het voorraadgetal staat al op de zoekknop. --}}
         @if ($soldRecent->count() >= 3)
-            <span class="text-cream/25" aria-hidden="true">/</span>
+            <span class="hidden text-cream/25 sm:inline" aria-hidden="true">/</span>
             <span>
                 {{-- "de deur uit" i.p.v. "verkocht": de sync ziet alleen dat een auto van de
                      dealersite verdween, niet waarom. Klopt voor verkoop én blijft eerlijk. --}}
                 <span class="font-semibold text-cream tabular">{{ $soldRecent->count() }}</span>
-                auto's de deur uit in de afgelopen {{ intdiv(\App\Http\Controllers\HomeController::SOLD_WINDOW_DAYS, 30) }} maanden<span class="hidden md:inline">, waaronder
-                {{ $soldRecent->map(fn ($c) => "{$c->brand} {$c->model}")->unique()->take(3)->join(', ', ' en ') }}</span>
+                auto's de deur uit in de afgelopen {{ intdiv(\App\Http\Controllers\HomeController::SOLD_WINDOW_DAYS, 30) }} maanden
             </span>
         @endif
     </div>
@@ -182,8 +136,7 @@
 
         <div class="mt-8 flex snap-x snap-mandatory scroll-px-5 gap-4 scroll-thin overflow-x-auto px-5 pb-4 sm:scroll-px-8 sm:gap-6 sm:px-8">
             @foreach ($newest as $car)
-                {{-- De eerste drie staan vanaf lg al in de hero. --}}
-                <div @class(['w-[280px] shrink-0 snap-start sm:w-[330px]', 'lg:hidden' => $loop->index < $heroNew->count()])>
+                <div class="w-[280px] shrink-0 snap-start sm:w-[330px]">
                     <x-car-card :car="$car" />
                 </div>
             @endforeach

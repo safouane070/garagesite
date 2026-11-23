@@ -47,10 +47,12 @@ class HomeProofTest extends TestCase
         $this->get('/')->assertOk()->assertDontSee('de deur uit in de afgelopen');
     }
 
-    public function test_hero_lists_newest_cars_with_price(): void
+    /** Rustige hero: de nieuwste auto's staan één keer op de pagina (in de rail), niet ook in de hero. */
+    public function test_newest_cars_appear_once_in_the_rail(): void
     {
         $car = Car::factory()->create(['status' => CarStatus::Available, 'price' => 30000, 'mileage' => 40000, 'is_featured' => false]);
 
-        $this->get('/')->assertOk()->assertSee('Net binnen')->assertSee(route('cars.show', $car), false);
+        $html = $this->get('/')->assertOk()->assertSee('Net binnengereden')->getContent();
+        $this->assertSame(1, substr_count($html, 'href="' . route('cars.show', $car) . '"'));
     }
 }

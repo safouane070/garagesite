@@ -22,7 +22,7 @@ class HomeController extends Controller
             ->get();
 
         // Nieuwste binnengekomen auto's — exclusief wat al bij de aanraders staat.
-        // De drie nieuwste staan in de hero, de rest in de rail eronder. Een prijs-/
+        // Rail "Net binnengereden" onder de aanraders. Een prijs-/
         // kilometerdrempel houdt ze in lijn met de premium-toon.
         $newest = Car::available()
             ->whereNotIn('id', $featured->pluck('id'))
@@ -32,8 +32,6 @@ class HomeController extends Controller
             ->latest()
             ->take(11)
             ->get();
-        // De rail houdt ze ook: op een telefoon staat het hero-paneel er niet (zie home).
-        $heroNew = $newest->take(3);
 
         // Bewijs in één regel i.p.v. een rij auto's die je niet kunt kopen.
         $soldRecent = Car::where('status', CarStatus::Sold->value)
@@ -47,6 +45,6 @@ class HomeController extends Controller
             ->get(['brand', 'price'])
             ->map(fn (Car $c) => [$c->brand, (int) $c->price]);
 
-        return view('home', compact('featured', 'heroNew', 'newest', 'soldRecent', 'stockIndex'));
+        return view('home', compact('featured', 'newest', 'soldRecent', 'stockIndex'));
     }
 }
