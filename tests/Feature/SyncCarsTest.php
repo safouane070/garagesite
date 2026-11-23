@@ -77,8 +77,7 @@ class SyncCarsTest extends TestCase
             . $price
             . '<span class="ct-text-block">Transmissie</span><span class="ct-span">Automaat</span>'
             . '<ul class="optionstest"><li>Navigatie</li><li>LED-koplampen</li><li>Panoramadak</li></ul>'
-            . '<img src="https://autobedrijfrijswijk.nl/wp-content/uploads/2026/09/555-1-1024x768.jpg">'
-            . '<img src="https://autobedrijfrijswijk.nl/wp-content/uploads/2026/09/555-2-1024x768.jpg">'
+            . implode('', array_map(fn ($n) => "<img src=\"https://autobedrijfrijswijk.nl/wp-content/uploads/2026/09/555-{$n}-1024x768.jpg\">", range(1, $v['photos'] ?? 2)))
             . '<img src="https://autobedrijfrijswijk.nl/wp-content/uploads/2026/09/999-1-300x225.jpg">' // andere auto
             . '</body></html>';
     }
@@ -221,6 +220,22 @@ class SyncCarsTest extends TestCase
         $this->artisan('cars:sync', ['--max-photos' => 1])->assertSuccessful();
 
         $this->assertCount(1, Car::firstWhere('dealer_slug', 'volkswagen-golf-1-5-tsi-r-line-pano-camera')->images);
+    }
+
+    /** Interieurfoto's staan achteraan de galerij: een begrensde galerij laat ze niet weg. */
+    public function test_capped_gallery_keeps_the_interior_at_the_end(): void
+    {
+        $this->vehicle('volkswagen-golf-1-5-tsi-r-line-pano-camera', ['photos' => 30]);
+
+        $this->artisan('cars:sync', ['--max-photos' => 12])->assertSuccessful();
+
+        $got = collect(Http::recorded())->map(fn ($r) => $r[0]->url())
+            ->filter(fn ($u) => preg_match('#/555-\d+-#', $u))
+            ->map(fn ($u) => (int) preg_replace('#.*/555-(\d+)-.*#', '$1', $u))->values()->all();
+        $this->assertCount(12, $got);
+        $this->assertSame(1, $got[0]); // omslag voorop
+        $this->assertContains(30, $got); // laatste foto = interieur
+        $this->assertSame($got, collect($got)->sort()->values()->all()); // volgorde van de dealer
     }
 
     public function test_limit_caps_the_number_of_new_cars(): void

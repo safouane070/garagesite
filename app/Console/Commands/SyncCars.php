@@ -392,9 +392,10 @@ class SyncCars extends Command implements Isolatable
             }
 
             $data = DealerSite::parse($html, $v['title'], DealerSite::mediaUrl($v['media']), $knownModels);
-            // Eerste foto's = omslag en buitenkant; het interieur staat achteraan.
-            if (is_array($data) && ($max = (int) $this->option('max-photos')) > 0) {
-                $data['photos'] = array_slice($data['photos'], 0, $max);
+            // Gelijk verdeeld over de galerij: de buitenkant staat voorop, het interieur achteraan.
+            if (is_array($data) && ($max = (int) $this->option('max-photos')) > 0 && count($data['photos']) > $max) {
+                $last = count($data['photos']) - 1;
+                $data['photos'] = array_map(fn ($i) => $data['photos'][$max > 1 ? (int) round($i * $last / ($max - 1)) : 0], range(0, $max - 1));
             }
 
             return $data;
