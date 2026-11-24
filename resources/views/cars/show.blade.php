@@ -2,8 +2,6 @@
     $images = $car->images;
     // Specificaties per groep (Algemeen, Motor, Prestaties, Afmetingen, Historie), al opgemaakt.
     $specSections = $car->specSections();
-    $general = $specSections['Algemeen'] ?? [];
-    unset($specSections['Algemeen']);
 
     // Per-auto meta-description: échte specs i.p.v. één generieke zin.
     $metaDescription = trim(sprintf(
@@ -253,46 +251,31 @@
         </div>
     </div>
 
-    {{-- ═══ Beschrijving + volledige specs ═══ --}}
-    <div class="container-x grid gap-12 border-t border-hairline py-14 lg:grid-cols-12">
-        <div class="lg:col-span-7">
-            <h2 class="font-display text-2xl font-bold text-cream">Over deze {{ $car->brand }}</h2>
-            {{-- whitespace-pre-line: alinea's die de beheerder intypt blijven alinea's. --}}
-            <p class="mt-4 whitespace-pre-line leading-relaxed text-cream/70">{{ \App\Support\CarDescription::display($car) }}</p>
-        </div>
+    {{-- ═══ Beschrijving + specificaties ═══
+         Eén linkerrand, één raster. Beschrijving op leesbreedte; daaronder alle specgroepen
+         (Algemeen voorop) in kolommen die de browser zelf in hoogte verdeelt: geen gaten
+         naast een korte groep, en geen tweede raster dat net niet uitlijnt. --}}
+    <div class="container-x border-t border-hairline py-14">
+        <h2 class="font-display text-2xl font-bold text-cream">Over deze {{ $car->brand }}</h2>
+        {{-- whitespace-pre-line: alinea's die de beheerder intypt blijven alinea's. --}}
+        <p class="mt-4 max-w-3xl whitespace-pre-line leading-relaxed text-cream/70">{{ \App\Support\CarDescription::display($car) }}</p>
 
-        <div class="lg:col-span-5">
-            <h2 class="font-display text-2xl font-bold text-cream">Specificaties</h2>
-            <dl class="mt-4 divide-y divide-hairline border-y border-hairline">
-                @foreach ($general as $label => $value)
-                    <div class="flex items-baseline justify-between gap-6 py-2.5">
-                        <dt class="text-sm text-cream/65">{{ $label }}</dt>
-                        <dd class="text-right text-sm font-medium text-cream tabular">{{ $value }}</dd>
-                    </div>
-                @endforeach
-            </dl>
+        <h2 class="mt-14 font-display text-2xl font-bold text-cream">Specificaties</h2>
+        <div class="-mb-10 mt-6 gap-x-12 sm:columns-2 lg:columns-3">{{-- -mb-10: de marge van de laatste groep --}}
+            @foreach ($specSections as $title => $rows)
+                <section aria-labelledby="specs-{{ Str::slug($title) }}" class="mb-10 break-inside-avoid">
+                    <h3 id="specs-{{ Str::slug($title) }}" class="text-sm font-semibold text-cream">{{ $title }}</h3>
+                    <dl class="mt-3 divide-y divide-hairline border-y border-hairline">
+                        @foreach ($rows as $label => $value)
+                            <div class="flex items-baseline justify-between gap-6 py-2.5">
+                                <dt class="text-sm text-cream/65">{{ $label }}</dt>
+                                <dd class="text-right text-sm font-medium text-cream tabular">{{ $value }}</dd>
+                            </div>
+                        @endforeach
+                    </dl>
+                </section>
+            @endforeach
         </div>
-
-        {{-- De rest per groep naast elkaar: 30+ regels onder elkaar is een muur, zo scan je
-             naar wat je zoekt (verbruik, trekgewicht, APK). --}}
-        @if ($specSections)
-            <div @class(['grid gap-x-10 gap-y-10 sm:grid-cols-2 lg:col-span-12',
-                         'lg:grid-cols-3' => count($specSections) === 3, 'lg:grid-cols-4' => count($specSections) >= 4])>
-                @foreach ($specSections as $title => $rows)
-                    <section aria-labelledby="specs-{{ Str::slug($title) }}">
-                        <h3 id="specs-{{ Str::slug($title) }}" class="text-sm font-semibold text-cream">{{ $title }}</h3>
-                        <dl class="mt-3 divide-y divide-hairline border-y border-hairline">
-                            @foreach ($rows as $label => $value)
-                                <div class="flex items-baseline justify-between gap-6 py-2.5">
-                                    <dt class="text-sm text-cream/65">{{ $label }}</dt>
-                                    <dd class="text-right text-sm font-medium text-cream tabular">{{ $value }}</dd>
-                                </div>
-                            @endforeach
-                        </dl>
-                    </section>
-                @endforeach
-            </div>
-        @endif
     </div>
 
     {{-- ═══ Uitrusting + aflevering ═══ --}}

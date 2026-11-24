@@ -27,6 +27,17 @@ class CarDetailExtrasTest extends TestCase
         $this->assertSame([35000, 30000, 25000], $related->map(fn ($c) => (int) $c->price)->all());
     }
 
+    /** Eén specblok op één raster: "Algemeen" is gewoon de eerste groep, geen los tweede blok. */
+    public function test_specs_are_one_section_with_general_as_first_group(): void
+    {
+        $car = Car::factory()->create(['status' => CarStatus::Available, 'specs' => ['vermogen_pk' => 150, 'cilinders' => 4]]);
+
+        $html = $this->get(route('cars.show', $car))->assertOk()
+            ->assertSeeInOrder(['Over deze', 'Specificaties', 'Algemeen', 'Bouwjaar', 'Motor &amp; aandrijving', 'Vermogen'], false)
+            ->getContent();
+        $this->assertSame(1, substr_count($html, '>Specificaties</h2>'));
+    }
+
     public function test_detail_shows_lease_with_terms_and_calculator_link(): void
     {
         $car = Car::factory()->create(['status' => CarStatus::Available, 'price' => 20000]);
