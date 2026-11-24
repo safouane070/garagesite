@@ -138,7 +138,8 @@ class PhotoTest extends TestCase
         $car = $this->carWithPhotos(2);
 
         $this->get(route('cars.show', $car))
-            ->assertSee('aria-label="Foto\'s schermvullend bekijken"', false)
+            // De zichtbare tekst staat vooraan in de naam: spraakbediening ("tik op Vergroot") werkt (WCAG 2.5.3).
+            ->assertSee('aria-label="Vergroot foto\'s"', false)
             ->assertSee('role="dialog"', false)
             ->assertSee('x-teleport="body"', false);
     }

@@ -59,7 +59,7 @@
 
             {{-- Echt financial-lease-aanbod (widget van onze leasepartner) --}}
             <div>
-                <p class="kicker">Actueel aanbod</p>
+                <h2 class="text-sm font-semibold text-cream">Actueel aanbod</h2>
                 <p class="mt-2 mb-4 text-sm text-cream/60">Live maandbedragen, verzorgd door onze leasepartner FinancialLease.nl.</p>
                 <x-consent-embed
                     src="https://iframe.financiallease.nl/lease?stock_id={{ config('brand.finance.financiallease_stock_id') }}&primary_color=d90429&secondary_color=d90429"

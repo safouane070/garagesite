@@ -34,13 +34,17 @@
                     $brands = ['Volkswagen', 'Audi', 'SEAT', 'CUPRA', 'Škoda'];
                 @endphp
                 <div class="rounded-[4px] border border-hairline bg-graphite-700/50 p-6">
-                    <p class="kicker">Onze merken</p>
-                    <ul class="mt-4 space-y-3">
+                    <h2 class="text-sm font-semibold text-cream">Onze merken</h2>
+                    {{-- Hele rij is de link: een duim raakt de rij, niet het woord "Bekijken". --}}
+                    <ul class="mt-2">
                         @foreach ($brands as $b)
-                            <li class="flex items-center justify-between border-b border-hairline pb-3 last:border-0 last:pb-0">
-                                <span class="font-display font-semibold text-cream">{{ $b }}</span>
-                                <a href="{{ route('cars.index', ['brand' => $b]) }}" class="inline-flex items-center gap-1.5 text-sm text-brass-300 transition hover:text-brass-200">
-                                    Bekijken <x-icon name="arrow-right" class="h-3.5 w-3.5" />
+                            <li class="border-b border-hairline last:border-0">
+                                <a href="{{ route('cars.index', ['brand' => $b]) }}"
+                                   class="group flex items-center justify-between py-3.5 transition-colors duration-150 ease-out active:bg-cream/[0.04]">
+                                    <span class="font-display font-semibold text-cream">{{ $b }}</span>
+                                    <span class="inline-flex items-center gap-1.5 text-sm text-brass-300 transition-colors group-hover:text-brass-200">
+                                        Bekijken <x-icon name="arrow-right" class="h-3.5 w-3.5 transition-transform duration-200 ease-out [@media(hover:hover)]:group-hover:translate-x-0.5" />
+                                    </span>
                                 </a>
                             </li>
                         @endforeach

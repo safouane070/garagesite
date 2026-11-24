@@ -69,7 +69,7 @@
             <span class="text-sm text-cream/60 tabular">Lease v.a. € {{ number_format($monthly, 0, ',', '.') }} p/m</span>
         @endif
         @if ($car->isVatDeductible())
-            <span class="rounded-[3px] border border-hairline px-1.5 py-0.5 text-[11px] font-medium uppercase tracking-wide text-cream/80">BTW</span>
+            <span class="rounded-[3px] border border-hairline px-1.5 py-0.5 text-xs font-medium uppercase tracking-wide text-cream/80">BTW</span>
         @endif
     </div>
 </a>

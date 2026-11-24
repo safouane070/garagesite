@@ -89,6 +89,12 @@
         box-shadow: 0 0 0 1px rgba(217, 4, 41, 0.6);
         cursor: pointer;
     }
+    /* Vinger i.p.v. muis: groter grijpvlak, en voelbaar "vast" tijdens het slepen. */
+    @media (pointer: coarse) {
+        .dual-range::-webkit-slider-thumb { height: 26px; width: 26px; }
+        .dual-range::-moz-range-thumb { height: 26px; width: 26px; }
+        .dual-range:active::-webkit-slider-thumb { transform: scale(1.1); }
+    }
     .dual-range::-webkit-slider-runnable-track {
         background: transparent;
     }
@@ -164,7 +170,8 @@
 
     /* Filterchip: zelfde drukgevoel als knoppen, kleur als staat. */
     .filter-chip {
-        @apply rounded-[3px] border px-3 py-1.5 text-xs font-medium transition-[color,background-color,border-color,transform] duration-150 ease-out active:scale-[0.97];
+        /* Telefoon: ±42px hoog (duimmaat); vanaf lg de compacte zijbalkmaat. */
+        @apply rounded-[3px] border px-3.5 py-2.5 text-sm font-medium transition-[color,background-color,border-color,transform] duration-150 ease-out active:scale-[0.97] lg:px-3 lg:py-1.5 lg:text-xs;
     }
 
     /* ---- Knoppen: crisp, kleine radius (geen pill-soep) ---- */

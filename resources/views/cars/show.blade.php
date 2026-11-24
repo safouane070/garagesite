@@ -84,14 +84,14 @@
                     <div class="pointer-events-none absolute inset-0 bg-gradient-to-t from-scrim/30 to-transparent"></div>
 
                     {{-- Schermvullend bekijken (ook met toetsenbord) --}}
-                    <button type="button" @click="open()" aria-label="Foto's schermvullend bekijken"
+                    <button type="button" @click="open()" aria-label="Vergroot foto's"
                             class="absolute bottom-4 right-4 inline-flex items-center gap-2 rounded-[3px] bg-scrim/70 px-3 py-2 text-xs font-medium text-onscrim backdrop-blur-md transition hover:bg-scrim/90">
                         <x-icon name="maximize" class="h-4 w-4" /> Vergroot
                     </button>
 
                     {{-- Teller --}}
-                    <div class="absolute right-4 top-4 rounded-[3px] bg-scrim/70 px-2.5 py-1 font-mono text-xs text-onscrim/80 backdrop-blur-md">
-                        <span x-text="String(i + 1).padStart(2, '0')"></span> / <span x-text="String(images.length).padStart(2, '0')"></span>
+                    <div class="absolute right-4 top-4 rounded-[3px] bg-scrim/70 px-2.5 py-1 text-xs text-onscrim/80 tabular backdrop-blur-md">
+                        <span x-text="i + 1">1</span> / <span x-text="images.length">{{ $images->count() }}</span>
                     </div>
 
                     {{-- Navigatie --}}
@@ -119,14 +119,14 @@
                 <template x-teleport="body">
                     <div x-show="full" x-cloak x-transition.opacity.duration.200ms
                          role="dialog" aria-modal="true" aria-label="Foto's van {{ $car->title() }}"
-                         class="fixed inset-0 z-[60] flex flex-col bg-black/95"
+                         class="fixed inset-0 z-[60] flex flex-col bg-black"
                          @keydown.escape.window="close()"
                          @keydown.arrow-left.window="full && prev()" @keydown.arrow-right.window="full && next()"
                          @touchstart.passive="touchStart($event)" @touchend.passive="touchEnd($event)">
-                        <div class="flex items-center justify-between px-4 py-3 font-mono text-xs text-white/75">
-                            <span><span x-text="i + 1"></span> / <span x-text="images.length"></span> · {{ $car->title() }}</span>
+                        <div class="flex items-center justify-between gap-3 px-4 py-3 text-sm text-white/75">
+                            <span class="min-w-0 truncate tabular"><span x-text="i + 1"></span> / <span x-text="images.length"></span> · {{ $car->title() }}</span>
                             <button type="button" x-ref="closeFull" @click="close()" aria-label="Sluiten"
-                                    class="flex h-11 w-11 items-center justify-center rounded-full text-white transition hover:bg-white/10">
+                                    class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-white transition hover:bg-white/10">
                                 <x-icon name="x" class="h-6 w-6" />
                             </button>
                         </div>
@@ -176,8 +176,10 @@
                     <p class="mt-1 text-lg text-cream/65">{{ $car->cleanVariant() }}</p>
                 @endif
 
-                {{-- Kernspecs als één regel (stond in een omkaderd 2×2-raster). --}}
-                <dl class="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-cream/80 tabular">
+                {{-- Kernspecs als één regel. Elk item draagt zijn scheidingspunt vóór zich; de lijst staat
+                     één punt-breedte naar links en wordt afgeknipt, dus een regel begint nooit met "·". --}}
+                <div class="mt-3 overflow-hidden">
+                <dl class="-ml-5 flex flex-wrap items-center gap-y-1 text-sm text-cream/80 tabular">
                     @foreach (array_filter([
                         'Bouwjaar' => $car->year,
                         'Kilometerstand' => $car->formattedMileage(),
@@ -185,13 +187,13 @@
                         'Brandstof' => $car->fuel_type,
                         'Transmissie' => $car->transmission,
                     ]) as $label => $value)
-                        <div class="flex items-center gap-2">
-                            @unless ($loop->first)<span class="text-cream/25" aria-hidden="true">·</span>@endunless
+                        <div class="flex items-center before:w-5 before:text-center before:text-cream/25 before:content-['·']">
                             <dt class="sr-only">{{ $label }}</dt>
                             <dd>{{ $value }}</dd>
                         </div>
                     @endforeach
                 </dl>
+                </div>
 
                 {{-- Prijs: groot en wit; alleen een status tonen als die afwijkt. --}}
                 <div class="mt-6 flex flex-wrap items-center gap-x-4 gap-y-2">
@@ -366,19 +368,17 @@
     @endif
 
     {{-- ═══ Vaste actiebalk (mobiel) ═══
-         Komt in beeld zodra de snelacties bovenin weggescrold zijn, en gaat weg bij het
-         formulier (daar staan de acties al). Vervangt op mobiel de zwevende WhatsApp-knop. --}}
+         Prijs + acties altijd binnen handbereik, behalve waar ze al staan: zolang de snelacties
+         in beeld zijn, en bij het formulier. Op een telefoon staan prijs en knoppen bij binnenkomst
+         onder de foto buiten beeld, dus de balk is er meteen. Vervangt de zwevende WhatsApp-knop. --}}
     @if ($forSale)
         <div x-data="{ show: false }"
              x-init="
                 const ctas = document.getElementById('snelacties'), form = document.getElementById('contact');
-                let past = false, atForm = false;
-                const update = () => show = past && !atForm;
-                // Opgerekte observatiegebieden: zo is elke passage een overgang, ook bij een
-                // sprong of snelle veeg (een gewoon gebied mist die als het element erover springt).
-                // past: de snelacties zijn boven het scherm verdwenen.
-                new IntersectionObserver(([e]) => { past = !e.isIntersecting; update(); },
-                    { rootMargin: '0px 0px 99999px 0px' }).observe(ctas);
+                let ctasVisible = true, atForm = false;
+                const update = () => show = !ctasVisible && !atForm;
+                new IntersectionObserver(([e]) => { ctasVisible = e.isIntersecting; update(); }).observe(ctas);
+                // Opgerekt gebied: ook een sprong voorbij het formulier (snelle veeg) telt als 'erbij'.
                 // atForm: het formulier is in beeld gekomen of al gepasseerd.
                 if (form) new IntersectionObserver(([e]) => { atForm = e.isIntersecting; update(); },
                     { rootMargin: '99999px 0px 0px 0px' }).observe(form);

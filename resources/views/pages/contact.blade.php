@@ -19,7 +19,7 @@
                             <p class="mt-0.5 text-sm text-cream/70">{{ config('brand.contact.address') }}</p>
                             <a href="https://www.google.com/maps/dir/?api=1&destination={{ urlencode(config('brand.maps.query')) }}"
                                target="_blank" rel="noopener"
-                               class="mt-1 inline-flex items-center gap-1.5 text-sm text-brass-300 transition hover:text-brass-200">
+                               class="-my-1.5 mt-0 inline-flex items-center gap-1.5 py-2.5 text-sm text-brass-300 transition hover:text-brass-200">
                                 Plan je route <x-icon name="arrow-up-right" class="h-3.5 w-3.5" />
                             </a>
                         </div>
@@ -50,7 +50,7 @@
                                 @foreach (config('brand.opening_hours.days') as $d)
                                     <div class="flex justify-between gap-6">
                                         <dt class="text-cream/70">{{ $d['label'] }}</dt>
-                                        <dd class="font-mono text-cream/80 tabular">{{ $d['value'] }}</dd>
+                                        <dd class="text-cream/80 tabular">{{ $d['value'] }}</dd>
                                     </div>
                                 @endforeach
                             </dl>

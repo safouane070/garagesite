@@ -88,4 +88,14 @@ class PublicUxTest extends TestCase
         $this->assertStringNotContainsString("Men&#039;s Edition” definitief", $html);
         $this->assertMatchesRegularExpression('/confirm\(\'[^)]*Men' . preg_quote(chr(92)) . 'u0027s Edition/', $html);
     }
+
+    /** Geen monospace-kostuum voor klanten: openingstijden en fototeller in de gewone letter (tabular). */
+    public function test_public_pages_use_no_monospace(): void
+    {
+        $car = $this->carWithPhoto();
+
+        foreach ([route('home'), route('contact'), route('cars.show', $car)] as $url) {
+            $this->get($url)->assertOk()->assertDontSee('font-mono', false);
+        }
+    }
 }

@@ -202,13 +202,13 @@
 
             <div class="md:col-span-3">
                 <p class="text-sm font-semibold text-cream">Navigatie</p>
-                <ul class="mt-4 grid grid-cols-2 gap-x-6 gap-y-3 text-sm text-cream/70 md:grid-cols-1">
-                    <li><a href="{{ route('cars.index') }}" class="transition hover:text-brass-300">Aanbod</a></li>
-                    <li><a href="{{ route('diensten') }}" class="transition hover:text-brass-300">Diensten</a></li>
-                    <li><a href="{{ route('financial-lease') }}" class="transition hover:text-brass-300">Financial lease</a></li>
-                    <li><a href="{{ route('vw-specialist') }}" class="transition hover:text-brass-300">Volkswagen specialist</a></li>
-                    <li><a href="{{ route('over-ons') }}" class="transition hover:text-brass-300">Over ons</a></li>
-                    <li><a href="{{ route('contact') }}" class="transition hover:text-brass-300">Contact</a></li>
+                <ul class="mt-2 grid grid-cols-2 gap-x-6 text-sm text-cream/70 md:mt-4 md:grid-cols-1 md:gap-y-3">
+                    <li><a href="{{ route('cars.index') }}" class="block py-2.5 transition hover:text-brass-300 md:py-0">Aanbod</a></li>
+                    <li><a href="{{ route('diensten') }}" class="block py-2.5 transition hover:text-brass-300 md:py-0">Diensten</a></li>
+                    <li><a href="{{ route('financial-lease') }}" class="block py-2.5 transition hover:text-brass-300 md:py-0">Financial lease</a></li>
+                    <li><a href="{{ route('vw-specialist') }}" class="block py-2.5 transition hover:text-brass-300 md:py-0">Volkswagen specialist</a></li>
+                    <li><a href="{{ route('over-ons') }}" class="block py-2.5 transition hover:text-brass-300 md:py-0">Over ons</a></li>
+                    <li><a href="{{ route('contact') }}" class="block py-2.5 transition hover:text-brass-300 md:py-0">Contact</a></li>
                 </ul>
             </div>
 
@@ -217,11 +217,11 @@
                 <ul class="mt-4 space-y-3 text-sm text-cream/70">
                     <li class="flex items-start gap-2.5"><x-icon name="map-pin" class="mt-0.5 h-4 w-4 shrink-0 text-brass-500/70" /> {{ config('brand.contact.address') }}</li>
                     <li class="flex items-center gap-2.5"><x-icon name="phone" class="h-4 w-4 shrink-0 text-brass-500/70" />
-                        <a href="tel:{{ config('brand.contact.phone_href') }}" class="hover:text-brass-300">{{ config('brand.contact.phone') }}</a>
+                        <a href="tel:{{ config('brand.contact.phone_href') }}" class="-my-2.5 py-2.5 hover:text-brass-300">{{ config('brand.contact.phone') }}</a>
                         <span class="text-cream/25">·</span>
-                        <a href="tel:{{ config('brand.contact.mobile_href') }}" class="hover:text-brass-300">{{ config('brand.contact.mobile') }}</a>
+                        <a href="tel:{{ config('brand.contact.mobile_href') }}" class="-my-2.5 py-2.5 hover:text-brass-300">{{ config('brand.contact.mobile') }}</a>
                     </li>
-                    <li class="flex items-center gap-2.5"><x-icon name="mail" class="h-4 w-4 shrink-0 text-brass-500/70" /> <a href="mailto:{{ config('brand.contact.email') }}" class="hover:text-brass-300">{{ config('brand.contact.email') }}</a></li>
+                    <li class="flex items-center gap-2.5"><x-icon name="mail" class="h-4 w-4 shrink-0 text-brass-500/70" /> <a href="mailto:{{ config('brand.contact.email') }}" class="-my-2.5 py-2.5 hover:text-brass-300">{{ config('brand.contact.email') }}</a></li>
                 </ul>
 
                 <p class="mt-8 text-sm font-semibold text-cream">Openingstijden</p>
@@ -229,7 +229,7 @@
                     @foreach (config('brand.opening_hours.days') as $d)
                         <div class="flex justify-between gap-6">
                             <dt class="text-cream/60">{{ $d['label'] }}</dt>
-                            <dd class="font-mono text-cream/75 tabular">{{ $d['value'] }}</dd>
+                            <dd class="text-cream/75 tabular">{{ $d['value'] }}</dd>
                         </div>
                     @endforeach
                 </dl>
@@ -240,9 +240,9 @@
             <div class="container-x flex flex-col items-center justify-between gap-3 pb-24 pt-5 text-center text-xs text-cream/55 sm:flex-row sm:py-5 sm:text-left">
                 <span>&copy; {{ date('Y') }} {{ config('brand.company.legal_name') ?: config('app.name') }} · Alle rechten voorbehouden{{ config('brand.company.kvk') ? ' · KvK ' . config('brand.company.kvk') : '' }}{{ config('brand.company.vat') ? ' · btw ' . config('brand.company.vat') : '' }}</span>
                 <span class="flex flex-wrap items-center justify-center gap-x-4 gap-y-1">
-                    <a href="{{ route('voorwaarden') }}" class="transition hover:text-brass-300">Algemene voorwaarden</a>
-                    <a href="{{ route('privacy') }}" class="transition hover:text-brass-300">Privacybeleid</a>
-                    <a href="{{ route('login') }}" class="transition hover:text-brass-300">Beheer</a>
+                    <a href="{{ route('voorwaarden') }}" class="-my-2.5 py-2.5 transition hover:text-brass-300">Algemene voorwaarden</a>
+                    <a href="{{ route('privacy') }}" class="-my-2.5 py-2.5 transition hover:text-brass-300">Privacybeleid</a>
+                    <a href="{{ route('login') }}" class="-my-2.5 py-2.5 transition hover:text-brass-300">Beheer</a>
                 </span>
             </div>
         </div>
