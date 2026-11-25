@@ -343,12 +343,16 @@ class Car extends Model
         return preg_match('/\d"?$/', $o) && str_ends_with($o, '"') ? $o : rtrim($o, "\"' ");
     }
 
-    /** Uitrusting voor de detailpagina: opgeschoond, belangrijkste eerst. */
-    public function displayOptions(): array
+    /**
+     * Uitrusting voor de detailpagina: hoogtepunten bovenaan, de rest per groep.
+     *
+     * @return array{highlights: list<string>, groups: array<string, list<string>>, count: int}
+     */
+    public function equipment(): array
     {
-        return \App\Support\CarDescription::ordered(
-            array_values(array_unique(array_map([self::class, 'cleanOption'], (array) $this->options)))
-        );
+        $all = \App\Support\Equipment::clean((array) $this->options);
+
+        return ['highlights' => \App\Support\CarDescription::highlights($all), 'groups' => \App\Support\Equipment::groups($all), 'count' => count($all)];
     }
 
     /** Kilometerstand als "84.500 km". */

@@ -283,33 +283,55 @@
     {{-- ═══ Uitrusting + aflevering ═══ --}}
     <div class="container-x border-t border-hairline py-14">
         <div class="grid gap-12 lg:grid-cols-12">
-            @php $options = $car->displayOptions(); $hasOptions = $options !== []; @endphp
+            @php
+                ['highlights' => $highlights, 'groups' => $groups, 'count' => $optionCount] = $car->equipment();
+                $long = $optionCount > 12; // korte lijst: meteen de groepen, geen samenvatting erboven
+            @endphp
 
-            @if ($hasOptions)
-                {{-- Tot ±60 opties: eerst 12, de rest op verzoek (anders schermen vol vinkjes vóór het formulier). --}}
-                <div class="lg:col-span-8" x-data="{ all: false }">
+            {{-- Uitrusting. Was: tot 74 regels met elk hetzelfde rode vinkje, op alfabet. Nu: de zes
+                 opties waar kopers op letten groot bovenaan, de rest per categorie als rustige tekst
+                 (zo vind je "stoelverwarming" in Comfort zonder de hele lijst te lezen). --}}
+            @if ($optionCount)
+                <div class="lg:col-span-8" x-data="{ all: {{ $long ? 'false' : 'true' }} }">
                     <h2 class="font-display text-2xl font-bold text-white">Uitrusting</h2>
-                    <div class="mt-5 grid gap-x-6 gap-y-2.5 sm:grid-cols-2 lg:grid-cols-3">
-                        @foreach ($options as $opt)
-                            <div class="flex items-start gap-2 text-sm text-cream/80" @if ($loop->index >= 12) x-show="all" x-cloak @endif>
-                                <x-icon name="check" class="mt-0.5 h-4 w-4 shrink-0 text-brass-500/80" />
-                                <span>{{ $opt }}</span>
-                            </div>
-                        @endforeach
-                    </div>
-                    @if (count($options) > 12)
-                        <button @click="all = !all" type="button" class="btn btn-outline mt-6 w-full sm:w-auto" :aria-expanded="all">
-                            <span x-text="all ? 'Toon minder' : 'Toon alle {{ count($options) }} opties'">Toon alle {{ count($options) }} opties</span>
-                            <x-icon name="chevron-down" class="h-4 w-4 transition-transform duration-200" x-bind:class="all && 'rotate-180'" />
+
+                    @if ($long)
+                        <ul class="mt-5 grid border-t border-hairline sm:grid-cols-2 sm:gap-x-8 lg:grid-cols-3">
+                            @foreach ($highlights as $h)
+                                <li class="border-b border-hairline py-3.5 font-medium text-white">{{ $h }}</li>
+                            @endforeach
+                        </ul>
+                        <button @click="all = !all" type="button" class="btn btn-outline mt-6 w-full sm:w-auto"
+                                :aria-expanded="all" aria-controls="alle-opties">
+                            <span x-text="all ? 'Minder tonen' : 'Alle {{ $optionCount }} opties per categorie'">Alle {{ $optionCount }} opties per categorie</span>
+                            <x-icon name="chevron-down" class="h-4 w-4 transition-transform duration-200 ease-out" x-bind:class="all && 'rotate-180'" />
                         </button>
                     @endif
+
+                    <div id="alle-opties" @if ($long) x-show="all" x-cloak x-transition.opacity.duration.150ms @endif
+                         class="-mb-8 mt-8 gap-x-10 sm:columns-2">{{-- -mb-8: marge van de laatste groep --}}
+                        @foreach ($groups as $group => $items)
+                            <section aria-labelledby="opties-{{ Str::slug($group) }}" class="mb-8 break-inside-avoid">
+                                <h3 id="opties-{{ Str::slug($group) }}" class="flex items-baseline gap-2 text-sm font-semibold text-white">
+                                    {{ $group }} <span class="font-normal text-cream/50 tabular">{{ count($items) }}</span>
+                                </h3>
+                                <ul class="mt-2 space-y-1.5 text-sm leading-snug text-cream/70">
+                                    @foreach ($items as $item)
+                                        <li>{{ $item }}</li>
+                                    @endforeach
+                                </ul>
+                            </section>
+                        @endforeach
+                    </div>
                 </div>
             @endif
 
-            <aside class="{{ $hasOptions ? 'lg:col-span-4' : 'lg:col-span-6 lg:col-start-4' }}">
-                <div>
-                    <h3 class="font-display text-lg font-bold text-white">Inbegrepen bij aflevering</h3>
-                    <ul class="mt-4 space-y-3 text-sm text-cream/80">
+            {{-- Belofte van de dealer, geen optie van de auto: daarom een eigen vak, zonder icoontjes
+                 die het op de optielijst lieten lijken. --}}
+            <aside class="{{ $optionCount ? 'lg:col-span-4' : 'lg:col-span-6 lg:col-start-4' }}">
+                <div class="rounded-[4px] border border-hairline bg-graphite-700/40 p-6 lg:sticky lg:top-24">
+                    <h2 class="font-display text-lg font-bold text-white">Inbegrepen bij aflevering</h2>
+                    <ul class="mt-3 divide-y divide-hairline text-sm text-cream/80">
                         @foreach ([
                             'BOVAG-garantie (' . config('brand.trust.warranty_months') . ' maanden)',
                             'Onderhoudsbeurt vóór aflevering',
@@ -317,10 +339,7 @@
                             'Geen afleverkosten',
                             'Inruil & financiering mogelijk',
                         ] as $item)
-                            <li class="flex items-start gap-2.5">
-                                <x-icon name="shield-check" class="mt-0.5 h-4 w-4 shrink-0 text-brass-500/80" />
-                                <span>{{ $item }}</span>
-                            </li>
+                            <li class="py-2.5">{{ $item }}</li>
                         @endforeach
                     </ul>
                 </div>

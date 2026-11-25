@@ -32,9 +32,10 @@ class CarDescription
         'hud' => ['head-up', 'head up', 'hud'],
         'licht' => ['matrix', 'laser', 'led-koplamp', 'led koplamp'],
         'cockpit' => ['virtual cockpit', 'digitaal dashboard', 'digital cockpit'],
-        'acc' => ['adaptive cruise', 'adaptieve cruise', 'acc'],
+        // Niet "acc": dat zit ook in "Accident Avoidance System".
+        'acc' => ['adaptive cruise', 'adaptieve cruise', 'cruise control adaptief'],
         'bekleding' => ['leder', 'leer', 'alcantara'],
-        'stoelen' => ['stoelverwarming', 'stoelventilatie', 'massage', 'memory'],
+        'stoelen' => ['stoelverwarming', 'verwarmde voorstoelen', 'voorstoelen verwarmd', 'stoelventilatie', 'stoel ventilatie', 'massage', 'memory'],
         'audio' => ['bang & olufsen', 'b&o', 'bose', 'harman', 'sonos', 'burmester', 'meridian'],
         'camera' => ['360', 'camera'],
         'navigatie' => ['navigatie'],
@@ -67,7 +68,7 @@ class CarDescription
             ucfirst(implode(', ', $kenmerken)) . '.',
         ];
 
-        $options = self::highlights(array_values($car->options ?? []));
+        $options = self::highlights(Equipment::clean((array) $car->options));
         if ($options !== []) {
             $zinnen[] = 'Uitgerust met onder meer ' . self::list($options) . '.';
         }
@@ -91,27 +92,6 @@ class CarDescription
         return self::isReplaceable($car->description) ? self::for($car) : $car->description;
     }
 
-    /**
-     * Alle opties, de begrippen waar kopers op letten eerst (in volgorde van belang),
-     * daarna de rest in de originele volgorde. Voor de uitrustingslijst: de feed is
-     * alfabetisch, waardoor "Airbag(s)" boven "Panoramadak" stond.
-     *
-     * @param  list<string>  $options
-     * @return list<string>
-     */
-    public static function ordered(array $options): array
-    {
-        $rank = array_flip(array_keys(self::PRIORITY));
-        $keyed = [];
-        foreach (array_values($options) as $i => $o) {
-            $concept = self::conceptOf($o);
-            $keyed[] = [$concept === null ? PHP_INT_MAX : $rank[$concept], $i, $o];
-        }
-        sort($keyed);
-
-        return array_column($keyed, 2);
-    }
-
     private static function conceptOf(string $option): ?string
     {
         $o = mb_strtolower($option);
@@ -126,8 +106,14 @@ class CarDescription
         return null;
     }
 
-    /** De belangrijkste opties eerst, aangevuld in de originele volgorde. */
-    private static function highlights(array $options): array
+    /**
+     * Hoogstens zes opties waar kopers op letten (één per begrip, in volgorde van belang),
+     * aangevuld in de originele volgorde. Voor de beschrijving én bovenaan de uitrusting.
+     *
+     * @param  list<string>  $options  opgeschoonde lijst (Equipment::clean)
+     * @return list<string>
+     */
+    public static function highlights(array $options): array
     {
         $conceptOf = fn (string $option): ?string => self::conceptOf($option);
 
