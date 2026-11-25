@@ -246,6 +246,9 @@ class SyncCarsTest extends TestCase
         $this->artisan('cars:sync', ['--limit' => 1])->assertSuccessful();
 
         $this->assertSame(1, Car::count());
+        // De tweede voertuigpagina wordt niet meer gelezen: met het tempo naar de dealer
+        // (2,5 s per aanvraag) kostte dat de build anders minuten voor niets.
+        $this->assertCount(1, collect(Http::recorded())->filter(fn ($r) => str_contains($r[0]->url(), '/voertuig/')));
     }
 
     public function test_price_change_on_dealer_site_is_applied(): void

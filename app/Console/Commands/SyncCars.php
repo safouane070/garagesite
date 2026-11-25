@@ -136,6 +136,10 @@ class SyncCars extends Command implements Isolatable
         [$created, $twinned, $failed] = [0, 0, 0];
         $limit = (int) $this->option('limit');
         foreach ($new as $v) {
+            // Limiet bereikt en niets meer te koppelen: verder lezen kost alleen tijd (2,5 s per aanvraag).
+            if ($limit > 0 && $created >= $limit && $pool->isEmpty()) {
+                break;
+            }
             $data = $this->read($v, $knownModels);
             if (is_string($data)) {
                 $this->warn("  niet leesbaar ({$data}): {$v['title']}");

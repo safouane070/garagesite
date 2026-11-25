@@ -25,7 +25,11 @@ WORKDIR /var/www/html
 
 COPY . .
 COPY --from=assets /app/public/build public/build
-RUN composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist --no-progress
+# Herkansing met pauze: een tijdelijke storing bij GitHub (HTTP 500 op één pakket) liet de deploy
+# van 25 nov mislukken; composer zelf probeert maar een paar seconden opnieuw.
+RUN for wait in 0 15 45; do sleep $wait; \
+        composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist --no-progress && exit 0; \
+    done; exit 1
 
 ENV APP_ENV=staging \
     APP_DEBUG=false \
