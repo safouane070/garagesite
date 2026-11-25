@@ -43,6 +43,7 @@ Route::view('/diensten', 'pages.diensten')->name('diensten');
 // Eigen voorraad met leaseprijs (Car::monthlyFrom), aanraders voorop.
 Route::get('/financial-lease', fn () => view('pages.financial-lease', [
     'leaseCars' => Car::available()->where('price', '>=', config('brand.finance.lease.min_price'))
+        ->where('year', '>=', now()->year - config('brand.finance.lease.max_age'))
         ->with('primaryImage')->orderByDesc('is_featured')->latest()->take(3)->get(),
 ]))->name('financial-lease');
 Route::view('/volkswagen-specialist', 'pages.vw-specialist')->name('vw-specialist');

@@ -98,6 +98,9 @@ return [
             'rate' => 10.5,          // nominale jaarrente in %
             'closing' => 3000,       // slottermijn in euro
             'min_price' => 7500,     // daaronder geen lease-indicatie
+            // FinancialLease.nl biedt tweedehands auto's "tussen de 0 en 12 jaar oud" aan
+            // (financiallease.nl/financial-lease-a-z, nov 2026); ouder: geen lease-indicatie.
+            'max_age' => 12,
         ],
     ],
 

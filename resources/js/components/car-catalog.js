@@ -2,7 +2,7 @@
 // page reload). De server rendert alle kaarten; dit component toont/verbergt
 // en herordent ze, en houdt de filters in de URL (deelbare links).
 // Per keer tonen we PAGE kaarten: 102 kaarten onder elkaar = 50.000px scrollen op een telefoon.
-const PAGE = 12;
+const PAGE = 24; // compacte rijen op de telefoon: 12 was maar 3 schermen
 
 export default (config) => ({
     bounds: { priceMin: config.priceMin, priceMax: config.priceMax, yearMin: config.yearMin, yearMax: config.yearMax },

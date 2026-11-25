@@ -83,6 +83,16 @@ class SiteReviewFixesTest extends TestCase
             ->assertDontSee('iframe.financiallease.nl', false);
     }
 
+    /** Te oud voor de leasepartner: geen maandbedrag, geen "ook via lease" en niet op de lease-pagina. */
+    public function test_too_old_car_gets_no_lease_promise_anywhere(): void
+    {
+        $old = Car::factory()->create(['status' => CarStatus::Available, 'price' => 9000, 'year' => now()->year - 13, 'is_featured' => true]);
+
+        $this->get(route('cars.show', $old))->assertOk()
+            ->assertDontSee('Lease v.a.')->assertDontSee('Bereken je eigen bedrag')->assertDontSee('Ook mogelijk via financial lease');
+        $this->get(route('financial-lease'))->assertOk()->assertDontSee(route('cars.show', $old), false);
+    }
+
     /** Identieke auto's (de dealer heeft er vijf dezelfde) krijgen toch elk een eigen paginatitel. */
     public function test_detail_title_is_unique_for_identical_cars(): void
     {

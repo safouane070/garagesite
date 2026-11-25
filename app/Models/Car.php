@@ -275,7 +275,8 @@ class Car extends Model
     public function monthlyFrom(): ?int
     {
         $c = config('brand.finance.lease');
-        if ((float) $this->price < $c['min_price']) {
+        // Zonder bouwjaar (het rekenvoorbeeld op /financial-lease) telt alleen de prijs.
+        if ((float) $this->price < $c['min_price'] || ($this->year && now()->year - (int) $this->year > $c['max_age'])) {
             return null;
         }
 

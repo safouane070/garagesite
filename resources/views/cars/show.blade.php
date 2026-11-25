@@ -220,11 +220,8 @@
                         <a href="{{ $car->leaseCalculatorUrl() }}" target="_blank" rel="noopener"
                            class="text-cream/80 underline decoration-cream/25 underline-offset-4 transition-colors hover:text-brass-300">Bereken je eigen bedrag</a>
                     </p>
-                @elseif ($forSale)
-                    <a href="{{ route('financial-lease') }}" class="mt-2 inline-flex text-sm text-cream/65 underline decoration-cream/25 underline-offset-4 transition hover:text-brass-300">
-                        Ook mogelijk via financial lease
-                    </a>
                 @endif
+                {{-- Geen bedrag = te goedkoop of te oud voor de leasepartner: dan ook niets beloven. --}}
 
                 {{-- CTA: één hoofdactie; bellen/WhatsApp ernaast. Bezichtiging en inruil
                      kies je in het formulier (onderwerp), dat hoeft geen vier knoppen. --}}

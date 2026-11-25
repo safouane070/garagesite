@@ -29,6 +29,19 @@ class CarPricingTest extends TestCase
         $this->assertNull((new Car(['price' => 6500]))->monthlyFrom());
     }
 
+    /**
+     * FinancialLease.nl leaset tweedehands auto's "tussen de 0 en 12 jaar oud": een BMW uit 2013
+     * met "Lease v.a. € 111 p/m" (72 maanden, dan 19 jaar oud) was een belofte die niet klopt.
+     */
+    public function test_no_lease_indication_for_cars_older_than_twelve_years(): void
+    {
+        $this->travelTo('2026-11-25');
+
+        $this->assertNull((new Car(['price' => 7500, 'year' => 2013]))->monthlyFrom());
+        $this->assertNotNull((new Car(['price' => 7500, 'year' => 2014]))->monthlyFrom());
+        $this->assertNotNull((new Car(['price' => 20000]))->monthlyFrom(), 'rekenvoorbeeld zonder bouwjaar');
+    }
+
     public function test_btw_marker_is_detected_and_stripped(): void
     {
         $car = new Car(['variant' => '60 TFSI e quattro Competition BTW']);
