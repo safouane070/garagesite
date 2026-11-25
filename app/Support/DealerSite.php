@@ -401,6 +401,9 @@ class DealerSite
             ->timeout(25)
             ->retry(3, fn (int $attempt, \Throwable $e) => $e instanceof RequestException && $e->response->status() === 429
                 ? $attempt * 15_000 // limiet geraakt: echt even wachten
-                : 500, throw: false);
+                : 500,
+                // Alleen wat vanzelf kan overgaan; een 404 blijft een 404 (en kost anders extra aanvragen).
+                when: fn (\Throwable $e) => ! $e instanceof RequestException || $e->response->status() === 429 || $e->response->serverError(),
+                throw: false);
     }
 }

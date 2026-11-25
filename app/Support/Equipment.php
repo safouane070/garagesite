@@ -23,7 +23,7 @@ class Equipment
         '/airbag|assist|cruise|camera|parkeer|parking|rijstrook|dodehoek|bots|verkeer|vermoeid|uitwijk|hill hold|afdaal|nachtzicht|alarm|isofix|brake|snelheidsbegrenz|accident|rondomzicht|achteruitrij|stuurhulp|zijwind|copilot|safety|file-|anti slip|stability|driving/' => 'Veiligheid & assistentie',
         '/navigatie|audio|radio|dab|bluetooth|telefoon|carplay|android|connect|wifi|multimedia|spraak|head-up|instrumentenpaneel|cockpit|boordcomputer|hard disk|\bcd|dvd|entertainment|oplaad|draadloze|usb|media|bang|bose|harman|burmester|sonos/' => 'Multimedia & navigatie',
         '/velg|\blak\b|metallic|spoiler|skirt|dakrail|trekhaak|onderstel|vering|demping|niveauregeling|differentieel|line|amg|aerodynami|bumper|chroom|exterieur|verlaagd|treeplank|wiel besturing|keramisch|stuurbekrachtiging|stuuroverbrenging|start\/stop|black style|night|adaptive drive|veersysteem|cornering/' => 'Exterieur & techniek',
-        '/stoel|bekleding|leder|alcantara|velours|stof|interieur|stuurwiel|sportstuur|stuur verstelbaar|stuurkolom|schakelmogelijkheid|versnellingspook|airco|clima|klimaat|armsteun|achterbank|ramen|keyless|deurvergrendeling|sluitbekrachtiging|achterklep|lendesteun|hoofdsteun|panorama|schuif|kanteldak|open dak|sky lounge|bagage|laadruimte|skiluik|tussenschot|comfort|memory|massage|ventilatie|houtafwerking|pianolak/' => 'Comfort & interieur',
+        '/stoel|zitplaats|bekleding|leder|alcantara|velours|stof|interieur|stuurwiel|sportstuur|stuur verstelbaar|stuurkolom|schakelmogelijkheid|versnellingspook|airco|clima|klimaat|armsteun|achterbank|ramen|keyless|deurvergrendeling|sluitbekrachtiging|achterklep|lendesteun|hoofdsteun|panorama|schuif|kanteldak|open dak|sky lounge|bagage|laadruimte|skiluik|tussenschot|comfort|memory|massage|ventilatie|houtafwerking|pianolak/' => 'Comfort & interieur',
         '/pakket|pack|package/' => 'Pakketten',
     ];
 
@@ -85,6 +85,9 @@ class Equipment
         'Stuurwiel multifunctioneel' => ['Multifunctioneel lederen stuurwiel'],
         'Mistlampen voor' => ['Mistlampen adaptief', 'LED mistlampen'],
         'Mistlampen' => ['Mistlampen voor', 'Mistlampen adaptief', 'LED mistlampen'],
+        'Elektrisch verstelbare bestuurdersstoel' => ['Elektrisch verstelbare bestuurdersstoel met geheugen'],
+        'Audio-navigatie' => ['Audio-navigatie full map'],
+        'Centrale deurvergrendeling' => ['Centrale deurvergrendeling met afstandsbediening'],
     ];
 
     /** Twee losse regels die samen één ding zijn. */
@@ -138,7 +141,7 @@ class Equipment
         // Binnen een groep op alfabet: zo scan je het snelst naar "stoelverwarming";
         // de belangrijkste opties staan al als hoogtepunten bovenaan.
         foreach ($groups as &$list) {
-            usort($list, 'strnatcasecmp');
+            usort($list, 'strcasecmp'); // spaties tellen mee: "Elektrisch glazen" vóór "Elektrische ramen"
         }
 
         return array_filter($groups);
@@ -156,26 +159,34 @@ class Equipment
         return 'Overig';
     }
 
-    /** Vijf losse airbagregels → "Airbags: bestuurder, passagier, hoofd en zij". */
+    /**
+     * Losse airbagregels → "Airbags voor, zij (voor en achter) en hoofd". "Achter" blijft
+     * zichtbaar (zij-airbags achter zijn vaak een echte optie); een airbagpakket blijft apart.
+     */
     private static function mergeAirbags(array $options): array
     {
-        $bags = array_filter($options, fn ($o) => preg_match('/airbag/i', $o));
+        $bags = array_filter($options, fn ($o) => preg_match('/airbag/i', $o) && ! preg_match('/pakket|pack/i', $o));
         if (count($bags) < 2) {
             return $options;
         }
-        $where = array_key_first($bags);
-        $joined = mb_strtolower(implode(' ', $bags));
-        $parts = array_keys(array_filter([
-            'bestuurder' => str_contains($joined, 'bestuurder') || str_contains($joined, 'dubbele'),
-            'passagier' => str_contains($joined, 'passagier') || str_contains($joined, 'dubbele'),
-            'hoofd' => str_contains($joined, 'hoofd'),
-            'zij' => str_contains($joined, 'side'),
-            'knie' => str_contains($joined, 'knie'),
+        $lines = array_map('mb_strtolower', $bags);
+        $where = fn (string $kind) => array_values(array_filter($lines, fn ($l) => str_contains($l, $kind)));
+        $place = function (array $found): string {
+            $rear = (bool) array_filter($found, fn ($l) => str_contains($l, 'achter'));
+            $other = (bool) array_filter($found, fn ($l) => ! str_contains($l, 'achter'));
+
+            return $rear ? ($other ? ' (voor en achter)' : ' achter') : '';
+        };
+        $parts = array_values(array_filter([
+            array_filter($lines, fn ($l) => preg_match('/bestuurder|passagier|dubbele|^airbag$/', $l)) ? 'voor' : null,
+            ($side = $where('side')) ? 'zij' . $place($side) : null,
+            ($head = $where('hoofd')) ? 'hoofd' . $place($head) : null,
+            $where('knie') ? 'knie' : null,
         ]));
-        $label = $parts ? 'Airbags: ' . (count($parts) > 1 ? implode(', ', array_slice($parts, 0, -1)) . ' en ' . end($parts) : $parts[0]) : 'Airbags';
+        $label = 'Airbags' . ($parts ? ' ' . (count($parts) > 1 ? implode(', ', array_slice($parts, 0, -1)) . ' en ' . end($parts) : $parts[0]) : '');
 
         $rest = array_diff_key($options, $bags);
-        $rest[$where] = $label;
+        $rest[array_key_first($bags)] = $label;
         ksort($rest);
 
         return array_values($rest);

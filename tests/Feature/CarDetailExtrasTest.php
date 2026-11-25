@@ -47,7 +47,7 @@ class CarDetailExtrasTest extends TestCase
         $car = Car::factory()->create(['status' => CarStatus::Available, 'options' => $options]);
 
         $html = $this->get(route('cars.show', $car))->assertOk()
-            ->assertSeeInOrder(['Uitrusting', 'Panoramadak', 'Alle 14 opties per categorie', 'Comfort &amp; interieur', 'Veiligheid &amp; assistentie', 'Airbags: bestuurder en passagier'], false)
+            ->assertSeeInOrder(['Uitrusting', 'Panoramadak', 'Alle 14 opties per categorie', 'Comfort &amp; interieur', 'Veiligheid &amp; assistentie', 'Airbags voor'], false)
             ->assertDontSee('>Bovag<', false)
             ->assertDontSee('Anti Blokkeer')
             ->getContent();

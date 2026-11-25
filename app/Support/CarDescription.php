@@ -45,6 +45,7 @@ class CarDescription
         'keyless' => ['keyless'],
         'sfeer' => ['sfeerverlichting'],
         'carplay' => ['carplay', 'android auto'],
+        'velgen' => ['lichtmetalen velgen'], // de feed geeft soms twee maten: één is genoeg
     ];
 
     public static function for(Car $car): string
@@ -136,6 +137,9 @@ class CarDescription
                 break;
             }
             $concept = $conceptOf($o);
+            if (stripos($o, 'airbag') !== false) {
+                continue; // standaarduitrusting, en een opsomming in een opsomming leest krom
+            }
             if (! in_array($o, $picked, true) && ($concept === null || ! in_array($concept, $usedConcepts, true))) {
                 $picked[] = $o;
                 $usedConcepts[] = $concept;

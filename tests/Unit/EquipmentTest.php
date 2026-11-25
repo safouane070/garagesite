@@ -20,12 +20,24 @@ class EquipmentTest extends TestCase
         ]));
     }
 
-    public function test_airbags_become_one_line(): void
+    /** Eén regel, maar "achter" blijft zichtbaar: zij-airbags achter zijn vaak een echte optie. */
+    public function test_airbags_become_one_line_that_keeps_the_rear(): void
     {
-        $this->assertSame(['Airbags: bestuurder, passagier, hoofd, zij en knie'], Equipment::clean([
+        $this->assertSame(['Airbags voor, zij, hoofd (voor en achter) en knie'], Equipment::clean([
             'Airbag bestuurder', 'Airbag passagier', 'Airbag(s) hoofd voor', 'Airbag(s) hoofd achter',
             'Airbag(s) side voor', 'Airbag(s) knie',
         ]));
+        $this->assertSame(['Airbags voor, zij (voor en achter) en hoofd'], Equipment::clean([
+            'Airbag bestuurder', 'Airbag(s) side voor', 'Airbag(s) side achter', 'Airbag(s) hoofd',
+        ]));
+        // Een pakket is geen airbagregel: die blijft staan.
+        $this->assertSame(['Airbags voor', 'Airbag-pakket'], Equipment::clean(['Airbag bestuurder', 'Airbag passagier', 'Airbag-pakket']));
+    }
+
+    /** "Elektrisch glazen" vóór "Elektrische ramen": spaties tellen mee, zoals een mens sorteert. */
+    public function test_groups_sort_like_people_read(): void
+    {
+        $this->assertSame(['Elektrisch glazen panorama-dak', 'Elektrische ramen voor'], Equipment::groups(['Elektrische ramen voor', 'Elektrisch glazen panorama-dak'])['Comfort & interieur']);
     }
 
     /** De algemene variant verdwijnt als de specifiekere er ook staat. */
@@ -102,10 +114,33 @@ class EquipmentTest extends TestCase
         $car = new Car(['options' => $q3]);
         $e = $car->equipment();
 
-        $this->assertLessThan(count($q3), $e['count']);
+        // Exact: elke regel is zichtbaar, samengevoegd of bewust weggelaten (Bovag, ABS, startblokkering).
+        $this->assertSame([
+            'Elektrisch glazen schuifdak', 'Panoramadak', 'Matrix LED koplampen', 'Accident Avoidance System', 'Lederen/stoffen bekleding',
+            'Lederen sportstuur', 'Navigatie-systeem full map + hard disk', 'Keyless-pakket', 'Lichtmetalen velgen 5-spaaks 20"',
+            'Achterbank in delen neerklapbaar', 'Airbags voor, zij en hoofd (voor en achter)', 'Alarmsysteem', 'Cruise control adaptief',
+            'Parkeersensoren voor en achter', 'Verwarmde voorstoelen',
+        ], Equipment::clean($q3));
         $this->assertSame($e['count'], array_sum(array_map('count', $e['groups'])));
-        $this->assertContains('Verwarmde voorstoelen', $e['groups']['Comfort & interieur']);
         $this->assertCount(6, $e['highlights']);
+    }
+
+    /** De feed geeft soms twee velgmaten: één velgregel per opsomming is genoeg. */
+    public function test_only_one_rim_line_among_highlights(): void
+    {
+        $car = new Car(['options' => ['Lichtmetalen velgen 17"', 'Lichtmetalen velgen 18"', 'Lederen stuurwiel']]);
+
+        $this->assertSame(['Lederen stuurwiel', 'Lichtmetalen velgen 17"'], $car->equipment()['highlights']);
+    }
+
+    /** Een kale auto: de airbagregel is geen hoogtepunt en hoort niet midden in een zin. */
+    public function test_description_of_a_basic_car_reads_naturally(): void
+    {
+        $car = new Car(['brand' => 'Kia', 'model' => 'Picanto', 'year' => 2019, 'mileage' => 50000, 'fuel_type' => 'Benzine', 'transmission' => 'Handgeschakeld',
+            'options' => ['Radio', 'Airbag bestuurder', 'Airbag passagier', 'Airbag(s) side voor', 'Elektrische ramen voor', 'Centrale deurvergrendeling']]);
+
+        $this->assertStringNotContainsString('irbag', CarDescription::for($car));
+        $this->assertNotContains('Airbags voor en zij', $car->equipment()['highlights']);
     }
 
     /** De beschrijving gebruikt dezelfde opgeschoonde lijst: geen "Accident Avoidance System" als hoogtepunt meer. */

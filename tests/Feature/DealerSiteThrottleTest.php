@@ -36,6 +36,15 @@ class DealerSiteThrottleTest extends TestCase
         Sleep::assertSlept(fn ($d) => $d->totalMilliseconds >= 10000, 2);
     }
 
+    /** Een 404 komt niet terug door het nog eens te proberen: één aanvraag, geen extra belasting. */
+    public function test_404_is_not_retried(): void
+    {
+        Http::fake(['*' => Http::response('', 404)]);
+
+        $this->assertNull(DealerSite::page('https://autobedrijfrijswijk.nl/voertuig/weg/'));
+        Http::assertSentCount(1);
+    }
+
     /** Foto's (wp-content/uploads) vallen niet onder de limiet: die blijven op volle snelheid. */
     public function test_photo_downloads_are_not_paced(): void
     {

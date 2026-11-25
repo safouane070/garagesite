@@ -47,7 +47,7 @@ class CarDescriptionTest extends TestCase
 
         $car = new Car(['options' => ['Airbag(s) hoofd voor', '"Lichtmetalen velgen 22"', 'Head-up display', 'Panoramadak', 'Achteruitrijcamera', 'Airbag(s) hoofd voor']]);
         $this->assertSame(
-            ['Panoramadak', 'Head-up display', 'Achteruitrijcamera', 'Airbag(s) hoofd voor', 'Lichtmetalen velgen 22"'],
+            ['Panoramadak', 'Head-up display', 'Achteruitrijcamera', 'Lichtmetalen velgen 22"'], // airbags zijn geen hoogtepunt
             $car->equipment()['highlights'],
         );
     }
