@@ -323,11 +323,8 @@ class SyncCarsTest extends TestCase
         $this->assertCount(2, $car->fresh()->images);
     }
 
-    /**
-     * Zo start de demo (Dockerfile + docker/start.sh): eerst elke auto met alleen de omslagfoto,
-     * zodat de hele voorraad er meteen staat; daarna de galerijen aanvullen tot 12.
-     */
-    public function test_cover_first_then_galleries_like_the_demo_startup(): void
+    /** --refresh-photos vult een galerij met alleen de omslagfoto aan tot het maximum. */
+    public function test_refresh_photos_fills_a_cover_only_gallery(): void
     {
         $this->vehicle('volkswagen-golf-1-5-tsi-r-line-pano-camera', ['photos' => 30]);
 
