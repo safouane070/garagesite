@@ -38,7 +38,9 @@ class SyncCarsTest extends TestCase
                         'slug' => $slug, 'title' => ['rendered' => $v['title']],
                         'link' => "https://autobedrijfrijswijk.nl/voertuig/{$slug}/",
                         'modified' => $v['modified'], 'featured_media' => 7,
-                    ];
+                    ] + (($v['embed'] ?? true) ? ['_embedded' => ['wp:featuredmedia' => [
+                        ['source_url' => 'https://autobedrijfrijswijk.nl/wp-content/uploads/2026/09/555-1.jpg'],
+                    ]]] : []);
                 }
 
                 return Http::response($list, 200, ['X-WP-TotalPages' => 1]);
@@ -238,6 +240,29 @@ class SyncCarsTest extends TestCase
         $this->assertSame($got, collect($got)->sort()->values()->all()); // volgorde van de dealer
     }
 
+    /** Omslagfoto zit in de voorraadlijst (_embed): geen extra, afgeremde aanvraag per auto. */
+    public function test_cover_comes_from_the_list_without_a_media_request(): void
+    {
+        $this->vehicle('volkswagen-golf-1-5-tsi-r-line-pano-camera');
+
+        $this->artisan('cars:sync')->assertSuccessful();
+
+        $this->assertSame(1, Car::count());
+        Http::assertNotSent(fn ($r) => str_contains($r->url(), '/wp-json/wp/v2/media/'));
+        Http::assertSent(fn ($r) => str_contains($r->url(), '/voertuig?') && str_contains(urldecode($r->url()), '_embed=wp:featuredmedia'));
+    }
+
+    /** Zonder meegeleverde omslagfoto (oude WordPress, plugin uit) valt hij terug op de media-API. */
+    public function test_cover_falls_back_to_the_media_api(): void
+    {
+        $this->vehicle('volkswagen-golf-1-5-tsi-r-line-pano-camera', ['embed' => false]);
+
+        $this->artisan('cars:sync')->assertSuccessful();
+
+        $this->assertSame(1, Car::count());
+        Http::assertSent(fn ($r) => str_contains($r->url(), '/wp-json/wp/v2/media/7'));
+    }
+
     public function test_limit_caps_the_number_of_new_cars(): void
     {
         $this->vehicle('audi-a3-sportback', ['title' => 'Audi A3 Sportback 35 TFSI', 'km' => 10000]);
@@ -296,6 +321,23 @@ class SyncCarsTest extends TestCase
 
         $this->artisan('cars:sync', ['--refresh-photos' => true])->assertSuccessful();
         $this->assertCount(2, $car->fresh()->images);
+    }
+
+    /**
+     * Zo start de demo (Dockerfile + docker/start.sh): eerst elke auto met alleen de omslagfoto,
+     * zodat de hele voorraad er meteen staat; daarna de galerijen aanvullen tot 12.
+     */
+    public function test_cover_first_then_galleries_like_the_demo_startup(): void
+    {
+        $this->vehicle('volkswagen-golf-1-5-tsi-r-line-pano-camera', ['photos' => 30]);
+
+        $this->artisan('cars:sync', ['--max-photos' => 1])->assertSuccessful();
+        $car = Car::firstWhere('dealer_slug', 'volkswagen-golf-1-5-tsi-r-line-pano-camera');
+        $this->assertCount(1, $car->images);
+
+        $this->artisan('cars:sync', ['--refresh-photos' => true, '--max-photos' => 12])->assertSuccessful();
+        $this->assertCount(12, $car->fresh()->images);
+        $this->assertTrue($car->fresh()->images->first()->is_primary);
     }
 
     public function test_failed_photo_downloads_keep_the_old_gallery(): void

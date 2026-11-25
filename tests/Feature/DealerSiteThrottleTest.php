@@ -45,6 +45,18 @@ class DealerSiteThrottleTest extends TestCase
         Http::assertSentCount(1);
     }
 
+    /** Foto's tegelijk ophalen, in de volgorde van de galerij; een mislukte foto krijgt los een herkansing. */
+    public function test_photos_download_in_parallel_in_gallery_order_with_retry(): void
+    {
+        $base = 'https://autobedrijfrijswijk.nl/wp-content/uploads/2026/09/';
+        Http::fake([
+            $base . '1-2.jpg' => Http::sequence()->push('', 503)->push('foto2'),
+            $base . '*' => fn ($r) => Http::response(basename($r->url(), '.jpg') === '1-1' ? 'foto1' : 'foto3'),
+        ]);
+
+        $this->assertSame(['foto1', 'foto2', 'foto3'], DealerSite::downloadAll([$base . '1-1.jpg', $base . '1-2.jpg', $base . '1-3.jpg']));
+    }
+
     /** Foto's (wp-content/uploads) vallen niet onder de limiet: die blijven op volle snelheid. */
     public function test_photo_downloads_are_not_paced(): void
     {

@@ -46,17 +46,17 @@ ENV APP_ENV=staging \
     SYNC_CRON="0 * * * *" \
     SYNC_MAX_PHOTOS=12
 
-# Database + een eerste deel van de voorraad tijdens de build, zodat de site meteen auto's toont.
-# De rest (en elk uur de updates) haalt de scheduler in de container op: zie docker/start.sh.
-# 12 foto's per auto (±650 MB voor 130 auto's): de volledige galerij (>1 GB) is te veel om na elke
-# herstart opnieuw te downloaden; Render kan een gratis service schorsen bij veel uitgaand verkeer.
+# Database + de HELE voorraad tijdens de build, maar met alleen de omslagfoto (±2,5 s per auto door
+# het tempo naar de dealersite). Render houdt de oude versie live tot deze klaar is, dus de nieuwe
+# versie gaat meteen live met alle auto's. De galerijen (12 foto's; de volledige >1 GB is te veel na
+# elke herstart) vult docker/start.sh daarna op de achtergrond aan.
 # Mislukt de sync (dealersite even weg), dan gaat de build door met een lege voorraad.
 RUN rm -f .env public/storage \
     && mkdir -p storage/app/public storage/framework/cache/data storage/framework/sessions storage/framework/views storage/logs \
     && touch database/database.sqlite \
     && APP_KEY=base64:$(head -c32 /dev/urandom | base64) sh -c '\
         php artisan migrate --force \
-        && (php artisan cars:sync --limit=20 --max-photos=12 || echo "cars:sync mislukt, voorraad leeg") \
+        && (php artisan cars:sync --max-photos=1 || echo "cars:sync mislukt, voorraad leeg") \
         && (php artisan reviews:fetch || echo "reviews:fetch mislukt") \
         && php artisan storage:link' \
     && chown -R www-data:www-data storage bootstrap/cache database

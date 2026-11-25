@@ -366,8 +366,10 @@ class SyncCars extends Command implements Isolatable
     private function storePhotos(array $urls, string $dir): array
     {
         $paths = [];
-        foreach ($urls as $url) {
-            $binary = DealerSite::download($url);
+        $urls = array_values($urls);
+        // Tegelijk downloaden (±3,7 s → <1 s per auto); verkleinen blijft na elkaar.
+        foreach (DealerSite::downloadAll($urls) as $i => $binary) {
+            $url = $urls[$i];
             if ($binary === null) {
                 continue;
             }
@@ -395,7 +397,7 @@ class SyncCars extends Command implements Isolatable
                 return 'pagina niet bereikbaar';
             }
 
-            $data = DealerSite::parse($html, $v['title'], DealerSite::mediaUrl($v['media']), $knownModels);
+            $data = DealerSite::parse($html, $v['title'], $v['cover'] ?? DealerSite::mediaUrl($v['media']), $knownModels);
             // Gelijk verdeeld over de galerij: de buitenkant staat voorop, het interieur achteraan.
             if (is_array($data) && ($max = (int) $this->option('max-photos')) > 0 && count($data['photos']) > $max) {
                 $last = count($data['photos']) - 1;

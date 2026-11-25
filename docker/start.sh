@@ -22,10 +22,12 @@ php artisan view:cache
 chown -R www-data:www-data storage bootstrap/cache database
 
 # Het gratis plan heeft geen cron: de scheduler draait daarom in deze container (de
-# uptimebot houdt hem wakker). Eerst meteen een volledige sync (de build haalt er maar
-# 20) en de specs uit Marktplaats (cars:enrich), daarna elk uur (SYNC_CRON) plus de
-# rest van routes/console.php. Als www-data,
-# zodat Apache de nieuwe foto's en database-rijen kan lezen en schrijven.
-su -s /bin/sh www-data -c "php artisan cars:sync --isolated --max-photos=${SYNC_MAX_PHOTOS:-12}; php artisan cars:enrich || true; exec php artisan schedule:work" &
+# uptimebot houdt hem wakker). Volgorde, zodat de site nooit een halve voorraad toont:
+# 1. sync met alleen omslagfoto's: wat sinds de build bij- of afging (de build haalde al alles);
+# 2. specs uit Marktplaats (cars:enrich);
+# 3. galerijen aanvullen tot SYNC_MAX_PHOTOS (±20 s per auto op deze trage CPU, op de achtergrond);
+# 4. daarna elk uur (SYNC_CRON) plus de rest van routes/console.php.
+# Als www-data, zodat Apache de nieuwe foto's en database-rijen kan lezen en schrijven.
+su -s /bin/sh www-data -c "php artisan cars:sync --isolated --max-photos=1; php artisan cars:enrich || true; php artisan cars:sync --isolated --refresh-photos --max-photos=${SYNC_MAX_PHOTOS:-12}; exec php artisan schedule:work" &
 
 exec apache2-foreground

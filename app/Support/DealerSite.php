@@ -2,7 +2,9 @@
 
 namespace App\Support;
 
+use Illuminate\Http\Client\Pool;
 use Illuminate\Http\Client\RequestException;
+use Illuminate\Http\Client\Response;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Sleep;
@@ -37,7 +39,7 @@ class DealerSite
      * De volledige actuele voorraadlijst. Gooit een exception als ook maar één
      * pagina faalt: een halve lijst mag nooit als "de voorraad" gelden.
      *
-     * @return list<array{slug:string,title:string,link:string,modified:string,media:int}>
+     * @return list<array{slug:string,title:string,link:string,modified:string,media:int,cover:?string}>
      */
     public static function vehicles(): array
     {
@@ -51,10 +53,13 @@ class DealerSite
         $page = 1;
 
         do {
+            // _embed: de omslagfoto komt mee in de lijst, zodat de sync niet per auto een extra
+            // (afgeremde, 2,5 s) aanvraag naar de media-API hoeft te doen.
             $resp = self::http()->get(self::base() . '/wp-json/wp/v2/voertuig', [
                 'per_page' => 100,
                 'page' => $page,
-                '_fields' => 'slug,title,link,modified,featured_media',
+                '_embed' => 'wp:featuredmedia',
+                '_fields' => 'slug,title,link,modified,featured_media,_links.wp:featuredmedia,_embedded',
             ]);
 
             if (! $resp->ok() || ! is_array($resp->json())) {
@@ -68,6 +73,7 @@ class DealerSite
                     'link' => (string) $v['link'],
                     'modified' => (string) $v['modified'],
                     'media' => (int) ($v['featured_media'] ?? 0),
+                    'cover' => $v['_embedded']['wp:featuredmedia'][0]['source_url'] ?? null,
                 ];
             }
 
@@ -120,6 +126,26 @@ class DealerSite
         $resp = self::http(paced: false)->timeout(40)->get(self::onDealer($url));
 
         return $resp->ok() ? $resp->body() : null;
+    }
+
+    /**
+     * Alle foto's van een auto tegelijk (foto's vallen niet onder de limiet van de dealer), in de
+     * volgorde van $urls. Wat mislukt krijgt los een herkansing via download(); null = echt weg.
+     *
+     * @param  list<string>  $urls
+     * @return list<?string>
+     */
+    public static function downloadAll(array $urls): array
+    {
+        $responses = Http::pool(fn (Pool $pool) => array_map(
+            fn (string $url) => $pool->withHeaders(['User-Agent' => self::UA])->timeout(40)->get(self::onDealer($url)),
+            $urls,
+        ), concurrency: 6);
+
+        return array_map(
+            fn ($resp, string $url) => $resp instanceof Response && $resp->ok() ? $resp->body() : self::download($url),
+            $responses, $urls,
+        );
     }
 
     /**
