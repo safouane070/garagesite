@@ -40,7 +40,9 @@
     ];
 @endphp
 
-<x-layouts.public :title="$car->title()" :description="$metaDescription" :og-image="$ogImage"
+{{-- Bouwjaar + km in de titel: de dealer heeft soms vijf identieke auto's; zo heeft elk tabblad,
+     zoekresultaat en gedeelde link toch een eigen naam. --}}
+<x-layouts.public :title="$car->title() . ' · ' . $car->year . ' · ' . $car->formattedMileage()" :description="$metaDescription" :og-image="$ogImage"
     :whatsapp-text="$whatsappText" :action-bar="$forSale">
     @push('head')
         <script type="application/ld+json">

@@ -15,7 +15,7 @@
                 <ul class="mt-3 list-disc space-y-2 pl-5 text-cream/75">
                     <li>Aanvragen via een formulier bewaren we tot {{ \App\Models\Lead::KEEP_HANDLED_MONTHS }} maanden na afhandeling, en nooit langer dan {{ \App\Models\Lead::KEEP_MAX_MONTHS }} maanden. Daarna worden ze automatisch gewist.</li>
                     <li>Lettertypen staan op onze eigen server; er gaan geen gegevens naar Google Fonts.</li>
-                    <li>De kaart (Google Maps) en het lease-aanbod (FinancialLease.nl) laden pas nadat jij daarop klikt.</li>
+                    <li>De kaart (Google Maps) laadt pas nadat jij daarop klikt.</li>
                     <li>We tellen hoe vaak een auto bekeken wordt, zonder cookies en zonder je IP-adres op te slaan.</li>
                     <li>Doe je een aanvraag, dan bewaren we daarbij via welke website je bij ons kwam (bv. Google of Marktplaats) en op welke pagina's, zodat we weten welke kanalen werken. Dit wordt samen met je aanvraag gewist.</li>
                     @if (config('brand.analytics.plausible_domain'))

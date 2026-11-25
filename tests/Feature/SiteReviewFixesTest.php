@@ -58,7 +58,38 @@ class SiteReviewFixesTest extends TestCase
         $this->get(route('financial-lease'))->assertOk()
             ->assertSee('Leasebedrag € 20.000')
             ->assertSee('€ 345 p/m', false)
-            ->assertSee('Wat is een slottermijn?');
+            ->assertSee('Wat is een slottermijn?')
+            ->assertSee('excl. btw')
+            ->assertSee('10,5% rente');
+    }
+
+    /** Kop noemt het product en voor wie; actie al in de kop, niet pas halverwege. */
+    public function test_financial_lease_hero_names_product_and_audience_with_action(): void
+    {
+        $this->get(route('financial-lease'))->assertOk()
+            ->assertSeeInOrder(['<h1', 'Financial lease voor ondernemers', 'Alleen zakelijk', 'Vraag een voorstel aan'], false);
+    }
+
+    /** Eigen auto's met leaseprijs i.p.v. het widget van de partner (scroll-val, blauwe UI, aanvraag lekt weg). */
+    public function test_financial_lease_shows_own_stock_instead_of_partner_widget(): void
+    {
+        $car = Car::factory()->create(['status' => CarStatus::Available, 'price' => 24950, 'is_featured' => true]);
+        Car::factory()->create(['status' => CarStatus::Sold, 'price' => 30000, 'brand' => 'Verkocht']);
+
+        $this->get(route('financial-lease'))->assertOk()
+            ->assertSee(route('cars.show', $car), false)
+            ->assertSee('Lease v.a.')
+            ->assertDontSee('Verkocht')
+            ->assertDontSee('iframe.financiallease.nl', false);
+    }
+
+    /** Identieke auto's (de dealer heeft er vijf dezelfde) krijgen toch elk een eigen paginatitel. */
+    public function test_detail_title_is_unique_for_identical_cars(): void
+    {
+        $car = Car::factory()->create(['status' => CarStatus::Available, 'brand' => 'Audi', 'model' => 'Q3', 'variant' => 'S Edition', 'year' => 2023, 'mileage' => 21436]);
+
+        $this->get(route('cars.show', $car))->assertOk()
+            ->assertSee('<title>Audi Q3 S Edition · 2023 · 21.436 km · ', false);
     }
 
     public function test_404_has_no_label_above_the_heading(): void

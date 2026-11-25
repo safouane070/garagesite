@@ -16,11 +16,11 @@
         x-transition:enter-start="opacity-0 -translate-y-1" x-transition:enter-end="opacity-100 translate-y-0"
         x-transition:leave="transition ease-out duration-100"
         x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
-        class="absolute inset-x-0 z-40 mt-2 overflow-hidden rounded-[5px] border border-hairline bg-paper py-1 shadow-card">
+        class="absolute right-0 z-40 mt-2 w-max min-w-full overflow-hidden rounded-[5px] border border-hairline bg-paper py-1 shadow-card">
         <template x-for="opt in sortOptions" :key="opt.v">
             <li>
                 <button type="button" @click="setSort(opt.v)" role="option" :aria-selected="sort===opt.v"
-                        class="flex w-full items-center justify-between gap-3 px-4 py-2 text-left text-sm transition"
+                        class="flex min-h-[2.75rem] w-full items-center justify-between gap-3 px-4 py-2 text-left text-sm transition-colors lg:min-h-0"
                         ::class="sort===opt.v ? 'font-medium text-brass-300' : 'text-cream/70 hover:bg-brass-500/[0.06] hover:text-cream'">
                     <span x-text="opt.l"></span>
                     <x-icon name="check" class="h-4 w-4 shrink-0 text-brass-300" x-show="sort===opt.v" />

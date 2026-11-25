@@ -19,10 +19,10 @@ class PrivacyTest extends TestCase
         }
     }
 
-    /** Kaart en lease-widget staan alleen binnen <template> (inert) tot er geklikt wordt. */
+    /** De kaart staat alleen binnen <template> (inert) tot er geklikt wordt. */
     public function test_third_party_embeds_only_load_after_a_click(): void
     {
-        foreach (['contact' => 'google.com/maps', 'financial-lease' => 'financiallease.nl/lease'] as $route => $src) {
+        foreach (['contact' => 'google.com/maps'] as $route => $src) {
             $html = $this->get(route($route))->assertOk()->getContent();
 
             $this->assertStringContainsString($src, $html);                          // wel aanwezig…

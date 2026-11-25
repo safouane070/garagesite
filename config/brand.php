@@ -85,10 +85,8 @@ return [
         'hidden_text' => ['van rijswijk'],
     ],
 
-    // Financial lease loopt via onze leasepartner FinancialLease.nl (widget met
-    // echte maandbedragen). stock_id = de dealer-feed van de zaak.
+    // Financial lease loopt via onze leasepartner FinancialLease.nl.
     'finance' => [
-        'financiallease_stock_id' => env('BRAND_FL_STOCK_ID', '1262'),
         // "Vanaf"-maandbedrag op kaart en detailpagina. Dit zijn de standaardwaarden
         // van de calculator van de leasepartner zelf (financiallease.nl/dealer/calculator,
         // calculator_id 1262): 72 mnd, geen aanbetaling, € 3.000 slottermijn. De rente is

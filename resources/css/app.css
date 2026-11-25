@@ -176,8 +176,9 @@
 
     /* ---- Knoppen: crisp, kleine radius (geen pill-soep) ---- */
     .btn {
-        @apply inline-flex items-center justify-center gap-2 rounded-[3px] px-5 py-2.5 text-sm font-medium
-               transition duration-200 ease-premium focus-visible:ring-2 active:scale-[0.97]
+        /* min-h 44px op aanraakschermen (duimmaat); vanaf lg de compacte 40px. */
+        @apply inline-flex min-h-[2.75rem] items-center justify-center gap-2 rounded-[3px] px-5 py-2.5 text-sm font-medium lg:min-h-0
+               transition-[color,background-color,border-color,box-shadow,transform] duration-200 ease-premium focus-visible:ring-2 active:scale-[0.97]
                disabled:cursor-not-allowed disabled:opacity-50 disabled:active:scale-100;
     }
     .btn-primary {

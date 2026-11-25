@@ -111,7 +111,7 @@
             class="sticky top-0 z-40 transition-colors duration-300"
             :class="scrolled ? 'bg-ink/85 backdrop-blur-lg border-b border-hairline' : 'bg-transparent border-b border-transparent'">
         <div class="container-x flex h-[4.5rem] items-center justify-between gap-6">
-            <a href="{{ route('home') }}" class="rounded" aria-label="{{ config('app.name') }} home">
+            <a href="{{ route('home') }}" class="-my-2 rounded py-2" aria-label="{{ config('app.name') }} home">{{-- py: 46px tikvlak, zelfde plek --}}
                 <x-brand-mark />
             </a>
 

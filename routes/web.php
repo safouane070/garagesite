@@ -40,7 +40,11 @@ Route::get('/robots.txt', [SitemapController::class, 'robots'])->name('robots');
 
 // Statische inhoudspagina's (lezen zelf uit config/brand.php + shared components).
 Route::view('/diensten', 'pages.diensten')->name('diensten');
-Route::view('/financial-lease', 'pages.financial-lease')->name('financial-lease');
+// Eigen voorraad met leaseprijs (Car::monthlyFrom), aanraders voorop.
+Route::get('/financial-lease', fn () => view('pages.financial-lease', [
+    'leaseCars' => Car::available()->where('price', '>=', config('brand.finance.lease.min_price'))
+        ->with('primaryImage')->orderByDesc('is_featured')->latest()->take(3)->get(),
+]))->name('financial-lease');
 Route::view('/volkswagen-specialist', 'pages.vw-specialist')->name('vw-specialist');
 Route::view('/over-ons', 'pages.over-ons')->name('over-ons');
 Route::view('/contact', 'pages.contact')->name('contact');

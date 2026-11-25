@@ -36,7 +36,7 @@ class SecurityHeaders
             "font-src 'self'", // fonts zelf gehost (AVG)
             // blob: voor de upload-preview in het beheer (URL.createObjectURL).
             "img-src 'self' data: blob: https:",
-            "frame-src https://www.google.com https://iframe.financiallease.nl https://www.financiallease.nl",
+            "frame-src https://www.google.com", // alleen de kaart op /contact
             "connect-src 'self'{$analytics}",
             "base-uri 'self'",
             "form-action 'self'",

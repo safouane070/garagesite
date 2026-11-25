@@ -1,9 +1,19 @@
 <x-layouts.public title="Financial Lease"
-    description="Financial lease bij Autobedrijf Rijswijk: rijd nu in je droomauto en word direct eigenaar. Bekijk ons actuele financial-lease-aanbod.">
+    description="Financial lease voor ondernemers bij Autobedrijf Rijswijk: vaste maandlasten, de auto op jouw naam. Bekijk occasions met hun maandbedrag.">
+    @php
+        $lease = config('brand.finance.lease');
+        $proposal = route('contact', ['onderwerp' => 'financiering']) . '#contact';
+    @endphp
 
-    <x-page-hero title="Jouw droomauto binnen handbereik"
-        intro="Met financial lease spreid je de aanschaf over een vaste looptijd én ben je vanaf dag één eigenaar. Ideaal voor ondernemers en zzp'ers."
-        image="images/site/interieur.webp" alt="Interieur van een Audi RS3 uit het aanbod" />
+    {{-- Kop zegt wat het is en voor wie; de actie staat er meteen onder (niet pas halverwege). --}}
+    <x-page-hero title="Financial lease voor ondernemers"
+        intro="Spreid de aanschaf over een vaste looptijd en rijd de auto direct op jouw naam. Alleen zakelijk: voor ondernemers en zzp'ers met een KvK-inschrijving."
+        image="images/site/interieur.webp" alt="Interieur van een Audi RS3 uit het aanbod">
+        <div class="mt-7 flex flex-wrap gap-3">
+            <a href="{{ $proposal }}" class="btn btn-primary">Vraag een voorstel aan <x-icon name="arrow-right" class="h-4 w-4" /></a>
+            <a href="#lease-aanbod" class="btn btn-outline">Bekijk auto's met maandbedrag</a>
+        </div>
+    </x-page-hero>
 
     <section class="container-x py-12 lg:py-16">
         <div class="grid gap-12 lg:grid-cols-2 lg:gap-16">
@@ -12,10 +22,10 @@
                 <h2 class="font-display text-2xl font-bold text-white">Waarom financial lease?</h2>
                 @php
                     $points = [
-                        ['t' => 'Direct eigenaar', 'd' => 'De auto staat meteen op jouw naam; na de laatste termijn is hij volledig van jou.'],
-                        ['t' => 'Vaste maandlasten', 'd' => 'Een vast bedrag per maand over de looptijd — overzichtelijk en voorspelbaar.'],
-                        ['t' => 'Fiscaal aantrekkelijk', 'd' => 'Voor ondernemers: rente en afschrijving zijn doorgaans aftrekbaar. Vraag je adviseur.'],
-                        ['t' => 'Flexibele looptijd', 'd' => 'Kies zelf de looptijd en aanbetaling die bij je situatie past.'],
+                        ['t' => 'Op jouw naam', 'd' => 'Het kenteken staat meteen op jouw naam; na de laatste termijn is de auto volledig van jou.'],
+                        ['t' => 'Vaste maandlasten', 'd' => 'Een vast bedrag per maand over de hele looptijd. Overzichtelijk en voorspelbaar.'],
+                        ['t' => 'Fiscaal aantrekkelijk', 'd' => 'Rente en afschrijving zijn doorgaans aftrekbaar. Vraag je adviseur wat dat voor jou betekent.'],
+                        ['t' => 'Afgestemd op jou', 'd' => 'Looptijd, aanbetaling en slottermijn stem je af op je situatie en de leeftijd van de auto.'],
                     ];
                 @endphp
                 <ul class="mt-6 space-y-5">
@@ -29,48 +39,57 @@
                         </li>
                     @endforeach
                 </ul>
-
-                {{-- Rekenvoorbeeld met dezelfde rekenregels als de calculator van de leasepartner
-                     (Car::monthlyFrom). Een getal zegt meer dan "vaste maandlasten". --}}
-                @php
-                    $lease = config('brand.finance.lease');
-                @endphp
-                <div class="mt-8 rounded-[4px] border border-hairline bg-graphite-700/50 p-6">
-                    <h3 class="font-display text-lg font-semibold text-white">Rekenvoorbeeld</h3>
-                    <p class="mt-1 text-sm text-cream/65">
-                        {{ $lease['months'] }} maanden, geen aanbetaling, € {{ number_format($lease['closing'], 0, ',', '.') }} slottermijn.
-                    </p>
-                    <dl class="mt-4 divide-y divide-hairline border-y border-hairline">
-                        @foreach ([20000, 35000, 60000] as $amount)
-                            <div class="flex items-baseline justify-between py-2.5 text-sm">
-                                <dt class="text-cream/70">Leasebedrag € {{ number_format($amount, 0, ',', '.') }}</dt>
-                                <dd class="font-semibold text-white tabular">€ {{ number_format((new \App\Models\Car(['price' => $amount]))->monthlyFrom(), 0, ',', '.') }} p/m</dd>
-                            </div>
-                        @endforeach
-                    </dl>
-                    <p class="mt-3 text-xs leading-relaxed text-cream/55">
-                        Indicatie op basis van de calculator van FinancialLease.nl. Je persoonlijke voorstel kan afwijken.
-                    </p>
-                    <a href="{{ route('contact', ['onderwerp' => 'financiering']) }}#contact" class="btn btn-primary mt-5">
-                        Vraag een voorstel aan <x-icon name="arrow-right" class="h-4 w-4" />
-                    </a>
-                </div>
             </div>
 
-            {{-- Echt financial-lease-aanbod (widget van onze leasepartner) --}}
-            <div>
-                <h2 class="text-sm font-semibold text-cream">Actueel aanbod</h2>
-                <p class="mt-2 mb-4 text-sm text-cream/60">Live maandbedragen, verzorgd door onze leasepartner FinancialLease.nl.</p>
-                <x-consent-embed
-                    src="https://iframe.financiallease.nl/lease?stock_id={{ config('brand.finance.financiallease_stock_id') }}&primary_color=d90429&secondary_color=d90429"
-                    title="Financial-lease-aanbod van {{ config('app.name') }}" provider="FinancialLease.nl" height="1500px"
-                    button="Toon het lease-aanbod" icon="repeat" class="bg-white"
-                    fallback-url="https://www.financiallease.nl/" fallback-label="FinancialLease.nl">
-                    <p class="font-display text-lg font-semibold text-cream">Live maandbedragen per auto</p>
-                </x-consent-embed>
+            {{-- Rekenvoorbeeld met dezelfde rekenregels als de calculator van de leasepartner
+                 (Car::monthlyFrom). Voorwaarden staan erbij: rente en btw-basis horen bij een bedrag. --}}
+            <div class="self-start rounded-[4px] border border-hairline bg-graphite-700/50 p-6">
+                <h2 class="font-display text-lg font-semibold text-white">Rekenvoorbeeld</h2>
+                <p class="mt-1 text-sm leading-relaxed text-cream/65">
+                    Bijvoorbeeld: {{ $lease['months'] }} maanden, geen aanbetaling, € {{ number_format($lease['closing'], 0, ',', '.') }} slottermijn
+                    en ca. {{ str_replace('.', ',', (string) $lease['rate']) }}% rente. Bedragen excl. btw.
+                </p>
+                <dl class="mt-4 divide-y divide-hairline border-y border-hairline">
+                    @foreach ([20000, 35000, 60000] as $amount)
+                        <div class="flex items-baseline justify-between py-2.5 text-sm">
+                            <dt class="text-cream/70">Leasebedrag € {{ number_format($amount, 0, ',', '.') }}</dt>
+                            <dd class="font-semibold text-white tabular">€ {{ number_format((new \App\Models\Car(['price' => $amount]))->monthlyFrom(), 0, ',', '.') }} p/m</dd>
+                        </div>
+                    @endforeach
+                </dl>
+                <p class="mt-3 text-xs leading-relaxed text-cream/60">
+                    Indicatie volgens de calculator van onze leasepartner FinancialLease.nl. Je persoonlijke voorstel kan afwijken.
+                    <a href="{{ (new \App\Models\Car(['price' => 20000]))->leaseCalculatorUrl() }}" target="_blank" rel="noopener"
+                       class="text-cream/80 underline decoration-cream/25 underline-offset-4 transition-colors hover:text-brass-300">Reken zelf</a>
+                </p>
+                <a href="{{ $proposal }}" class="btn btn-primary mt-5">
+                    Vraag een voorstel aan <x-icon name="arrow-right" class="h-4 w-4" />
+                </a>
             </div>
         </div>
     </section>
+
+    {{-- Eigen voorraad met maandbedrag. Was een widget van de partner: op een telefoon een
+         scroll-val (1500px venster op 5800px inhoud), blauwe vreemde UI, en "Bekijk deal"
+         stuurde de klant naar de site van de partner in plaats van naar de dealer. --}}
+    @if ($leaseCars->isNotEmpty())
+        <section id="lease-aanbod" class="container-x scroll-mt-24 border-t border-hairline py-12 lg:py-16">
+            <div class="flex flex-wrap items-end justify-between gap-4">
+                <h2 class="font-display text-2xl font-bold text-white">Occasions met maandbedrag</h2>
+                <a href="{{ route('cars.index') }}" class="group inline-flex items-center gap-2 py-2 text-sm text-cream/70 transition-colors hover:text-brass-300">
+                    Alle auto's met leaseprijs <x-icon name="arrow-right" class="h-4 w-4 transition-transform duration-200 ease-out [@media(hover:hover)]:group-hover:translate-x-0.5" />
+                </a>
+            </div>
+            {{-- Telefoon: swipe-rail, zoals op de homepage. --}}
+            <div class="-mx-5 mt-8 flex snap-x snap-mandatory scroll-px-5 gap-4 overflow-x-auto px-5 pb-4 scroll-thin sm:mx-0 sm:grid sm:grid-cols-2 sm:gap-6 sm:overflow-visible sm:px-0 sm:pb-0 lg:grid-cols-3">
+                @foreach ($leaseCars as $car)
+                    <div class="w-[280px] shrink-0 snap-start sm:w-auto">
+                        <x-car-card :car="$car" />
+                    </div>
+                @endforeach
+            </div>
+        </section>
+    @endif
 
     {{-- Veelgestelde vragen. Antwoorden volgen de uitleg van de leasepartner zelf; geen eigen beloftes. --}}
     <section class="container-x border-t border-hairline py-12 lg:py-16">
@@ -82,7 +101,7 @@
                 ['q' => 'Wat is een slottermijn?',
                  'a' => 'Het vaste restbedrag dat je aan het einde van het contract in één keer betaalt. Je lost het niet maandelijks af, maar betaalt er wel rente over. Hoe hoger de slottermijn, hoe lager je maandbedrag; vaak kies je hem rond de verwachte inruilwaarde.'],
                 ['q' => 'Kan ik eerder aflossen of de auto tussentijds inruilen?',
-                 'a' => 'Ja. Volgens onze leasepartner kun je altijd eerder aflossen of inruilen.'],
+                 'a' => 'Ja, volgens onze leasepartner kan dat. Vraag bij je voorstel naar de voorwaarden.'],
                 ['q' => 'Hoe zit het met de btw?',
                  'a' => 'Je least hoogstens de prijs exclusief btw. De btw betaal je zelf of verreken je met je inruilauto; als ondernemer vorder je die terug bij de Belastingdienst.'],
             ];
@@ -97,6 +116,20 @@
                     <p class="pb-5 pr-10 text-sm leading-relaxed text-cream/70">{{ $item['a'] }}</p>
                 </details>
             @endforeach
+        </div>
+    </section>
+
+    {{-- Afsluiter: de pagina eindigde in de footer zonder volgende stap. --}}
+    <section class="border-t border-hairline bg-graphite-800/60">
+        <div class="container-x flex flex-col gap-6 py-12 lg:flex-row lg:items-center lg:justify-between lg:py-16">
+            <div>
+                <h2 class="font-display text-2xl font-bold text-white">Benieuwd naar jouw maandbedrag?</h2>
+                <p class="mt-2 max-w-lg text-cream/70">Vraag een voorstel aan voor een auto uit ons aanbod. We reageren meestal binnen één werkdag.</p>
+            </div>
+            <div class="flex flex-wrap gap-3">
+                <a href="{{ $proposal }}" class="btn btn-primary">Vraag een voorstel aan <x-icon name="arrow-right" class="h-4 w-4" /></a>
+                <a href="tel:{{ config('brand.contact.phone_href') }}" class="btn btn-outline"><x-icon name="phone" class="h-4 w-4" /> Bel ons</a>
+            </div>
         </div>
     </section>
 </x-layouts.public>
