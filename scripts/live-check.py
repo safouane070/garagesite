@@ -121,21 +121,20 @@ with sync_playwright() as p:
                name, "hoofdfoto detailpagina laadt niet")
 
         # Lightbox: openen, bladeren, sluiten met Escape; pagina daarna weer bruikbaar.
-        page.click("button[aria-label=\"Foto's schermvullend bekijken\"]")
+        page.get_by_role("button", name="Vergroot foto's", exact=True).click()
         page.wait_for_timeout(400)
-        expect(page.is_visible("[role=dialog]"), name, "lightbox opent niet")
-        expect(page.evaluate("document.querySelector('main').inert"), name, "pagina achter de lightbox is niet inert")
+        expect(page.get_by_role("dialog").is_visible(), name, "lightbox opent niet")
+        expect(page.get_by_role("dialog").evaluate("el => el.matches(':modal')"), name, "lightbox blokkeert de achtergrond niet")
         page.keyboard.press("ArrowRight")
         page.keyboard.press("Escape")
         page.wait_for_timeout(400)
-        expect(not page.is_visible("[role=dialog]"), name, "lightbox sluit niet met Escape")
+        expect(not page.get_by_role("dialog").is_visible(), name, "lightbox sluit niet met Escape")
         # Touch-gebruikers hebben geen Escape: de sluitknop moet werken.
-        page.click("button[aria-label=\"Foto's schermvullend bekijken\"]")
+        page.get_by_role("button", name="Vergroot foto's", exact=True).click()
         page.wait_for_timeout(400)
-        page.click("[role=dialog] button[aria-label*='luiten']")
+        page.get_by_role("dialog").get_by_role("button", name="Sluiten", exact=True).click()
         page.wait_for_timeout(400)
-        expect(not page.is_visible("[role=dialog]"), name, "lightbox sluit niet met de sluitknop")
-        expect(not page.evaluate("document.querySelector('main').inert"), name, "pagina blijft inert na sluiten")
+        expect(not page.get_by_role("dialog").is_visible(), name, "lightbox sluit niet met de sluitknop")
 
         # Snelknop "Proefrit aanvragen" -> onderwerp proefrit, datumveld zichtbaar, focus in naamveld.
         page.click("a:has-text('Proefrit aanvragen')")

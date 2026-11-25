@@ -89,14 +89,6 @@
         Naar hoofdinhoud
     </a>
 
-    @if (config('brand.demo'))
-        {{-- Portfolio-demo (met toestemming van de zaak): niet verwarren met de echte site. --}}
-        <div class="bg-brass-500 px-4 py-2 text-center text-sm text-cream">
-            Demo — portfolioproject van Safouane Lahoua. Aanvragen komen niet aan; de officiële site is
-            <a href="https://autobedrijfrijswijk.nl" class="underline">autobedrijfrijswijk.nl</a>.
-        </div>
-    @endif
-
     <header x-data="{ open: false, scrolled: false }" @keydown.escape.window="open = false"
             x-init="
                 const onScroll = () => scrolled = window.scrollY > 8;
@@ -109,7 +101,7 @@
                 }, { passive: true });
             "
             class="sticky top-0 z-40 transition-colors duration-300"
-            :class="scrolled ? 'bg-ink/85 backdrop-blur-lg border-b border-hairline' : 'bg-transparent border-b border-transparent'">
+            :class="scrolled ? 'bg-ink/95 backdrop-blur-lg border-b border-hairline' : 'bg-ink/90 border-b border-hairline'">
         <div class="container-x flex h-[4.5rem] items-center justify-between gap-6">
             <a href="{{ route('home') }}" class="-my-2 rounded py-2" aria-label="{{ config('app.name') }} home">{{-- py: 46px tikvlak, zelfde plek --}}
                 <x-brand-mark />
@@ -129,7 +121,7 @@
                     <a href="{{ route($item['route']) }}"
                        @if($item['active']) aria-current="page" @endif
                        class="relative text-sm font-medium transition
-                              {{ $item['active'] ? 'text-brass-400' : 'text-cream/70 hover:text-cream' }}">
+                              {{ $item['active'] ? 'text-brass-300' : 'text-cream/90 hover:text-white' }}">
                         {{ $item['label'] }}
                         @if($item['active'])
                             <span class="absolute -bottom-2 left-0 h-px w-full bg-brass-500"></span>

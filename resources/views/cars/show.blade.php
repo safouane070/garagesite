@@ -84,7 +84,7 @@
                     <div class="pointer-events-none absolute inset-0 bg-gradient-to-t from-scrim/30 to-transparent"></div>
 
                     {{-- Schermvullend bekijken (ook met toetsenbord) --}}
-                    <button type="button" @click="open()" aria-label="Vergroot foto's"
+                    <button type="button" x-ref="openFull" @click="open()" aria-label="Vergroot foto's"
                             class="absolute bottom-4 right-4 inline-flex items-center gap-2 rounded-[3px] bg-scrim/70 px-3 py-2 text-xs font-medium text-onscrim backdrop-blur-md transition hover:bg-scrim/90">
                         <x-icon name="maximize" class="h-4 w-4" /> Vergroot
                     </button>
@@ -117,10 +117,10 @@
             {{-- Lightbox: naar <body> verplaatst zodat de rest "inert" kan worden --}}
             @if ($images->isNotEmpty())
                 <template x-teleport="body">
-                    <div x-show="full" x-cloak x-transition.opacity.duration.200ms
-                         role="dialog" aria-modal="true" aria-label="Foto's van {{ $car->title() }}"
-                         class="fixed inset-0 z-[60] flex flex-col bg-black"
-                         @keydown.escape.window="close()"
+                    <dialog x-ref="lightbox" x-cloak
+                         aria-label="Foto's van {{ $car->title() }}"
+                         class="gallery-lightbox fixed inset-0 m-0 h-full max-h-none w-full max-w-none flex-col border-0 bg-black p-0 text-white"
+                         @cancel.prevent="close()"
                          @keydown.arrow-left.window="full && prev()" @keydown.arrow-right.window="full && next()"
                          @touchstart.passive="touchStart($event)" @touchend.passive="touchEnd($event)">
                         <div class="flex items-center justify-between gap-3 px-4 py-3 text-sm text-white/75">
@@ -146,7 +146,7 @@
                                 </div>
                             </template>
                         </div>
-                    </div>
+                    </dialog>
                 </template>
             @endif
 

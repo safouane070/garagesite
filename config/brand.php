@@ -156,6 +156,6 @@ return [
         'max_photos' => (int) env('SYNC_MAX_PHOTOS', 0),
     ],
 
-    // Portfolio-demo (Render): toont een banner bovenaan dat dit niet de echte site is.
+    // Portfolio-demo (Render): aanvragen niet opslaan of mailen.
     'demo' => (bool) env('BRAND_DEMO', false),
 ];

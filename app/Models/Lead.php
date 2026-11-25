@@ -23,6 +23,8 @@ class Lead extends Model
         'proefrit'     => 'Proefrit aanvragen',
         'inruil'       => 'Inruil bespreken',
         'financiering' => 'Financiering aanvragen',
+        'inkoop'       => 'Auto verkopen',
+        'aankoop'      => 'Aankoopbegeleiding',
         'zoekopdracht' => 'Zoekopdracht plaatsen',
     ];
 

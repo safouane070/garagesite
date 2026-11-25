@@ -9,17 +9,17 @@
     {{-- Paginakop --}}
     <section class="border-b border-hairline">
         {{-- Telefoon: compacte kop, zodat de eerste auto al op het eerste scherm begint. --}}
-        <div class="container-x py-7 sm:py-12 lg:py-16">
+        <div class="container-x py-7 sm:py-8 lg:py-9">
             <h1 class="max-w-3xl font-display text-3xl font-bold uppercase leading-[1.02] tracking-tight text-cream sm:text-5xl">
                 Ons volledige aanbod
             </h1>
-            <p class="mt-5 hidden max-w-xl leading-relaxed text-cream/70 sm:block">
+            <p class="mt-3 hidden max-w-2xl leading-relaxed text-cream/70 sm:block">
                 Elke auto met BOVAG-garantie en nieuwe APK. Geen afleverkosten,
                 inruil en financiering mogelijk. Filter op wat voor jou telt.
             </p>
 
             {{-- Live telling als fijne meta-regel, geen los "hero-getal" --}}
-            <div class="mt-3 flex items-center gap-3 text-sm text-cream/70 sm:mt-8">
+            <div class="mt-3 flex items-center gap-3 text-sm text-cream/70 sm:mt-4">
                 <span class="inline-flex items-baseline gap-1.5">
                     <span class="text-lg font-bold text-cream tabular" x-text="count"></span>
                     <span x-text="count === 1 ? 'auto' : 'auto\'s'"></span>
@@ -34,12 +34,12 @@
     {{-- Mobiele actiebalk (sticky) --}}
     <div class="sticky top-[4.5rem] z-30 border-b border-hairline bg-ink/85 backdrop-blur-lg lg:hidden">
         <div class="container-x flex items-center gap-3 py-3">
-            <button @click="drawerOpen=true" type="button" class="btn btn-outline flex-1">
+            <button @click="drawerOpen=true" type="button" class="btn btn-outline shrink-0 gap-1 px-3">
                 <x-icon name="sliders" class="h-4 w-4" /> Filters
                 <span x-show="activeCount>0" x-text="activeCount"
                       class="ml-1 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-brass-500 px-1 text-[0.7rem] font-bold text-cream"></span>
             </button>
-            <div class="flex-1">
+            <div class="min-w-0 flex-1">
                 @include('cars.partials.sort-dropdown')
             </div>
         </div>
@@ -126,20 +126,20 @@
              x-transition:enter-start="translate-y-full" x-transition:enter-end="translate-y-0"
              x-transition:leave="transition-transform ease-out duration-200"
              x-transition:leave-start="translate-y-0" x-transition:leave-end="translate-y-full"
-             class="absolute inset-x-0 bottom-0 flex max-h-[88vh] flex-col rounded-t-2xl border-t border-hairline bg-graphite-800">
-            <div class="flex items-center justify-between border-b border-hairline px-5 py-4">
+             class="absolute inset-x-0 bottom-0 flex max-h-[88dvh] min-w-0 flex-col overflow-hidden rounded-t-2xl border-t border-hairline bg-graphite-800">
+            <div class="flex shrink-0 items-center justify-between border-b border-hairline px-5 py-4">
                 <span class="flex items-center gap-2 text-sm text-cream/80">
                     <x-icon name="sliders" class="h-4 w-4 text-brass-500" /> Filters
                 </span>
-                <button @click="drawerOpen=false" type="button" class="btn btn-ghost -mr-2"><x-icon name="x" class="h-5 w-5" /></button>
+                <button @click="drawerOpen=false" type="button" aria-label="Filters sluiten" class="btn btn-ghost -mr-2"><x-icon name="x" class="h-5 w-5" /></button>
             </div>
-            <div class="overflow-y-auto px-5 py-6">
+            <div class="min-h-0 overflow-y-auto px-5 py-6">
                 @include('cars.partials.filters', ['idp' => 'lade'])
             </div>
-            <div class="flex items-center gap-3 border-t border-hairline px-5 py-4">
-                <button @click="reset()" type="button" class="btn btn-outline flex-1" x-show="hasActiveFilters">Wissen</button>
-                <button @click="drawerOpen=false" type="button" class="btn btn-primary flex-1">
-                    Toon <span x-text="count"></span> resultaten
+            <div class="flex shrink-0 items-center gap-3 border-t border-hairline px-5 py-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
+                <button @click="reset()" type="button" class="btn btn-outline shrink-0 px-3" x-show="hasActiveFilters">Wissen</button>
+                <button @click="drawerOpen=false" type="button" class="btn btn-primary min-w-0 flex-1 gap-1 px-3">
+                    Toon <span x-text="count"></span> <span x-text="count === 1 ? 'auto' : 'auto\'s'"></span>
                 </button>
             </div>
         </div>

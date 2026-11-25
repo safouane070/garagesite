@@ -5,13 +5,6 @@
         <p class="mt-1 text-sm text-cream/70">Log in om de voorraad te beheren.</p>
     </div>
 
-    {{-- Demo-inloggegevens: alleen lokaal (de seeder zet "password" ook alleen lokaal). --}}
-    @if (app()->isLocal())
-        <div class="mb-6 rounded-[4px] border border-brass-500/20 bg-brass-500/[0.06] p-3 font-mono text-[0.7rem] text-cream/70">
-            <span class="text-brass-300">Demo:</span> admin@autobedrijfrijswijk.test · password
-        </div>
-    @endif
-
     @if (session('status'))
         <div class="mb-4 rounded-[4px] border border-emerald-500/20 bg-emerald-500/10 p-3 text-sm text-emerald-200">
             {{ session('status') }}

@@ -54,10 +54,10 @@
 
     <div class="min-w-0 sm:mt-3">
         {{-- Merk/model + uitvoering --}}
-        <h3 class="truncate font-display text-[1.05rem] font-semibold leading-tight text-cream">
+        <h3 class="break-words font-display text-[1.05rem] font-semibold leading-tight text-cream sm:truncate">
             {{ $car->brand }} {{ $car->model }}
         </h3>
-        <p class="mt-0.5 truncate text-sm text-cream/60">{{ $car->cleanVariant() ?: $car->body_type }}</p>
+        <p class="mt-0.5 line-clamp-2 break-words text-sm leading-snug text-cream/70 sm:block sm:truncate">{{ $car->cleanVariant() ?: $car->body_type }}</p>
 
         {{-- Kernspecs waarop gekozen wordt. Telefoon: twee korte regels (smalle kolom), daarna één regel. --}}
         <p class="mt-1.5 text-sm text-cream/80 tabular sm:mt-2 sm:truncate">

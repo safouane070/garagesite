@@ -79,26 +79,13 @@
         </div>
     </section>
 
-    {{-- ═══════════ BEWIJS · één regel i.p.v. cijfertegels + vertrouwensband ═══════════
-         De beloftes (BOVAG, afleverkosten) staan al in de hero; hier alleen wat de hero
-         niet zegt: de echte Google-score en wat er echt verkocht is.
-         Dat laatste verving een hele sectie verkochte auto's (die je niet kunt kopen). --}}
+    {{-- De echte Google-score; de beloftes (BOVAG, afleverkosten) staan al in de hero. --}}
     <div class="container-x flex flex-wrap items-center gap-x-4 gap-y-1 border-b border-hairline py-5 text-sm text-cream/70">
         <a href="{{ config('brand.reviews.url') }}" target="_blank" rel="noopener" class="inline-flex items-center gap-1.5 transition hover:text-cream">
             <x-icon name="star" class="h-4 w-4 text-brass-400" />
             <span class="font-semibold text-cream tabular">{{ str_replace('.', ',', (string) $rating) }}</span>
             · {{ $reviewCount }} Google-reviews
         </a>
-        {{-- Pas vanaf 3 tonen: "1 verkocht" is geen bewijs. Het voorraadgetal staat al op de zoekknop. --}}
-        @if ($soldRecent->count() >= 3)
-            <span class="hidden text-cream/25 sm:inline" aria-hidden="true">/</span>
-            <span>
-                {{-- "de deur uit" i.p.v. "verkocht": de sync ziet alleen dat een auto van de
-                     dealersite verdween, niet waarom. Klopt voor verkoop én blijft eerlijk. --}}
-                <span class="font-semibold text-cream tabular">{{ $soldRecent->count() }}</span>
-                auto's de deur uit in de afgelopen {{ intdiv(\App\Http\Controllers\HomeController::SOLD_WINDOW_DAYS, 30) }} maanden
-            </span>
-        @endif
     </div>
 
     {{-- ═══════════ AANRADERS ═══════════ --}}
@@ -163,10 +150,10 @@
 
         @php
             $teaser = [
-                ['t' => 'Inkoop', 'd' => 'Eerlijke dagprijs voor je auto, direct geregeld.'],
-                ['t' => 'Verkoop', 'd' => 'Kwaliteitsoccasions met BOVAG-garantie, zonder afleverkosten.'],
-                ['t' => 'Aankoop', 'd' => 'Zelf een auto op het oog? Wij begeleiden je bij de aankoop.'],
-                ['t' => 'Zoekopdracht', 'd' => 'Niet gevonden? Wij zoeken gericht naar jouw droomauto.'],
+                ['t' => 'Inkoop', 'd' => 'Eerlijke dagprijs voor je auto, direct geregeld.', 'url' => route('diensten', ['onderwerp' => 'inkoop']) . '#contact'],
+                ['t' => 'Verkoop', 'd' => 'Kwaliteitsoccasions met BOVAG-garantie, zonder afleverkosten.', 'url' => route('cars.index')],
+                ['t' => 'Aankoop', 'd' => 'Zelf een auto op het oog? Wij begeleiden je bij de aankoop.', 'url' => route('diensten', ['onderwerp' => 'aankoop']) . '#contact'],
+                ['t' => 'Zoekopdracht', 'd' => 'Niet gevonden? Wij zoeken gericht naar jouw droomauto.', 'url' => route('diensten', ['onderwerp' => 'zoekopdracht']) . '#contact'],
             ];
         @endphp
         {{-- Index-rijen: titel, uitleg en pijl op één lijn (telefoon: uitleg onder de titel).
@@ -174,7 +161,7 @@
         <ul class="mt-8 border-t border-hairline">
             @foreach ($teaser as $s)
                 <li class="border-b border-hairline">
-                    <a href="{{ route('diensten') }}"
+                    <a href="{{ $s['url'] }}"
                        class="group -mx-3 grid grid-cols-[1fr_auto] items-center gap-x-6 gap-y-1 rounded-[3px] px-3 py-5 transition-colors duration-150 ease-out hover:bg-cream/[0.03] active:bg-cream/[0.05] sm:py-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)_auto] lg:gap-x-10">
                         <span class="font-display text-lg font-semibold text-cream sm:text-xl">{{ $s['t'] }}</span>
                         <span class="col-start-1 text-sm leading-relaxed text-cream/65 lg:col-start-2 lg:row-start-1 lg:text-base">{{ $s['d'] }}</span>

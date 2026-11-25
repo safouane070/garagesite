@@ -23,19 +23,14 @@ class HomeProofTest extends TestCase
         $this->assertNull($car->fresh()->sold_at);
     }
 
-    public function test_home_shows_recent_sales_as_one_line_not_a_car_grid(): void
+    public function test_home_shows_no_sales_claim_or_sold_car_grid(): void
     {
         foreach (['X5', 'Q8', 'Cayenne'] as $model) {
             Car::factory()->create(['status' => CarStatus::Sold, 'model' => $model, 'slug' => "verkocht-{$model}"]);
         }
-        // Buiten het venster: telt niet mee.
-        Car::factory()->create(['status' => CarStatus::Sold, 'slug' => 'oud-verkocht'])
-            ->forceFill(['sold_at' => now()->subYear()])->save();
-
         $this->get('/')
             ->assertOk()
-            ->assertSee('de deur uit in de afgelopen 3 maanden')
-            ->assertSeeInOrder(['<span class="font-semibold text-cream tabular">3</span>'], false)
+            ->assertDontSee('de deur uit in de afgelopen')
             ->assertDontSee('verkocht-X5')
             ->assertDontSee('Deze klanten waren je voor');
     }

@@ -8,9 +8,6 @@ use Illuminate\View\View;
 
 class HomeController extends Controller
 {
-    /** Venster voor "verkocht in de afgelopen N dagen" (een periode die we echt bijhouden). */
-    public const SOLD_WINDOW_DAYS = 90;
-
     public function index(): View
     {
         // Uitgelichte occasions voor de highlight-sectie.
@@ -33,18 +30,12 @@ class HomeController extends Controller
             ->take(11)
             ->get();
 
-        // Bewijs in één regel i.p.v. een rij auto's die je niet kunt kopen.
-        $soldRecent = Car::where('status', CarStatus::Sold->value)
-            ->where('sold_at', '>=', now()->subDays(self::SOLD_WINDOW_DAYS))
-            ->orderByDesc('price')
-            ->get(['brand', 'model', 'price']);
-
         // Voor de zoekbalk in de hero: merk + prijs van de actuele voorraad,
         // zodat de knop live "Toon N auto's" kan zeggen.
         $stockIndex = Car::where('status', '!=', CarStatus::Sold->value)
             ->get(['brand', 'price'])
             ->map(fn (Car $c) => [$c->brand, (int) $c->price]);
 
-        return view('home', compact('featured', 'newest', 'soldRecent', 'stockIndex'));
+        return view('home', compact('featured', 'newest', 'stockIndex'));
     }
 }

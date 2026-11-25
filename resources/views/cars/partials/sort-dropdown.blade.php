@@ -3,7 +3,7 @@
      sortOpen, sortLabel(), setSort(). --}}
 <div class="relative" @click.outside="sortOpen=false" @keydown.escape.window="sortOpen=false">
     <button type="button" @click="sortOpen=!sortOpen" :aria-expanded="sortOpen" aria-haspopup="listbox"
-            class="flex w-full items-center justify-between gap-3 rounded-[3px] border border-hairline bg-paper px-3.5 py-2.5 text-sm text-cream transition hover:border-brass-500/50 focus-visible:ring-2">
+            class="flex w-full items-center justify-between gap-2 rounded-[3px] border border-hairline bg-paper px-3 py-2.5 text-sm text-cream transition hover:border-brass-500/50 focus-visible:ring-2">
         <span class="flex min-w-0 items-center gap-2">
             <span class="hidden text-xs font-medium text-cream/70 sm:inline">Sorteer</span>
             <span class="truncate font-medium" x-text="sortLabel()"></span>

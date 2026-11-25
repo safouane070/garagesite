@@ -15,8 +15,8 @@ class LeadController extends Controller
 {
     public function store(StoreLeadRequest $request): RedirectResponse
     {
-        // Portfolio-demo: de banner zegt dat aanvragen niet aankomen, dus ook geen
-        // persoonsgegevens opslaan of (naar de logs) mailen. Wel de normale bevestiging tonen.
+        // Portfolio-demo: geen persoonsgegevens opslaan of (naar de logs) mailen.
+        // Wel de normale bevestiging tonen.
         if (config('brand.demo')) {
             return back()->with('lead_sent', true)->withFragment('contact');
         }

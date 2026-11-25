@@ -68,6 +68,10 @@ export default (config) => ({
         if (p.get('year_min')) this.year[0] = clamp(+p.get('year_min'), this.bounds.yearMin, this.bounds.yearMax, this.year[0]);
         if (p.get('year_max')) this.year[1] = clamp(+p.get('year_max'), this.bounds.yearMin, this.bounds.yearMax, this.year[1]);
         if (p.has('sort')) this.sort = p.get('sort');
+        // Gedeelde merklinks gebruiken soms de merkstijl (CUPRA), de voorraad Cupra.
+        // Herstel de echte keuzewaarde zodat filter, dropdown en URL overeenkomen.
+        const requestedBrand = typeof this.brand === 'string' ? this.brand.trim() : '';
+        this.brand = this.cards.find((c) => c.brand.toLowerCase() === requestedBrand.toLowerCase())?.brand ?? requestedBrand;
         // Omgedraaid bereik (min > max) rechtzetten.
         this.price.sort((a, b) => a - b);
         this.year.sort((a, b) => a - b);

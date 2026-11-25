@@ -14,6 +14,30 @@ class LeadTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_service_requests_reach_the_inbox_with_their_own_subject(): void
+    {
+        Mail::fake();
+
+        foreach (['inkoop' => 'Auto verkopen', 'aankoop' => 'Aankoopbegeleiding'] as $type => $label) {
+            $this->flushSession();
+            $this->get(route('diensten', ['onderwerp' => $type]))
+                ->assertOk()
+                ->assertSee('<option value="' . $type . '" selected', false);
+
+            $this->post(route('leads.store'), [
+                'type' => $type,
+                'name' => 'Test Klant',
+                'email' => $type . '@example.com',
+                'message' => 'Ik wil deze dienst bespreken.',
+            ])->assertSessionHasNoErrors()->assertSessionHas('lead_sent', true);
+
+            $lead = Lead::where('email', $type . '@example.com')->sole();
+            $this->assertSame($type, $lead->type);
+            $this->assertSame($label, $lead->typeLabel());
+            Mail::assertQueued(LeadReceived::class, fn ($mail) => $mail->lead->is($lead));
+        }
+    }
+
     public function test_visitor_can_submit_an_inquiry_for_a_car(): void
     {
         Mail::fake();

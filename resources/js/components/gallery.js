@@ -1,7 +1,6 @@
 // Fotogalerij op de detailpagina, met schermvullende weergave (lightbox).
-// Pijltjes, vegen en Escape werken in beide weergaven. Tijdens de lightbox is de
-// rest van de pagina "inert", zodat toetsenbordfocus in de lightbox blijft.
-const PAGE = 'body > header, body > main, body > footer';
+// Pijltjes, vegen en Escape werken in beide weergaven. De native dialoog maakt
+// de hele achtergrond inert, inclusief WhatsApp en de skiplink.
 
 export default (config) => ({
     images: config.images,
@@ -9,7 +8,6 @@ export default (config) => ({
     i: 0,
     full: false,
     touchX: null,
-    lastFocus: null,
 
     // Actieve miniatuur in beeld houden (alleen horizontaal: de pagina zelf mag niet verspringen).
     init() {
@@ -35,18 +33,21 @@ export default (config) => ({
 
     open() {
         if (!this.images.length) return;
-        this.lastFocus = document.activeElement;
         this.full = true;
         document.documentElement.classList.add('overflow-hidden');
-        document.querySelectorAll(PAGE).forEach((el) => { el.inert = true; });
-        this.$nextTick(() => this.$refs.closeFull?.focus());
+        this.$nextTick(() => {
+            this.$refs.lightbox.showModal();
+            this.$refs.closeFull.focus();
+        });
     },
 
     close() {
         if (!this.full) return;
         this.full = false;
         document.documentElement.classList.remove('overflow-hidden');
-        document.querySelectorAll(PAGE).forEach((el) => { el.inert = false; });
-        this.lastFocus?.focus();
+        this.$refs.lightbox.close();
+        // Safari focust een aangeklikte knop niet altijd. Keer expliciet terug
+        // naar de galerijknop, ook wanneer de foto zelf de dialoog opende.
+        this.$refs.openFull.focus({ preventScroll: true });
     },
 });
