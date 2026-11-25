@@ -241,7 +241,7 @@
                         </a>
                         <a href="https://wa.me/{{ preg_replace('/\D/', '', (string) config('brand.contact.whatsapp')) }}?text={{ rawurlencode($whatsappText) }}"
                            target="_blank" rel="noopener" class="btn btn-outline">
-                            WhatsApp
+                            <x-icon name="whatsapp" class="h-4 w-4" /> WhatsApp
                         </a>
                     </div>
                 @else

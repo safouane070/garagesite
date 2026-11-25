@@ -61,7 +61,7 @@
 
                 <a href="https://wa.me/{{ config('brand.contact.whatsapp') }}" target="_blank" rel="noopener"
                    class="btn btn-primary mt-8">
-                    <x-icon name="phone" class="h-4 w-4" /> Direct via WhatsApp
+                    <x-icon name="whatsapp" class="h-4 w-4" /> Direct via WhatsApp
                 </a>
             </div>
 

@@ -66,6 +66,21 @@ class CarDetailExtrasTest extends TestCase
             ->assertDontSee('opties per categorie');
     }
 
+    /** "Bel ons" had een telefoon, "WhatsApp" niets; op /contact stond zelfs een telefoon bij WhatsApp. */
+    public function test_whatsapp_buttons_carry_the_whatsapp_logo(): void
+    {
+        $logo = 'M12.04 2C6.58 2'; // begin van het WhatsApp-pad
+        $car = Car::factory()->create(['status' => CarStatus::Available]);
+
+        $quick = Str::between($this->get(route('cars.show', $car))->getContent(), 'id="snelacties"', '</div>');
+        $this->assertStringContainsString($logo, Str::after($quick, 'Bel ons'), 'logo bij de WhatsApp-knop');
+
+        $contact = $this->get(route('contact'))->getContent();
+        $button = Str::afterLast(Str::before($contact, 'Direct via WhatsApp'), '<a ');
+        $this->assertStringContainsString($logo, $button);
+        $this->assertStringNotContainsString('M22 16.92', $button, 'geen telefoon bij WhatsApp');
+    }
+
     public function test_detail_shows_lease_with_terms_and_calculator_link(): void
     {
         $car = Car::factory()->create(['status' => CarStatus::Available, 'price' => 20000]);
