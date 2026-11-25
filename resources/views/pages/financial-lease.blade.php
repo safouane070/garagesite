@@ -80,10 +80,10 @@
                     Alle auto's met leaseprijs <x-icon name="arrow-right" class="h-4 w-4 transition-transform duration-200 ease-out [@media(hover:hover)]:group-hover:translate-x-0.5" />
                 </a>
             </div>
-            {{-- Telefoon: swipe-rail, zoals op de homepage. --}}
-            <div class="-mx-5 mt-8 flex snap-x snap-mandatory scroll-px-5 gap-4 overflow-x-auto px-5 pb-4 scroll-thin sm:mx-0 sm:grid sm:grid-cols-2 sm:gap-6 sm:overflow-visible sm:px-0 sm:pb-0 lg:grid-cols-3">
+            {{-- Telefoon: compacte rijen onder elkaar (zie car-card), zoals op de homepage. --}}
+            <div class="mt-6 grid gap-y-5 sm:mt-8 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
                 @foreach ($leaseCars as $car)
-                    <div class="w-[280px] shrink-0 snap-start sm:w-auto">
+                    <div>
                         <x-car-card :car="$car" />
                     </div>
                 @endforeach

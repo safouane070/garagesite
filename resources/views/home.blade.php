@@ -103,30 +103,29 @@
 
     {{-- ═══════════ AANRADERS ═══════════ --}}
     @if ($featured->count())
-        <section class="container-x py-16 lg:py-24">
+        {{-- Telefoon: compacte rijen onder elkaar (±5 per scherm). Opzij vegen liet er één tegelijk zien. --}}
+        <section class="container-x py-10 sm:py-16 lg:py-24">
             <div class="flex flex-wrap items-end justify-between gap-4">
                 <h2 class="font-display text-3xl font-bold uppercase tracking-tight text-cream sm:text-4xl">
                     Onze aanraders
                 </h2>
-                <a href="{{ route('cars.index') }}" class="group inline-flex items-center gap-2 text-sm text-cream/70 transition hover:text-brass-300">
+                <a href="{{ route('cars.index') }}" class="group inline-flex items-center gap-2 py-2 text-sm text-cream/70 transition hover:text-brass-300">
                     Volledig aanbod
                     <x-icon name="arrow-right" class="h-4 w-4 transition group-hover:translate-x-0.5" />
                 </a>
             </div>
 
-            {{-- Telefoon: swipe-rail (zoals "Net binnen") i.p.v. zes schermhoge kaarten onder elkaar. --}}
-            <div class="-mx-5 mt-8 flex snap-x snap-mandatory scroll-px-5 gap-4 overflow-x-auto px-5 pb-4 scroll-thin sm:mx-0 sm:grid sm:grid-cols-2 sm:gap-x-6 sm:gap-y-10 sm:overflow-visible sm:px-0 sm:pb-0 lg:grid-cols-3">
+            <div class="mt-6 grid gap-y-5 sm:mt-8 sm:grid-cols-2 sm:gap-x-6 sm:gap-y-10 lg:grid-cols-3">
                 @foreach ($featured as $car)
-                    <div class="w-[280px] shrink-0 snap-start sm:w-auto">
-                        <x-car-card :car="$car" />
-                    </div>
+                    <div @class(['max-sm:hidden' => $loop->index >= 4])><x-car-card :car="$car" /></div>
                 @endforeach
             </div>
         </section>
     @endif
 
-    {{-- ═══════════ NET BINNEN · scroll-rail ═══════════ --}}
-    <section class="py-16 lg:py-20">
+    {{-- ═══════════ NET BINNEN ═══════════
+         Telefoon: de nieuwste 4 als rijen + knop naar alles. Vanaf sm: de scroll-rail. --}}
+    <section class="py-10 sm:py-16 lg:py-20">
         <div class="container-x flex items-end justify-between gap-4">
             <h2 class="font-display text-3xl font-bold uppercase tracking-tight text-cream sm:text-4xl">Net binnengereden</h2>
             <a href="{{ route('cars.index') }}" class="group hidden items-center gap-2 text-sm text-cream/70 transition hover:text-brass-300 sm:inline-flex">
@@ -134,22 +133,25 @@
             </a>
         </div>
 
-        <div class="mt-8 flex snap-x snap-mandatory scroll-px-5 gap-4 scroll-thin overflow-x-auto px-5 pb-4 sm:scroll-px-8 sm:gap-6 sm:px-8">
+        <div class="mt-6 grid gap-y-5 px-5 sm:mt-8 sm:flex sm:snap-x sm:snap-mandatory sm:scroll-px-8 sm:gap-6 sm:overflow-x-auto sm:px-8 sm:pb-4 sm:scroll-thin">
             @foreach ($newest as $car)
-                <div class="w-[280px] shrink-0 snap-start sm:w-[330px]">
+                <div @class(['sm:w-[330px] sm:shrink-0 sm:snap-start', 'max-sm:hidden' => $loop->index >= 4])>
                     <x-car-card :car="$car" />
                 </div>
             @endforeach
-            <a href="{{ route('cars.index') }}" class="flex w-[160px] shrink-0 snap-start flex-col items-center justify-center gap-3 text-cream/60 transition hover:text-brass-300">
+            <a href="{{ route('cars.index') }}" class="hidden w-[160px] shrink-0 snap-start flex-col items-center justify-center gap-3 text-cream/60 transition hover:text-brass-300 sm:flex">
                 <span class="flex h-12 w-12 items-center justify-center rounded-full border border-hairline"><x-icon name="arrow-right" class="h-5 w-5" /></span>
                 <span class="text-sm">Bekijk alles</span>
+            </a>
+            <a href="{{ route('cars.index') }}" class="btn btn-outline mt-1 w-full sm:hidden">
+                Bekijk alle auto's <x-icon name="arrow-right" class="h-4 w-4" />
             </a>
         </div>
     </section>
 
 
     {{-- ═══════════ DIENSTEN · lijst, geen kaartjes ═══════════ --}}
-    <section class="container-x py-16 lg:py-24">
+    <section class="container-x py-10 sm:py-16 lg:py-24">
         <div class="flex flex-wrap items-end justify-between gap-4">
             <h2 class="font-display text-3xl font-bold uppercase tracking-tight text-cream sm:text-4xl">
                 Alles rondom je auto
@@ -188,7 +190,7 @@
 
     {{-- ═══════════ CTA · volle band ═══════════ --}}
     <section class="border-y border-hairline bg-graphite-800">
-        <div class="container-x grid items-center gap-8 py-14 lg:grid-cols-12 lg:py-20">
+        <div class="container-x grid items-center gap-6 py-10 sm:gap-8 sm:py-14 lg:grid-cols-12 lg:py-20">
             <div class="lg:col-span-8">
                 <h2 class="font-display text-3xl font-bold uppercase tracking-tight text-cream sm:text-4xl">
                     Iets specifieks zoeken?

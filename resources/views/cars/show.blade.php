@@ -360,10 +360,10 @@
     @if ($related->isNotEmpty())
         <section class="container-x border-t border-hairline py-14">
             <h2 class="font-display text-2xl font-bold tracking-tight text-cream sm:text-3xl">Misschien ook interessant</h2>
-            {{-- Telefoon: swipe-rail, zoals op de homepage. --}}
-            <div class="-mx-5 mt-8 flex snap-x snap-mandatory scroll-px-5 gap-4 overflow-x-auto px-5 pb-4 scroll-thin sm:mx-0 sm:grid sm:grid-cols-2 sm:gap-x-6 sm:gap-y-10 sm:overflow-visible sm:px-0 sm:pb-0 lg:grid-cols-3">
+            {{-- Telefoon: compacte rijen onder elkaar (zie car-card), zoals op de homepage. --}}
+            <div class="mt-6 grid gap-y-5 sm:mt-8 sm:grid-cols-2 sm:gap-x-6 sm:gap-y-10 lg:grid-cols-3">
                 @foreach ($related as $item)
-                    <div class="w-[280px] shrink-0 snap-start sm:w-auto">
+                    <div>
                         <x-car-card :car="$item" />
                     </div>
                 @endforeach
