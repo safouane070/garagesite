@@ -59,6 +59,7 @@ class DealerSiteParseTest extends TestCase
         return [
             ['B', 'Benzine'], ['D', 'Diesel'], ['E', 'Elektrisch'], ['B,E', 'Hybride'],
             ['Hybride (benzine)', 'Hybride'], ['Elektrisch', 'Elektrisch'], ['LPG', 'LPG'],
+            ['Electrisch', 'Elektrisch'], ['Electric', 'Elektrisch'], // zo staat de BMW i4 er bij de dealer
         ];
     }
 

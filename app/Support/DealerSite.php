@@ -2,8 +2,10 @@
 
 namespace App\Support;
 
+use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Sleep;
 use Illuminate\Support\Str;
 use RuntimeException;
 
@@ -115,7 +117,7 @@ class DealerSite
 
     public static function download(string $url): ?string
     {
-        $resp = self::http()->timeout(40)->get(self::onDealer($url));
+        $resp = self::http(paced: false)->timeout(40)->get(self::onDealer($url));
 
         return $resp->ok() ? $resp->body() : null;
     }
@@ -352,7 +354,7 @@ class DealerSite
 
         return match (true) {
             str_contains($v, 'hybr') || (count($parts) > 1 && in_array('e', $parts, true)) => 'Hybride',
-            str_contains($v, 'elektr') || $parts === ['e'] => 'Elektrisch',
+            str_contains($v, 'elektr') || str_contains($v, 'electr') || $parts === ['e'] => 'Elektrisch',
             str_contains($v, 'benz') || $parts === ['b'] => 'Benzine',
             str_contains($v, 'dies') || $parts === ['d'] => 'Diesel',
             str_contains($v, 'lpg') || str_contains($v, 'gas') || in_array($parts[0], ['l', 'g'], true) => 'LPG',
@@ -376,10 +378,29 @@ class DealerSite
         };
     }
 
-    private static function http()
+    /**
+     * De server van de dealer (nginx) laat ±1 pagina- of API-aanvraag per 2 s toe en geeft daarboven
+     * "429" zonder Retry-After; zonder tempo las de sync nog 2% van de voorraad. Foto's
+     * (wp-content/uploads) vallen er niet onder en gaan op volle snelheid ($paced = false).
+     */
+    private const PACE_MS = 2500;
+
+    private static ?int $lastAt = null;
+
+    private static function http(bool $paced = true)
     {
+        if ($paced) {
+            $since = self::$lastAt === null ? PHP_INT_MAX : now()->getTimestampMs() - self::$lastAt;
+            if ($since < self::PACE_MS) {
+                Sleep::for(min(self::PACE_MS, self::PACE_MS - $since))->milliseconds();
+            }
+            self::$lastAt = now()->getTimestampMs();
+        }
+
         return Http::withHeaders(['User-Agent' => self::UA, 'Accept' => 'application/json, text/html'])
             ->timeout(25)
-            ->retry(2, 500, throw: false);
+            ->retry(3, fn (int $attempt, \Throwable $e) => $e instanceof RequestException && $e->response->status() === 429
+                ? $attempt * 15_000 // limiet geraakt: echt even wachten
+                : 500, throw: false);
     }
 }
