@@ -23,6 +23,16 @@ class LaunchTest extends TestCase
         $this->get('/voertuig/allang-verkocht/')->assertRedirect(route('cars.index'))->assertStatus(301);
     }
 
+    /**
+     * Achter een proxy (Render, de meeste hosts) maakte Apache's slash-regel van /voertuig/x/ een
+     * doorverwijzing naar http://host:10000/voertuig/x: de interne poort, die nooit laadt. Oude
+     * links van de dealer eindigen allemaal op een slash. Laravel handelt die zelf correct af.
+     */
+    public function test_apache_does_not_redirect_trailing_slashes_itself(): void
+    {
+        $this->assertStringNotContainsString('RewriteRule ^ %1 [L,R=301]', file_get_contents(public_path('.htaccess')));
+    }
+
     /** De juridische teksten staan op deze site zelf, niet op de WordPress-site die verdwijnt. */
     public function test_legal_pages_link_to_local_pdfs_that_exist(): void
     {
