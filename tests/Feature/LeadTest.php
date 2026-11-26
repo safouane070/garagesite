@@ -148,10 +148,41 @@ class LeadTest extends TestCase
 
         $this->post(route('leads.store'), ['type' => 'vraag', 'name' => 'Jan', 'email' => 'jan@example.com', 'phone' => '0612345678'])
             ->assertRedirect()
-            ->assertSessionHas('lead_sent', true);
+            ->assertSessionHas('lead_demo', true)
+            ->assertSessionMissing('lead_sent'); // geen "ontvangen" voor iets dat nergens aankomt
 
         $this->assertSame(0, Lead::count());
         Mail::assertNothingOutgoing();
+    }
+
+    /**
+     * Zonder demobalk lijkt de demo de echte zaak. Wie een proefrit aanvraagt, moet vóór én na
+     * het versturen weten dat het niet aankomt en hoe hij de dealer wél bereikt.
+     */
+    public function test_demo_form_says_up_front_and_afterwards_that_nothing_is_sent(): void
+    {
+        config(['brand.demo' => true]);
+        $car = Car::factory()->create(['status' => 'available']);
+
+        foreach ([route('cars.show', $car), route('contact'), route('diensten')] as $url) {
+            $this->get($url)->assertOk()
+                ->assertSee('Aanvragen via dit formulier komen niet aan')
+                ->assertSee('tel:' . config('brand.contact.phone_href'), false)
+                ->assertSee('https://autobedrijfrijswijk.nl', false);
+        }
+
+        $this->from(route('contact'))->followingRedirects()
+            ->post(route('leads.store'), ['type' => 'vraag', 'name' => 'Jan', 'email' => 'jan@example.com'])
+            ->assertSee('Niet verstuurd')
+            ->assertDontSee('we hebben je aanvraag ontvangen');
+    }
+
+    /** Op de echte site geen demotekst. */
+    public function test_real_site_form_has_no_demo_note(): void
+    {
+        config(['brand.demo' => false]);
+
+        $this->get(route('contact'))->assertOk()->assertDontSee('Aanvragen via dit formulier komen niet aan');
     }
 
     /** De bevestiging gaat naar een vrij in te vullen adres: dus geen vrij ingevulde tekst erin (spam/phishing-relay). */

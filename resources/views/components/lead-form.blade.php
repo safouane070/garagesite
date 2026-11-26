@@ -19,7 +19,20 @@
 <section id="contact" {{ $attributes->merge(['class' => 'scroll-mt-28']) }}>
     {{-- Geen kader om het formulier: de velden zelf zijn al omlijnd. --}}
     <div>
-        @if (session('lead_sent'))
+        @php
+            // Demo zonder balk lijkt de echte zaak: zeg vóór én na het versturen dat het niet aankomt.
+            $demoNote = config('brand.demo') ? 'Aanvragen via dit formulier komen niet aan: dit is een voorbeeldwebsite. Bel of app Autobedrijf Rijswijk, of ga naar de officiële site.' : null;
+            $reachDealer = '<a href="tel:' . e(config('brand.contact.phone_href')) . '" class="font-medium text-cream underline underline-offset-2 hover:text-brass-300">' . e(config('brand.contact.phone')) . '</a> · '
+                . '<a href="https://wa.me/' . e(preg_replace('/\D/', '', (string) config('brand.contact.whatsapp'))) . '" target="_blank" rel="noopener" class="font-medium text-cream underline underline-offset-2 hover:text-brass-300">WhatsApp</a> · '
+                . '<a href="https://autobedrijfrijswijk.nl" class="font-medium text-cream underline underline-offset-2 hover:text-brass-300">autobedrijfrijswijk.nl</a>';
+        @endphp
+        @if (session('lead_demo'))
+            <div class="flex flex-col items-center gap-3 py-8 text-center" role="status">
+                <h2 class="font-display text-2xl font-bold text-cream">Niet verstuurd</h2>
+                <p class="max-w-md text-sm leading-relaxed text-cream/75">{{ $demoNote }}</p>
+                <p class="text-sm">{!! $reachDealer !!}</p>
+            </div>
+        @elseif (session('lead_sent'))
             {{-- Bevestiging na verzenden --}}
             <div class="flex flex-col items-center gap-4 py-8 text-center" role="status">
                 <span class="flex h-14 w-14 items-center justify-center rounded-full border border-brass-500/40 text-brass-400">
@@ -36,6 +49,14 @@
                 <h2 class="font-display text-2xl font-bold text-cream">{{ $title }}</h2>
                 <p class="mt-2 text-sm leading-relaxed text-cream/65">{{ $intro }}</p>
             </div>
+
+            @if ($demoNote)
+                {{-- Vóór het invullen, niet pas erna: niemand hoort tijd te verliezen aan een formulier dat niet aankomt. --}}
+                <div class="mb-6 rounded-[4px] border border-brass-500/40 bg-brass-500/[0.08] p-4 text-sm leading-relaxed text-cream/85" role="note">
+                    <p>{{ $demoNote }}</p>
+                    <p class="mt-1.5">{!! $reachDealer !!}</p>
+                </div>
+            @endif
 
             @if ($errors->any())
                 <div class="mb-6 rounded-[4px] border border-rose-500/30 bg-rose-500/10 p-4">

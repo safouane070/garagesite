@@ -15,10 +15,10 @@ class LeadController extends Controller
 {
     public function store(StoreLeadRequest $request): RedirectResponse
     {
-        // Portfolio-demo: geen persoonsgegevens opslaan of (naar de logs) mailen.
-        // Wel de normale bevestiging tonen.
+        // Portfolio-demo: geen persoonsgegevens opslaan of (naar de logs) mailen, en dus ook
+        // géén "ontvangen" tonen: het formulier zegt eerlijk dat het niet aankomt.
         if (config('brand.demo')) {
-            return back()->with('lead_sent', true)->withFragment('contact');
+            return back()->with('lead_demo', true)->withFragment('contact');
         }
 
         $data = $request->safe()->only([
