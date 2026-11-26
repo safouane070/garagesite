@@ -156,6 +156,7 @@ return [
         'max_photos' => (int) env('SYNC_MAX_PHOTOS', 0),
     ],
 
-    // Portfolio-demo (Render): aanvragen niet opslaan of mailen.
+    // Render-preview: wel opslaan in de inbox; geen klantbevestiging uit naam van de echte zaak.
+    // E-mailmeldingen naar de eigenaar zijn apart instelbaar in de aanvragen-inbox.
     'demo' => (bool) env('BRAND_DEMO', false),
 ];

@@ -6,6 +6,7 @@ use App\Mail\LeadConfirmation;
 use App\Mail\LeadReceived;
 use App\Models\Car;
 use App\Models\Lead;
+use App\Models\LeadInboxSettings;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
 use Tests\TestCase;
@@ -13,6 +14,12 @@ use Tests\TestCase;
 class LeadTest extends TestCase
 {
     use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        config(['mail.default' => 'smtp']);
+    }
 
     public function test_service_requests_reach_the_inbox_with_their_own_subject(): void
     {
@@ -22,16 +29,16 @@ class LeadTest extends TestCase
             $this->flushSession();
             $this->get(route('diensten', ['onderwerp' => $type]))
                 ->assertOk()
-                ->assertSee('<option value="' . $type . '" selected', false);
+                ->assertSee('<option value="'.$type.'" selected', false);
 
             $this->post(route('leads.store'), [
                 'type' => $type,
                 'name' => 'Test Klant',
-                'email' => $type . '@example.com',
+                'email' => $type.'@example.com',
                 'message' => 'Ik wil deze dienst bespreken.',
             ])->assertSessionHasNoErrors()->assertSessionHas('lead_sent', true);
 
-            $lead = Lead::where('email', $type . '@example.com')->sole();
+            $lead = Lead::where('email', $type.'@example.com')->sole();
             $this->assertSame($type, $lead->type);
             $this->assertSame($label, $lead->typeLabel());
             Mail::assertQueued(LeadReceived::class, fn ($mail) => $mail->lead->is($lead));
@@ -140,49 +147,54 @@ class LeadTest extends TestCase
         $mail->assertHasReplyTo(config('brand.contact.email'));
     }
 
-    /** Op de portfolio-demo komen aanvragen niet aan: dan ook niets opslaan of mailen. */
-    public function test_demo_does_not_store_or_mail_personal_data(): void
+    public function test_render_requests_are_stored_without_email_or_customer_confirmation(): void
     {
         Mail::fake();
-        config(['brand.demo' => true]);
+        config(['brand.demo' => true, 'mail.default' => 'log']);
 
-        $this->post(route('leads.store'), ['type' => 'vraag', 'name' => 'Jan', 'email' => 'jan@example.com', 'phone' => '0612345678'])
-            ->assertRedirect()
-            ->assertSessionHas('lead_demo', true)
-            ->assertSessionMissing('lead_sent'); // geen "ontvangen" voor iets dat nergens aankomt
+        $this->from(route('contact'))->followingRedirects()
+            ->post(route('leads.store'), ['type' => 'vraag', 'name' => 'Jan', 'email' => 'jan@example.com'])
+            ->assertSee('we hebben je aanvraag ontvangen')
+            ->assertDontSee('Niet verstuurd');
 
-        $this->assertSame(0, Lead::count());
+        $this->assertDatabaseHas('leads', ['email' => 'jan@example.com']);
         Mail::assertNothingOutgoing();
     }
 
-    /**
-     * Zonder demobalk lijkt de demo de echte zaak. Wie een proefrit aanvraagt, moet vóór én na
-     * het versturen weten dat het niet aankomt en hoe hij de dealer wél bereikt.
-     */
-    public function test_demo_form_says_up_front_and_afterwards_that_nothing_is_sent(): void
+    public function test_render_can_notify_the_configured_owner_without_contacting_the_real_dealer(): void
+    {
+        Mail::fake();
+        config(['brand.demo' => true]);
+        LeadInboxSettings::updateOrCreate(['id' => 1], ['notification_email' => 'eigenaar@example.com']);
+
+        $this->post(route('leads.store'), ['type' => 'vraag', 'name' => 'Jan', 'email' => 'jan@example.com'])
+            ->assertSessionHas('lead_sent', true);
+
+        Mail::assertQueued(LeadReceived::class, fn ($mail) => $mail->hasTo('eigenaar@example.com'));
+        Mail::assertNotQueued(LeadConfirmation::class);
+        Mail::assertQueuedCount(1);
+    }
+
+    public function test_empty_notification_address_disables_email_without_disabling_the_inbox(): void
+    {
+        Mail::fake();
+        LeadInboxSettings::updateOrCreate(['id' => 1], ['notification_email' => null]);
+
+        $this->post(route('leads.store'), ['type' => 'vraag', 'name' => 'Jan', 'email' => 'jan@example.com'])
+            ->assertSessionHas('lead_sent', true);
+
+        $this->assertSame(1, Lead::count());
+        Mail::assertNothingOutgoing();
+    }
+
+    public function test_form_has_no_obsolete_demo_notice(): void
     {
         config(['brand.demo' => true]);
         $car = Car::factory()->create(['status' => 'available']);
 
         foreach ([route('cars.show', $car), route('contact'), route('diensten')] as $url) {
-            $this->get($url)->assertOk()
-                ->assertSee('Aanvragen via dit formulier komen niet aan')
-                ->assertSee('tel:' . config('brand.contact.phone_href'), false)
-                ->assertSee('https://autobedrijfrijswijk.nl', false);
+            $this->get($url)->assertOk()->assertDontSee('Aanvragen via dit formulier komen niet aan');
         }
-
-        $this->from(route('contact'))->followingRedirects()
-            ->post(route('leads.store'), ['type' => 'vraag', 'name' => 'Jan', 'email' => 'jan@example.com'])
-            ->assertSee('Niet verstuurd')
-            ->assertDontSee('we hebben je aanvraag ontvangen');
-    }
-
-    /** Op de echte site geen demotekst. */
-    public function test_real_site_form_has_no_demo_note(): void
-    {
-        config(['brand.demo' => false]);
-
-        $this->get(route('contact'))->assertOk()->assertDontSee('Aanvragen via dit formulier komen niet aan');
     }
 
     /** De bevestiging gaat naar een vrij in te vullen adres: dus geen vrij ingevulde tekst erin (spam/phishing-relay). */

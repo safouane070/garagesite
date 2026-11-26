@@ -7,6 +7,32 @@
         </div>
     </div>
 
+    <section class="surface mt-6 p-5" aria-labelledby="notification-title">
+        <h2 id="notification-title" class="font-display text-lg font-semibold text-cream">E-mailmeldingen</h2>
+        <p class="mt-1 text-sm text-cream/70">Alle aanvragen verschijnen hier. Vul het e-mailadres van de eigenaar in om daarnaast een melding per mail te ontvangen. Leeg laten zet meldingen uit.</p>
+        <form method="POST" action="{{ route('admin.leads.settings') }}" class="mt-4 flex flex-col items-start gap-3 sm:flex-row sm:items-end">
+            @csrf @method('PATCH')
+            <div class="w-full sm:max-w-md">
+                <label for="notification-email" class="field-label">E-mailadres voor meldingen</label>
+                <input id="notification-email" name="notification_email" type="email" maxlength="254" autocomplete="email"
+                       value="{{ old('notification_email', $inboxSettings->notification_email) }}" class="field-input"
+                       aria-describedby="notification-help @error('notification_email') notification-error @enderror"
+                       @error('notification_email') aria-invalid="true" @enderror>
+                @error('notification_email') <p id="notification-error" class="field-hint text-rose-300">{{ $message }}</p> @enderror
+            </div>
+            <button type="submit" class="btn btn-outline shrink-0">Instellingen opslaan</button>
+        </form>
+        <p id="notification-help" class="mt-3 text-sm text-cream/65">
+            @if (! $deliveryMailer)
+                E-mailmeldingen zijn nog niet actief: er is geen verzendende maildienst ingesteld. Aanvragen ontvang je wel in deze inbox.
+            @elseif ($inboxSettings->notification_email)
+                Nieuwe aanvragen worden ook als e-mailmelding aangeboden aan de ingestelde maildienst. Controleer bij de eerste aanvraag de ontvangst en de spammap.
+            @else
+                E-mailmeldingen staan uit. Aanvragen ontvang je in deze inbox.
+            @endif
+        </p>
+    </section>
+
     {{-- Herkomst: welke kanalen leveren aanvragen op (laatste 90 dagen) --}}
     @if ($sources->isNotEmpty())
         <section class="mt-6 rounded-[4px] border border-hairline px-4 py-3" aria-label="Herkomst van aanvragen">
@@ -27,7 +53,7 @@
         @foreach ($tabs as $key => $label)
             <a href="{{ route('admin.leads.index', ['tab' => $key]) }}"
                @if ($tab === $key) aria-current="page" @endif
-               class="-mb-px inline-flex items-center gap-2 border-b-2 px-4 py-2.5 text-sm transition
+               class="-mb-px inline-flex items-center gap-1 border-b-2 px-2 py-2.5 text-xs transition sm:gap-2 sm:px-4 sm:text-sm
                       {{ $tab === $key ? 'border-brass-500 font-medium text-cream' : 'border-transparent text-cream/65 hover:text-cream' }}">
                 {{ $label }}
                 <span class="rounded-full px-2 py-0.5 font-mono text-[0.7rem] tabular
@@ -45,7 +71,7 @@
                 {{ $tab === 'open' ? 'Geen open aanvragen' : 'Geen aanvragen' }}
             </h2>
             <p class="mt-2 max-w-sm text-sm text-cream/65">
-                {{ $tab === 'open' ? 'Alles is afgehandeld. Nieuwe aanvragen van de site verschijnen hier en komen ook per mail binnen.' : 'Hier verschijnen de aanvragen die via de site binnenkomen.' }}
+                {{ $tab === 'open' ? 'Alles is afgehandeld. Nieuwe aanvragen van de site verschijnen hier.' : 'Hier verschijnen de aanvragen die via de site binnenkomen.' }}
             </p>
         </div>
     @else
@@ -89,11 +115,11 @@
                                 </p>
                             @endif
 
-                            <p class="mt-3 font-display text-lg font-semibold text-cream">{{ $lead->name }}</p>
+                            <p class="mt-3 break-words font-display text-lg font-semibold text-cream">{{ $lead->name }}</p>
                             <div class="mt-1 flex flex-wrap gap-x-5 gap-y-1 text-sm">
                                 <a href="mailto:{{ $lead->email }}?subject={{ rawurlencode($replySubject) }}"
-                                   class="inline-flex items-center gap-1.5 text-cream/75 transition hover:text-brass-300">
-                                    <x-icon name="mail" class="h-4 w-4" /> {{ $lead->email }}
+                                   class="inline-flex min-w-0 items-center gap-1.5 text-cream/75 transition hover:text-brass-300">
+                                    <x-icon name="mail" class="h-4 w-4 shrink-0" /> <span class="break-all">{{ $lead->email }}</span>
                                 </a>
                                 @if ($lead->phone)
                                     <a href="tel:{{ preg_replace('/[^0-9+]/', '', $lead->phone) }}"
@@ -104,7 +130,7 @@
                             </div>
 
                             @if ($lead->message)
-                                <p class="mt-4 whitespace-pre-line rounded-[3px] border-l-2 border-brass-500/40 bg-graphite-800/60 px-4 py-3 text-sm leading-relaxed text-cream/85">{{ $lead->message }}</p>
+                                <p class="mt-4 whitespace-pre-line break-words rounded-[3px] border-l-2 border-brass-500/40 bg-graphite-800/60 px-4 py-3 text-sm leading-relaxed text-cream/85">{{ $lead->message }}</p>
                             @endif
                         </div>
 

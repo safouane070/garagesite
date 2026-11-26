@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Car;
 use App\Models\Lead;
+use App\Models\LeadInboxSettings;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -26,6 +27,43 @@ class AdminLeadTest extends TestCase
     public function test_guests_cannot_see_the_inbox(): void
     {
         $this->get(route('admin.leads.index'))->assertRedirect(route('login'));
+    }
+
+    public function test_notification_settings_are_private_validated_and_can_be_cleared(): void
+    {
+        $this->patch(route('admin.leads.settings'), ['notification_email' => 'stranger@example.com'])
+            ->assertRedirect(route('login'));
+        $this->assertDatabaseCount('lead_inbox_settings', 0);
+
+        $this->actingAs(User::factory()->create());
+        $this->patch(route('admin.leads.settings'), ['notification_email' => 'ongeldig'])
+            ->assertSessionHasErrors('notification_email');
+        $this->assertDatabaseCount('lead_inbox_settings', 0);
+
+        $this->patch(route('admin.leads.settings'), ['notification_email' => 'eigenaar@example.com'])
+            ->assertRedirect(route('admin.leads.index'));
+        $this->get(route('admin.leads.index'))
+            ->assertSee('eigenaar@example.com')
+            ->assertSee('geen verzendende maildienst ingesteld');
+        $this->assertSame('eigenaar@example.com', LeadInboxSettings::current()->notification_email);
+        $this->assertNotSame('eigenaar@example.com', config('brand.contact.email'));
+
+        $this->patch(route('admin.leads.settings'), ['notification_email' => ''])
+            ->assertSessionHasNoErrors();
+        $this->assertNull(LeadInboxSettings::current()->notification_email);
+    }
+
+    public function test_render_submission_appears_in_the_admin_inbox(): void
+    {
+        config(['brand.demo' => true, 'mail.default' => 'log']);
+        $this->post(route('leads.store'), [
+            'type' => 'aankoop', 'name' => 'Inbox Klant', 'email' => 'inbox@example.com',
+            'message' => 'Graag hulp bij het vinden van een auto.',
+        ])->assertSessionHas('lead_sent', true);
+
+        $this->actingAs(User::factory()->create())->get(route('admin.leads.index'))
+            ->assertOk()->assertSee('Inbox Klant')->assertSee('Graag hulp bij het vinden van een auto.')
+            ->assertSee('Aankoopbegeleiding');
     }
 
     public function test_open_tab_shows_open_leads_with_car_and_date(): void

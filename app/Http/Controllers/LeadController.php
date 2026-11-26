@@ -7,6 +7,7 @@ use App\Http\Requests\StoreLeadRequest;
 use App\Mail\LeadConfirmation;
 use App\Mail\LeadReceived;
 use App\Models\Lead;
+use App\Models\LeadInboxSettings;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
@@ -15,12 +16,6 @@ class LeadController extends Controller
 {
     public function store(StoreLeadRequest $request): RedirectResponse
     {
-        // Portfolio-demo: geen persoonsgegevens opslaan of (naar de logs) mailen, en dus ook
-        // géén "ontvangen" tonen: het formulier zegt eerlijk dat het niet aankomt.
-        if (config('brand.demo')) {
-            return back()->with('lead_demo', true)->withFragment('contact');
-        }
-
         $data = $request->safe()->only([
             'car_id', 'type', 'name', 'email', 'phone', 'message', 'preferred_date',
         ]);
@@ -39,15 +34,23 @@ class LeadController extends Controller
 
         $lead = Lead::create($data);
 
-        // De lead staat veilig in de database (en in /admin/aanvragen). Mails gaan
-        // via de wachtrij, zodat de bezoeker nooit op de mailserver wacht; lukt
-        // zelfs het inplannen niet, dan blokkeert dat de bevestiging niet.
-        try {
-            Mail::to(config('brand.contact.email'))->queue(new LeadReceived($lead));
-            // Zonder naam: die is vrij in te vullen en zou in de "Aan"-regel van een vreemde staan.
-            Mail::to($lead->email)->queue(new LeadConfirmation($lead));
-        } catch (\Throwable $e) {
-            Log::warning('Lead-mail niet ingepland: ' . $e->getMessage(), ['lead_id' => $lead->id]);
+        // De inbox ontvangt altijd, ook zonder maildienst of als die hapert.
+        $recipient = LeadInboxSettings::current()->notification_email;
+        if ($recipient && LeadInboxSettings::usesDeliveryMailer()) {
+            try {
+                Mail::to($recipient)->queue(new LeadReceived($lead));
+            } catch (\Throwable $e) {
+                Log::warning('Aanvraagmelding niet ingepland.', ['lead_id' => $lead->id, 'exception' => $e::class]);
+            }
+
+            // De Render-preview stuurt geen bevestiging uit naam van de echte zaak naar bezoekers.
+            if (! config('brand.demo')) {
+                try {
+                    Mail::to($lead->email)->queue(new LeadConfirmation($lead));
+                } catch (\Throwable $e) {
+                    Log::warning('Aanvraagbevestiging niet ingepland.', ['lead_id' => $lead->id, 'exception' => $e::class]);
+                }
+            }
         }
 
         return back()

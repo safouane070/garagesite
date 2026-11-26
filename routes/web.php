@@ -75,6 +75,7 @@ Route::middleware('auth')->group(function () {
 
         // Aanvragen-inbox (leads van de site).
         Route::get('aanvragen', [AdminLeadController::class, 'index'])->name('leads.index');
+        Route::patch('aanvragen/instellingen', [AdminLeadController::class, 'updateSettings'])->name('leads.settings');
         Route::patch('aanvragen/{lead}/afgehandeld', [AdminLeadController::class, 'toggle'])->name('leads.toggle');
         Route::delete('aanvragen/{lead}', [AdminLeadController::class, 'destroy'])->name('leads.destroy');
 

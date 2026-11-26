@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Lead;
+use App\Models\LeadInboxSettings;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -38,7 +39,23 @@ class LeadController extends Controller
             ->selectRaw('source, count(*) as total')->groupBy('source')->orderByDesc('total')
             ->pluck('total', 'source');
 
-        return view('admin.leads.index', compact('leads', 'tab', 'counts', 'sources'));
+        $inboxSettings = LeadInboxSettings::current();
+        $deliveryMailer = LeadInboxSettings::usesDeliveryMailer();
+
+        return view('admin.leads.index', compact('leads', 'tab', 'counts', 'sources', 'inboxSettings', 'deliveryMailer'));
+    }
+
+    public function updateSettings(Request $request): RedirectResponse
+    {
+        $data = $request->validate([
+            'notification_email' => ['nullable', 'email', 'max:254'],
+        ], [
+            'notification_email.email' => 'Vul een geldig e-mailadres in.',
+        ]);
+
+        LeadInboxSettings::updateOrCreate(['id' => 1], $data);
+
+        return to_route('admin.leads.index')->with('status', 'Instellingen voor e-mailmeldingen opgeslagen.');
     }
 
     /** Afgehandeld ↔ open wisselen. */

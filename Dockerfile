@@ -12,9 +12,9 @@ RUN npm run build
 FROM php:8.4-apache
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-        libjpeg62-turbo-dev libpng-dev libwebp-dev libfreetype6-dev libzip-dev unzip \
+        libjpeg62-turbo-dev libpng-dev libwebp-dev libfreetype6-dev libzip-dev libpq-dev unzip \
     && docker-php-ext-configure gd --with-jpeg --with-webp --with-freetype \
-    && docker-php-ext-install gd exif zip \
+    && docker-php-ext-install gd exif zip pdo_pgsql \
     && a2enmod rewrite \
     && sed -ri 's!/var/www/html!/var/www/html/public!g' /etc/apache2/sites-available/000-default.conf \
     && sed -ri 's!AllowOverride None!AllowOverride All!g' /etc/apache2/apache2.conf \

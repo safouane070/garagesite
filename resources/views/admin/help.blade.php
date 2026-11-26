@@ -30,8 +30,9 @@
             [
                 'icon' => 'inbox', 'title' => 'Aanvragen',
                 'items' => [
-                    'Elke aanvraag (proefrit, bezichtiging, inruil, vraag) komt per mail binnen én staat onder Aanvragen. Het rode getal is wat nog open staat.',
-                    'De klant krijgt automatisch een bevestiging dat de aanvraag binnen is. Beantwoorden met de knop opent je mail met het goede onderwerp.',
+                    'Elke aanvraag (proefrit, bezichtiging, inruil, vraag) staat onder Aanvragen. Het rode getal is wat nog open staat.',
+                    'Daarnaast meldingen per mail ontvangen? Vul onder Aanvragen het e-mailadres voor meldingen in. Daar zie je ook of de maildienst al is ingesteld.',
+                    'Beantwoorden opent je eigen mailprogramma met het goede onderwerp. De aanvraag blijft in deze inbox staan.',
                     'Klaar? “Markeer als afgehandeld”. Afgehandelde aanvragen worden na ' . \App\Models\Lead::KEEP_HANDLED_MONTHS . ' maanden automatisch gewist (privacywet).',
                 ],
             ],
@@ -47,7 +48,9 @@
                 'items' => [
                     'Wachtwoord wijzigen: Profiel. Kies een lang wachtwoord dat je nergens anders gebruikt.',
                     'Extra veilig: zet onder Profiel de tweestapsverificatie aan (code uit een app op je telefoon). Print de herstelcodes en bewaar ze goed.',
-                    'Wachtwoord kwijt? Op het inlogscherm “Wachtwoord vergeten”: je krijgt een link op ' . auth()->user()?->email . '.',
+                    \App\Models\LeadInboxSettings::usesDeliveryMailer()
+                        ? 'Wachtwoord kwijt? Op het inlogscherm “Wachtwoord vergeten”: je krijgt een link op ' . auth()->user()?->email . '.'
+                        : 'Je inlogadres is ' . auth()->user()?->email . '. Zonder ingestelde maildienst werkt wachtwoordherstel per mail nog niet. Bewaar je inloggegevens en laat de maildienst instellen vóór gebruik door de eigenaar.',
                 ],
             ],
         ];
@@ -75,6 +78,6 @@
     </div>
 
     <p class="mt-8 text-sm text-cream/60">
-        Klopt er iets niet op de site? Bij een fout krijgt de beheerder automatisch een mail; je hoeft niets te doen.
+        Klopt er iets niet op de site? Geef dit door aan je websitebeheerder.
     </p>
 </x-layouts.admin>

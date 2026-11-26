@@ -14,6 +14,13 @@ fi
 # Render zet het publieke adres in RENDER_EXTERNAL_URL (links in sitemap/mails).
 export APP_URL="${APP_URL:-$RENDER_EXTERNAL_URL}"
 
+# Met Render Postgres blijft de inbox buiten deze tijdelijke container bewaard.
+# De lokale build-snapshot bevat alleen de voorraad en foto's, nooit aanvragen of instellingen.
+php artisan migrate --force
+if [ "$DB_CONNECTION" = "pgsql" ]; then
+    php artisan demo:restore-catalog
+fi
+
 # Beheeraccount uit ADMIN_EMAIL / ADMIN_PASSWORD (zie DatabaseSeeder).
 php artisan db:seed --force
 php artisan config:cache
