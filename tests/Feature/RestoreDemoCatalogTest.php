@@ -7,6 +7,7 @@ use App\Models\Lead;
 use App\Models\LeadInboxSettings;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class RestoreDemoCatalogTest extends TestCase
@@ -48,6 +49,40 @@ class RestoreDemoCatalogTest extends TestCase
             $this->assertSame(['deuren' => 5], $new->specs);
             $this->assertSame(['Airco'], $new->options);
             $this->assertTrue($new->is_featured);
+        } finally {
+            DB::disconnect('build_snapshot');
+            DB::disconnect('snapshot_fixture');
+            unlink($snapshot);
+        }
+    }
+
+    /**
+     * Een auto die tussen twee builds door de uurlijkse sync is toegevoegd, staat in de blijvende
+     * database, maar zijn foto's stonden in de vorige container. Die verwijzingen gaven live een 403
+     * (kapotte foto's); nu worden ze leeggemaakt en leest de sync de auto opnieuw in.
+     */
+    public function test_cars_outside_the_build_with_missing_photo_files_are_refetched(): void
+    {
+        Storage::fake('public');
+        $lost = Car::factory()->create(['dealer_slug' => 'tussendoor', 'dealer_modified_at' => now()]);
+        $lost->images()->create(['path' => 'cars/tussendoor/weg.webp', 'is_primary' => true, 'sort_order' => 0]);
+        $fine = Car::factory()->create(['dealer_slug' => 'heeft-fotos', 'dealer_modified_at' => now()]);
+        $fine->images()->create(['path' => 'cars/heeft-fotos/er.webp', 'is_primary' => true, 'sort_order' => 0]);
+        Storage::disk('public')->put('cars/heeft-fotos/er.webp', 'x');
+
+        $snapshot = tempnam(sys_get_temp_dir(), 'catalog-');
+        config(['database.connections.snapshot_fixture' => ['driver' => 'sqlite', 'database' => $snapshot, 'prefix' => '']]);
+        $db = DB::connection('snapshot_fixture');
+        $db->statement('CREATE TABLE cars (id INTEGER PRIMARY KEY, dealer_slug TEXT)');
+        $db->statement('CREATE TABLE car_images (id INTEGER PRIMARY KEY, car_id INTEGER, path TEXT)');
+
+        try {
+            $this->artisan('demo:restore-catalog', ['--snapshot' => $snapshot])->assertSuccessful();
+
+            $this->assertCount(0, $lost->images()->get());
+            $this->assertNull($lost->refresh()->dealer_modified_at); // sync leest hem opnieuw (en haalt foto's)
+            $this->assertCount(1, $fine->images()->get());
+            $this->assertNotNull($fine->refresh()->dealer_modified_at);
         } finally {
             DB::disconnect('build_snapshot');
             DB::disconnect('snapshot_fixture');

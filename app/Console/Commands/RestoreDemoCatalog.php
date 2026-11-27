@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use App\Models\Car;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class RestoreDemoCatalog extends Command
 {
@@ -57,7 +58,21 @@ class RestoreDemoCatalog extends Command
             $count++;
         }
 
-        $this->info("Galerijen van {$count} auto's gekoppeld; bestaande aanvragen en instellingen behouden.");
+        // Auto's die tussen builds door de sync zijn toegevoegd: hun foto's stonden in de vorige
+        // container. Ontbreken de bestanden, dan verwijzingen weg en opnieuw laten inlezen door de
+        // sync die hierna draait (anders live 403/kapotte foto's tot de dealer de auto wijzigt).
+        $built = $snapshot->table('cars')->whereNotNull('dealer_slug')->pluck('dealer_slug');
+        $refetch = 0;
+        Car::whereNotIn('dealer_slug', $built)->orWhereNull('dealer_slug')->with('primaryImage')->get()
+            ->each(function (Car $car) use (&$refetch) {
+                if ($car->primaryImage && ! Storage::disk('public')->exists($car->primaryImage->path)) {
+                    $car->images()->delete();
+                    $car->update(['dealer_modified_at' => null]);
+                    $refetch++;
+                }
+            });
+
+        $this->info("Galerijen van {$count} auto's gekoppeld; {$refetch} auto('s) zonder fotobestanden worden opnieuw ingelezen; bestaande aanvragen en instellingen behouden.");
 
         return self::SUCCESS;
     }
