@@ -9,19 +9,12 @@
     {{-- ═══════════ HERO · echte showroomfoto met tekst eroverheen ═══════════ --}}
     <section class="relative -mt-[4.5rem] flex min-h-hero flex-col overflow-hidden bg-ink pt-[4.5rem] sm:flex-row sm:items-end">
         {{-- Echte foto van het wagenpark van de zaak --}}
-        {{-- Staand scherm (telefoon): de middenuitsnede. object-cover toont daar toch alleen het
-             midden van de vierkante foto; zelfde beeld, ±35% minder bytes voor de grootste afbeelding.
-             Telefoon: de foto is een eigen strook boven de tekst, op breedte geschaald. Als
-             achtergrond viel de rij auto's (45–67% van de foto) precies achter de kop en werden
-             de buitenste auto's afgesneden. 62% houdt de rij in beeld van ±190px (iPhone in
-             Safari) tot ±350px strookhoogte. Vanaf sm: weer de volle achtergrondfoto. --}}
-        <div class="relative min-h-[12rem] flex-1 [mask-image:linear-gradient(to_bottom,#000_70%,transparent)] sm:absolute sm:inset-0 sm:[mask-image:none]">
-            <picture>
-                <source media="(max-aspect-ratio: 5/8)" srcset="{{ asset('images/hero-showroom-portrait.webp') }}" width="1120" height="1600">
-                <img src="{{ asset('images/hero-showroom.webp') }}" alt="Wagenpark van {{ config('app.name') }}"
-                     width="1600" height="1600" fetchpriority="high" decoding="async"
-                     class="absolute inset-0 h-full w-full object-cover object-[50%_62%] sm:object-center">
-            </picture>
+        {{-- Mobiel blijft de volledige breedte van de foto zichtbaar. De vaste verhouding
+             houdt de rij auto's vrij van de kop en de fade begint onder de bumpers. --}}
+        <div class="relative aspect-[16/10] shrink-0 [mask-image:linear-gradient(to_bottom,#000_80%,transparent)] sm:absolute sm:inset-0 sm:aspect-auto sm:[mask-image:none]">
+            <img src="{{ asset('images/hero-showroom.webp') }}" alt="Wagenpark van {{ config('app.name') }}"
+                 width="1600" height="1600" fetchpriority="high" decoding="async"
+                 class="absolute inset-0 h-full w-full object-cover object-[50%_62%] sm:object-center">
             {{-- Lichte overlay: alleen onderin/links donker voor tekst, boven blijft de foto helder --}}
             <div class="pointer-events-none absolute inset-0 hidden bg-gradient-to-t from-ink via-ink/40 to-ink/5 sm:block"></div>
             <div class="pointer-events-none absolute inset-0 hidden bg-gradient-to-r from-ink/55 via-transparent to-transparent sm:block"></div>
@@ -33,14 +26,9 @@
                     Dé Duitse occasions<br>van Rijswijk
                 </h1>
 
-                {{-- USP's, zoals op de originele hero (kort, geen lange alinea) --}}
-                <ul class="mt-6 flex flex-wrap gap-x-6 gap-y-2 sm:mt-8">
-                    @foreach (['BOVAG-garantie', 'Geen afleverkosten', 'Volkswagen- & Audi-specialist'] as $usp)
-                        <li class="inline-flex items-center gap-2 text-sm font-medium text-cream">
-                            <x-icon name="check" class="h-4 w-4 text-brass-400" /> {{ $usp }}
-                        </li>
-                    @endforeach
-                </ul>
+                <p class="mt-5 max-w-md text-sm leading-relaxed text-cream/75 sm:mt-6 sm:text-base">
+                    Volkswagen en Audi, met BOVAG-garantie en zonder afleverkosten.
+                </p>
 
                 {{-- Direct zoeken, zoals elke dealer in de regio het bovenaan zet. De knop telt live
                      mee; zonder JS werkt het formulier gewoon als link naar het gefilterde aanbod. --}}
@@ -141,7 +129,7 @@
     <section class="container-x py-10 sm:py-16 lg:py-24">
         <div class="flex flex-wrap items-end justify-between gap-4">
             <h2 class="font-display text-3xl font-bold uppercase tracking-tight text-cream sm:text-4xl">
-                Alles rondom je auto
+                Kopen, verkopen of laten zoeken
             </h2>
             <a href="{{ route('diensten') }}" class="group inline-flex items-center gap-2 text-sm text-cream/70 transition hover:text-brass-300">
                 Alle diensten <x-icon name="arrow-right" class="h-4 w-4 transition group-hover:translate-x-0.5" />
@@ -150,10 +138,10 @@
 
         @php
             $teaser = [
-                ['t' => 'Inkoop', 'd' => 'Eerlijke dagprijs voor je auto, direct geregeld.', 'url' => route('diensten', ['onderwerp' => 'inkoop']) . '#contact'],
+                ['t' => 'Inkoop', 'd' => 'Bespreek de verkoopprijs en overdracht van je auto.', 'url' => route('diensten', ['onderwerp' => 'inkoop']) . '#contact'],
                 ['t' => 'Verkoop', 'd' => 'Kwaliteitsoccasions met BOVAG-garantie, zonder afleverkosten.', 'url' => route('cars.index')],
                 ['t' => 'Aankoop', 'd' => 'Zelf een auto op het oog? Wij begeleiden je bij de aankoop.', 'url' => route('diensten', ['onderwerp' => 'aankoop']) . '#contact'],
-                ['t' => 'Zoekopdracht', 'd' => 'Niet gevonden? Wij zoeken gericht naar jouw droomauto.', 'url' => route('diensten', ['onderwerp' => 'zoekopdracht']) . '#contact'],
+                ['t' => 'Zoekopdracht', 'd' => 'Geef je gewenste model, uitvoering en budget door.', 'url' => route('diensten', ['onderwerp' => 'zoekopdracht']) . '#contact'],
             ];
         @endphp
         {{-- Index-rijen: titel, uitleg en pijl op één lijn (telefoon: uitleg onder de titel).

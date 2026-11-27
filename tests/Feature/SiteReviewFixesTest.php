@@ -40,7 +40,7 @@ class SiteReviewFixesTest extends TestCase
     {
         $this->get('/')->assertOk()
             ->assertSee('<title>VW &amp; Audi occasions in Rijswijk · ', false)
-            ->assertSee('Volkswagen- &amp; Audi-specialist', false)
+            ->assertSee('Volkswagen en Audi, met BOVAG-garantie en zonder afleverkosten.')
             ->assertSee('data-fab-avoid', false);
     }
 

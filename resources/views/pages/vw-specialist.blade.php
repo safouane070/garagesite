@@ -1,19 +1,19 @@
 <x-layouts.public title="Volkswagen Specialist"
-    description="Autobedrijf Rijswijk is Volkswagen- en VAG-specialist: diepgaande kennis van Volkswagen, Audi, SEAT, CUPRA en Škoda. Occasions met garantie.">
+    description="Volkswagen, Audi, SEAT, CUPRA en Škoda bij Autobedrijf Rijswijk. Bekijk het aanbod per merk of plan een bezoek.">
 
     <x-page-hero title="De Volkswagen-specialist van Rijswijk"
-        intro="Volkswagen, Audi, SEAT, CUPRA en Škoda: we kennen deze modellen door en door. Die kennis vertaalt zich in scherp geselecteerde occasions en eerlijk advies."
+        intro="Volkswagen, Audi, SEAT, CUPRA en Škoda vormen een groot deel van onze voorraad. Bekijk hieronder het aanbod per merk."
         image="images/site/vw-specialist.webp" alt="Medewerker in een jas met het embleem Volkswagen Specialist" position="60% 40%" />
 
     <section class="container-x py-12 lg:py-16">
         <div class="grid gap-12 lg:grid-cols-12 lg:gap-16">
             <div class="lg:col-span-7">
-                <h2 class="font-display text-2xl font-bold text-cream">Waarom een specialist?</h2>
+                <h2 class="font-display text-2xl font-bold text-cream">Volkswagen en de andere VAG-merken</h2>
                 <div class="mt-4 space-y-4 leading-relaxed text-cream/70">
                     <p>
-                        Als VAG-specialist weten we precies waar je bij deze modellen op moet letten — van de
-                        bekende motoren en distributie tot software en uitrusting. Elke occasion die we inkopen
-                        beoordelen we met die kennis, zodat jij een auto koopt die klopt.
+                        De VAG-merken delen veel motoren en techniek, maar uitvoering en onderhoud verschillen
+                        per auto. Vraag ons naar de onderhoudshistorie, motorisering en uitrusting van
+                        de occasion die je op het oog hebt.
                     </p>
                     <p>
                         Onze voorraad bestaat grotendeels uit Volkswagens en premium Duitse occasions. Van een

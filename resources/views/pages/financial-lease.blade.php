@@ -28,10 +28,9 @@
                         ['t' => 'Afgestemd op jou', 'd' => 'Looptijd, aanbetaling en slottermijn stem je af op je situatie en de leeftijd van de auto.'],
                     ];
                 @endphp
-                <ul class="mt-6 space-y-5">
+                <ul class="mt-6 divide-y divide-hairline border-y border-hairline">
                     @foreach ($points as $p)
-                        <li class="flex items-start gap-4">
-                            <span class="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-brass-500/35 text-brass-400"><x-icon name="check" class="h-4 w-4" /></span>
+                        <li class="py-4">
                             <div>
                                 <p class="font-medium text-white">{{ $p['t'] }}</p>
                                 <p class="mt-1 text-sm leading-relaxed text-cream/70">{{ $p['d'] }}</p>
